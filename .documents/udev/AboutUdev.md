@@ -59,7 +59,7 @@ KERNEL=="urbtc*"  ATTRS{idVendor}=="1d6b" ATTRS{idProduct}=="0002" MODE="0777" N
 
 このドキュメントと同じ階層にあるファイルをコピーしても良い。
 ```bash
-$ sudo cp <catkin_ws>/src/tc2015_ws/src/TC2015/third_robot/.documents/udev/91-third-robot.udev /etc/udev/rules.d/
+$ sudo cp <catkin_ws>/src/TC2015/third_robot/.documents/udev/91-third-robot.udev /etc/udev/rules.d/
 ```
 
 ## restart
