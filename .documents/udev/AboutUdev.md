@@ -42,9 +42,9 @@ ATTRS{idProduct}=="0002"
 これを各デバイスついて調べる。
 3号機の場合だと、iMCs01の他にLRFが3台とArduinoが1台。
 
-## `/etc/udev/96-local.rules` というファイルを作成する
+## `/etc/udev/rules.d/91-third-robot.rules` というファイルを作成する
 
-`96-local.rules`の最初の数字は読み込まる順番を示しているらしい。
+`91-third-robot.rules`の最初の数字は読み込まる順番を示しているらしい。
 中身は次のような感じ。
 LRFの場合は固有の情報が `udevadm` を使って取得できないのでROSの力を使う（強い）。roswikiを参考に。
 
@@ -55,6 +55,11 @@ KERNEL=="ttyACM*  SUBSYSTEMS=="usb" ATTRS{idVendor}=="2341" ATTRS{idProduct}=="0
 KERNEL=="ttyACM[0-9]*", ACTION=="add", ATTRS{idVendor}=="15d1", MODE="0777", GROUP="dialout", PROGRAM="/opt/ros/indigo/env.sh rosrun hokuyo_node getID %N q", SYMLINK+="sensors/hokuyo_%c"
 
 KERNEL=="urbtc*"  ATTRS{idVendor}=="1d6b" ATTRS{idProduct}=="0002" MODE="0777" NAME="urbtc0"
+```
+
+このドキュメントと同じ階層にあるファイルをコピーしても良い。
+```bash
+$ sudo cp <catkin_ws>/src/tc2015_ws/src/TC2015/third_robot/.documents/udev/91-third-robot.udev /etc/udev/rules.d/
 ```
 
 ## restart

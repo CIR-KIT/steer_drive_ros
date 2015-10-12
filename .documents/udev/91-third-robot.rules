@@ -1,0 +1,6 @@
+# ttyACM0: Arduino, ttyACM1: LRF(bottom), ttyACM2: LRF(top), ttyACM3: LRF(rear), urbtc0: iMCs01
+KERNEL=="ttyACM*  SUBSYSTEMS=="usb" ATTRS{idVendor}=="2341" ATTRS{idProduct}=="0043" NAME="ttyACM0" MODE="0777"
+
+KERNEL=="ttyACM[0-9]*", ACTION=="add", ATTRS{idVendor}=="15d1", MODE="0777", GROUP="dialout", PROGRAM="/opt/ros/indigo/env.sh rosrun hokuyo_node getID %N q", SYMLINK+="sensors/hokuyo_%c"
+
+KERNEL=="urbtc*"  ATTRS{idVendor}=="1d6b" ATTRS{idProduct}=="0002" MODE="0777" NAME="urbtc0"
