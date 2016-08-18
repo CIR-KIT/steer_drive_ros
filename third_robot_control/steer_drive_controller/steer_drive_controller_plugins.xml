@@ -1,8 +1,8 @@
-<library path="lib/librocker_bogie_controller">
+<library path="lib/libsteer_drive_controller">
 
-  <class name="rocker_bogie_controller/RockerBogieController" type="rocker_bogie_controller::RockerBogieController" base_class_type="controller_interface::ControllerBase">
+  <class name="steer_drive_controller/SteerDriveController" type="steer_drive_controller::SteerDriveController" base_class_type="controller_interface::ControllerBase">
     <description>
-      The RockerBogieController tracks velocity commands. It expects 6 VelocityJointInterface type of hardware interfaces.
+      The SteerDriveController tracks velocity commands. It expects 1 VelocityJointInterface and 1 PositionJointInterfece types of hardware interfaces.
     </description>
   </class>
 
