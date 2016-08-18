@@ -1,0 +1,9 @@
+<library path="lib/librocker_bogie_controller">
+
+  <class name="rocker_bogie_controller/RockerBogieController" type="rocker_bogie_controller::RockerBogieController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      The RockerBogieController tracks velocity commands. It expects 6 VelocityJointInterface type of hardware interfaces.
+    </description>
+  </class>
+
+</library>
