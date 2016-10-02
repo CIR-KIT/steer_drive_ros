@@ -122,7 +122,7 @@ namespace steer_drive_controller{
     , enable_odom_tf_(true)
     , wheel_joints_size_(0)
   #ifdef GUI_DEBUG
-    , ns_("fr01_steer_drive_controller/")
+    , ns_("steer_drive_controller/")
     , isCmdVelImput_(false)
   #else
     , ns_("")

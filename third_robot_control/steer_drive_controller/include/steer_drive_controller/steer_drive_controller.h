@@ -185,7 +185,7 @@ namespace steer_drive_controller{
 
     // FOR_DEBUG
     std::string ns_;
-//#define GUI_DEBUG // uncommentout when you use qtcreator for debugging
+#define GUI_DEBUG // uncommentout when you use qtcreator for debugging
 #ifdef GUI_DEBUG
     bool isCmdVelImput_;
 #endif

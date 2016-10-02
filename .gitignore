@@ -1,0 +1,9 @@
+# vim
+.*.sw[a-z]
+*.un~
+Session.vim
+.netrwhist
+
+# qtcreator
+*.user
+*.autosave
