@@ -18,7 +18,7 @@
     <!-- load the controllers -->
     <node name="controller_spawner" pkg="controller_manager"
         type="spawner" respawn="false"
-        output="screen"
+        output="screen" 
         args="third_robot_diff_drive_controller 
             joint_state_controller
         " />
