@@ -1,19 +1,32 @@
 <launch>
+    <!--
     <arg name="model" default="$(find third_robot_description)/urdf/third_robot.xacro"/>
+    -->
 
     <!-- Load the URDF into the ROS Parameter Server -->
+    <!--
     <param name="robot_description"
         command="$(find xacro)/xacro.py '$(arg model)'" />
+    -->
+    <!-- robot_description はgazeboのworld起動用launchファイル内で既にロードされている． -->
 
     <!-- Load joint controller configurations from YAML file to parameter server -->
     <rosparam file="$(find third_robot_gazebo)/config/third_robot_diff_drive_controller.yaml" command="load"/>
 
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
 
+    <!-- load the controllers -->
+    <node name="controller_spawner" pkg="controller_manager"
+        type="spawner" respawn="false"
+        output="screen"
+        args="third_robot_diff_drive_controller 
+            joint_state_controller
+        " />
+
     <!-- convert joint states to TF transforms for rviz, etc -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
         respawn="false" output="screen">
-        <!-- <remap from="/joint_states" to="/fr01/joint_states" /> -->
+        <!-- <remap from="/joint_states" to="/third_robot/joint_states" /> -->
     </node>
 
 </launch>
