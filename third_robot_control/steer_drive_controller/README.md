@@ -10,7 +10,7 @@ Detailed user documentation can be found in the controller's [forest_robot_proje
 - 右方向
 ![右方向](https://github.com/Nishida-Lab/forest_robot_project/blob/add_fr01_rocker_bogie_controller/fr01_control/rocker_bogie_controller/.fig/rocker_bogie_left.png)
 
-## third_robotのjointメモ
+## third_robotのlinkメモ
 ### ベース
 - base_link
 
@@ -28,6 +28,16 @@ Detailed user documentation can be found in the controller's [forest_robot_proje
 - front_bottom_lrf
 - front_top_lrf
 - rear_bottom_lrf
+
+## third_robotのjointメモ
+### ホイール
+- base_to_left_front_wheel
+- base_to_left_rear_wheel
+- base_to_right_front_wheel
+- base_to_right_rear_wheel
+
+### ステアリング
+- base_to_steer
 
 ## デバッグ開発の手順
 ### 準備
