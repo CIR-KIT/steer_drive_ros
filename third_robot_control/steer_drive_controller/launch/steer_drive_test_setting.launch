@@ -1,5 +1,5 @@
 <launch>
-    <arg name="model" default="$(find fr01_description)/robots/fr01.urdf.xacro"/>
+    <arg name="model" default="$(find third_robot_description)/urdf/third_robot.xacro"/>
 
     <!-- Load the URDF into the ROS Parameter Server -->
     <param name="robot_description"
@@ -7,6 +7,8 @@
 
     <!-- Load joint controller configurations from YAML file to parameter server -->
     <rosparam file="$(find third_robot_gazebo)/config/third_robot_diff_drive_controller.yaml" command="load"/>
+
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
 
     <!-- convert joint states to TF transforms for rviz, etc -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
