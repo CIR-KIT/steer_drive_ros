@@ -126,6 +126,8 @@ namespace steer_drive_controller{
     std::vector<hardware_interface::JointHandle> right_wheel_joints_;
     std::vector<hardware_interface::JointHandle> left_steer_joints_;
     std::vector<hardware_interface::JointHandle> right_steer_joints_;
+    hardware_interface::JointHandle wheel_joint_;
+    hardware_interface::JointHandle steer_joint_;
 
     /// Velocity command related:
     struct Commands

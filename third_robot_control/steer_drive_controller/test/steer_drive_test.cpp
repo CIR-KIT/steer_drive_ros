@@ -6,15 +6,21 @@
 // ros_control
 #include <controller_manager/controller_manager.h>
 #include <hardware_interface/joint_command_interface.h>
+// gazebo
+#include <control_toolbox/pid.h>
+#include <gazebo_ros_control/robot_hw_sim.h>
+#include <gazebo/gazebo.hh>
+#include <gazebo/physics/physics.hh>
+#include <gazebo/common/common.hh>
 
 int configureVelocityJointInterface(hardware_interface::VelocityJointInterface&);
 
-class SteerBot: public hardware_interface::RobotHW
+class SteerBot: /*public gazebo_ros_control::RobotHWSim*/public hardware_interface::RobotHW
 {
     // methods
 public:
     SteerBot(ros::NodeHandle &_nh)
-        : ns_("fr01_steer_drive_controller/")
+        : ns_("steer_drive_controller/")
     {
         this->CleanUp();
         this->GetJointNames(_nh);
@@ -110,6 +116,12 @@ private:
         std::copy(left_wheel_joint_names.begin(), left_wheel_joint_names.end(),
                   std::back_inserter(wheel_joint_names_));
         cnt_wheel_joints_ = wheel_joint_names_.size();
+
+        // rear wheel name
+        std::string wheel_joint_name;
+
+        _nh.getParam(ns_ + "rear_wheel", wheel_joint_name);
+        wheel_joint_name_ = wheel_joint_name;
     }
 
     void GetSteerJointNames(ros::NodeHandle &_nh)
@@ -125,6 +137,12 @@ private:
         std::copy(left_steer_joint_names.begin(), left_steer_joint_names.end(),
                   std::back_inserter(steer_joint_names_));
         cnt_steer_joints_ = steer_joint_names_.size();
+
+        // front steer name
+        std::string steer_joint_name;
+
+        _nh.getParam(ns_ + "front_steer", steer_joint_name);
+        wheel_joint_name_ = steer_joint_name;
     }
 
     void RegisterHardwareInterfaces()
@@ -193,6 +211,8 @@ private:
     //
     std::vector<std::string> wheel_joint_names_;
     std::vector<std::string> steer_joint_names_;
+    std::string wheel_joint_name_;
+    std::string steer_joint_name_;
 
     // interface variables
     //-- wheel
@@ -212,6 +232,9 @@ private:
     //
     hardware_interface::JointStateInterface wheel_joint_state_interface_;
     hardware_interface::JointStateInterface steer_joint_state_interface_;
+
+    // gazebo
+    std::vector<gazebo::physics::JointPtr> sim_joints_;
 
 };
 

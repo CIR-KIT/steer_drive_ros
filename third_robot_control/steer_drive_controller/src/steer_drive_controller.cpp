@@ -193,6 +193,15 @@ namespace steer_drive_controller{
       right_steer_joints_.resize(steer_joints_size_);
     }
 
+    //-- single rear drive
+    std::string wheel_name = "wheel_joint";
+    controller_nh.param(ns_ + "rear_wheel", wheel_name, wheel_name);
+
+    //-- single front steer drive
+    std::string steer_name = "steer_joint";
+    controller_nh.param(ns_ + "front_steer", steer_name, steer_name);
+
+
     // Odometry related:
     double publish_rate;
     controller_nh.param("publish_rate", publish_rate, 50.0);
@@ -302,6 +311,15 @@ namespace steer_drive_controller{
       left_steer_joints_[i] = pos_joint_if->getHandle(left_steer_names[i]);  // throws on failure
       right_steer_joints_[i] = pos_joint_if->getHandle(right_steer_names[i]);  // throws on failure
     }
+    //-- rear wheel
+    //---- handles need to be previously registerd in steer_drive_test.cpp
+    ROS_INFO_STREAM_NAMED(name_,
+                          "Adding the wheel with joint name: " << wheel_name);
+    wheel_joint_ = vel_joint_if->getHandle(wheel_name); // throws on failure
+    //-- front steer
+    ROS_INFO_STREAM_NAMED(name_,
+                          "Adding the steer with joint name: " << steer_name);
+    steer_joint_ = pos_joint_if->getHandle(steer_name); // throws on failure
 
     sub_command_ = controller_nh.subscribe("cmd_vel", 1, &SteerDriveController::cmdVelCallback, this);
 
@@ -394,82 +412,9 @@ namespace steer_drive_controller{
     const double ws_h = wheel_separation_multiplier_ * wheel_separation_h_;
     const double wr = wheel_radius_multiplier_     * wheel_radius_;
 
-    ///////
-    // will change here!!! kinematics stuff!!!
-    ///////
-
-    if(curr_cmd.ang == 0.0)
-    {
-        const double steer_pos = 0.0;
-        for (size_t i = 0; i < steer_joints_size_; ++i)
-        {
-          left_steer_joints_[i].setCommand(steer_pos);
-          right_steer_joints_[i].setCommand(steer_pos);
-        }
-
-        const double vel_linear = curr_cmd.lin / wr;
-        for (size_t i = 0; i < wheel_joints_size_; ++i)
-        {
-          left_wheel_joints_[i].setCommand(vel_linear);
-          right_wheel_joints_[i].setCommand(vel_linear);
-        }
-    }
-    else
-    {
-      // steer
-      //-- compute commands
-      const double tan_cmd_ang = tan(curr_cmd.ang);
-      //---- front
-      const double right_front_steer_pos = atan2(2.0*ws_h*tan_cmd_ang,
-                                                 2.0*ws_h + ws_w*tan_cmd_ang);
-      const double left_front_steer_pos = atan2(2.0*ws_h*tan_cmd_ang,
-                                                2.0*ws_h - ws_w*tan_cmd_ang);
-      //---- back
-      const double right_back_steer_pos = - right_front_steer_pos;
-      const double left_back_steer_pos = - left_front_steer_pos;
-      //-- set commands
-      right_steer_joints_[INDX_STEER_FRNT].setCommand(right_front_steer_pos);
-      left_steer_joints_[INDX_STEER_FRNT].setCommand(left_front_steer_pos);
-      right_steer_joints_[INDX_STEER_BACK].setCommand(right_back_steer_pos);
-      left_steer_joints_[INDX_STEER_BACK].setCommand(left_back_steer_pos);
-
-      // wheel
-      //-- compute commands
-      const double sin_cmd_ang = sin(curr_cmd.ang);
-      //---- front
-      const double right_front_wheel_vel = sin_cmd_ang/sin(right_front_steer_pos)*curr_cmd.lin;
-      const double left_front_wheel_vel = sin_cmd_ang/sin(left_front_steer_pos)*curr_cmd.lin;
-      //---- back
-      const double right_back_wheel_vel = right_front_wheel_vel;
-      const double left_back_wheel_vel = left_front_wheel_vel;
-      //---- middle
-      const double right_middle_wheel_vel = sin_cmd_ang/tan(right_front_steer_pos)*curr_cmd.lin;
-      const double left_middle_wheel_vel = sin_cmd_ang/tan(left_front_steer_pos)*curr_cmd.lin;
-      //-- set commands
-      //---- front
-      right_wheel_joints_[INDX_WHEEL_FRNT].setCommand(right_front_wheel_vel);
-      left_wheel_joints_[INDX_WHEEL_FRNT].setCommand(left_front_wheel_vel);
-      //---- back
-      right_wheel_joints_[INDX_WHEEL_BACK].setCommand(right_back_wheel_vel);
-      left_wheel_joints_[INDX_WHEEL_BACK].setCommand(left_back_wheel_vel);
-      //---- middle
-      right_wheel_joints_[INDX_WHEEL_MID].setCommand(right_middle_wheel_vel);
-      left_wheel_joints_[INDX_WHEEL_MID].setCommand(left_middle_wheel_vel);
-    }
-
-    this->brake();
-    /*
-    // Compute wheels velocities:
-    const double vel_left  = (curr_cmd.lin - curr_cmd.ang * ws_w / 2.0)/wr;
-    const double vel_right = (curr_cmd.lin + curr_cmd.ang * ws_w / 2.0)/wr;
-
-    // Set wheels velocities:
-    for (size_t i = 0; i < wheel_joints_size_; ++i)
-    {
-      left_wheel_joints_[i].setCommand(vel_left);
-      right_wheel_joints_[i].setCommand(vel_right);
-    }
-    */
+    // Set Command
+    wheel_joint_.setCommand(curr_cmd.lin);
+    steer_joint_.setCommand(curr_cmd.ang);
   }
 
   void SteerDriveController::starting(const ros::Time& time)
@@ -490,17 +435,10 @@ namespace steer_drive_controller{
   void SteerDriveController::brake()
   {
     const double steer_pos = 0.0;
-    for (size_t i = 0; i < steer_joints_size_; ++i)
-    {
-        left_steer_joints_[i].setCommand(steer_pos);
-        right_steer_joints_[i].setCommand(steer_pos);
-    }
     const double wheel_vel = 0.0;
-    for (size_t i = 0; i < wheel_joints_size_; ++i)
-    {
-      left_wheel_joints_[i].setCommand(wheel_vel);
-      right_wheel_joints_[i].setCommand(wheel_vel);
-    }
+
+    wheel_joint_.setCommand(steer_pos);
+    steer_joint_.setCommand(wheel_vel);
   }
 
   void SteerDriveController::cmdVelCallback(const geometry_msgs::Twist& command)
@@ -655,6 +593,7 @@ namespace steer_drive_controller{
 
       return true;
   }
+
 
   bool SteerDriveController::setOdomParamsFromUrdf(ros::NodeHandle& root_nh,
                              const std::string& left_wheel_name,
