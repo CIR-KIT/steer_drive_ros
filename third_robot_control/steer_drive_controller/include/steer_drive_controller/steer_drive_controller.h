@@ -122,10 +122,12 @@ namespace steer_drive_controller{
     bool open_loop_;
 
     /// Hardware handles:
+#ifdef MULTIPLE_JOINTS
     std::vector<hardware_interface::JointHandle> left_wheel_joints_;
     std::vector<hardware_interface::JointHandle> right_wheel_joints_;
     std::vector<hardware_interface::JointHandle> left_steer_joints_;
     std::vector<hardware_interface::JointHandle> right_steer_joints_;
+#endif
     hardware_interface::JointHandle wheel_joint_;
     hardware_interface::JointHandle steer_joint_;
 
@@ -250,5 +252,5 @@ namespace steer_drive_controller{
 
   };
 
-  PLUGINLIB_EXPORT_CLASS(steer_drive_controller::SteerDriveController, controller_interface::ControllerBase);
+  PLUGINLIB_EXPORT_CLASS(steer_drive_controller::SteerDriveController, controller_interface::ControllerBase)
 } // namespace diff_drive_controller

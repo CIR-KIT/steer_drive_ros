@@ -25,8 +25,10 @@ public:
         : ns_("steer_drive_controller/")
     {
         this->CleanUp();
+#ifdef MULTIPLE_JOINTS
         this->GetJointNames(_nh);
         this->Resize();
+#endif
         this->RegisterHardwareInterfaces();
     }
 
@@ -44,8 +46,10 @@ public:
         sim_joints_ = _model->GetJoints();
         int n_dof = sim_joints_.size();
 
+#ifdef MULTIPLE_JOINTS
         this->GetJointNames(_nh);
         this->Resize();
+#endif
         this->RegisterHardwareInterfaces();
     }
 
@@ -98,24 +102,28 @@ public:
 private:
     void CleanUp()
     {
+#ifdef MULTIPLE_JOINTS
        // wheel joints
        wheel_joint_names_.clear();
        wheel_joint_pos_.clear();
        wheel_joint_vel_.clear();
        wheel_joint_eff_.clear();
        wheel_joint_vel_cmd_.clear();
+#endif
        // rear wheel joint
         wheel_jnt_pos_ = 0;
         wheel_jnt_vel_ = 0;
         wheel_jnt_eff_ = 0;
         wheel_jnt_vel_cmd_ = 0;
 
+#ifdef MULTIPLE_JOINTS
        // steer joints
        steer_joint_names_.clear();
        steer_joint_pos_.clear();
        steer_joint_vel_.clear();
        steer_joint_eff_.clear();
        steer_joint_vel_cmd_.clear();
+#endif
        // front steer joint
        steer_jnt_pos_ = 0;
        steer_jnt_vel_ = 0;
@@ -124,6 +132,7 @@ private:
 
     }
 
+#ifdef MULTIPLE_JOINTS
     void Resize()
     {
        // wheel joints
@@ -192,6 +201,7 @@ private:
         wheel_joint_name_ = steer_joint_name;
         */
     }
+#endif
 
     void RegisterHardwareInterfaces()
     {

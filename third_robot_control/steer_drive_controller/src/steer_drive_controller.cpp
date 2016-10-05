@@ -166,8 +166,10 @@ namespace steer_drive_controller{
     {
       wheel_joints_size_ = left_wheel_names.size();
 
+#ifdef MULTIPLE_JOINTS
       left_wheel_joints_.resize(wheel_joints_size_);
       right_wheel_joints_.resize(wheel_joints_size_);
+#endif
     }
 
     //-- steers
@@ -189,8 +191,10 @@ namespace steer_drive_controller{
     {
       steer_joints_size_ = left_steer_names.size();
 
+#ifdef MULTIPLE_JOINTS
       left_steer_joints_.resize(steer_joints_size_);
       right_steer_joints_.resize(steer_joints_size_);
+#endif
     }
 
     //-- single rear drive
@@ -299,8 +303,10 @@ namespace steer_drive_controller{
       ROS_INFO_STREAM_NAMED(name_,
                             "Adding left wheel with joint name: " << left_wheel_names[i]
                             << " and right wheel with joint name: " << right_wheel_names[i]);
+#ifdef MULTIPLE_JOINTS
       left_wheel_joints_[i] = vel_joint_if->getHandle(left_wheel_names[i]);  // throws on failure
       right_wheel_joints_[i] = vel_joint_if->getHandle(right_wheel_names[i]);  // throws on failure
+#endif
     }
     //-- steers
     for (int i = 0; i < steer_joints_size_; ++i)
@@ -308,8 +314,10 @@ namespace steer_drive_controller{
       ROS_INFO_STREAM_NAMED(name_,
                             "Adding left steer with joint name: " << left_steer_names[i]
                             << " and right steer with joint name: " << right_steer_names[i]);
+#ifdef MULTIPLE_JOINTS
       left_steer_joints_[i] = pos_joint_if->getHandle(left_steer_names[i]);  // throws on failure
       right_steer_joints_[i] = pos_joint_if->getHandle(right_steer_names[i]);  // throws on failure
+#endif
     }
     //-- rear wheel
     //---- handles need to be previously registerd in steer_drive_test.cpp
@@ -339,8 +347,13 @@ namespace steer_drive_controller{
       double right_pos = 0.0;
       for (size_t i = 0; i < wheel_joints_size_; ++i)
       {
+#ifdef MULTIPLE_JOINTS
         const double lp = left_wheel_joints_[i].getPosition();
         const double rp = right_wheel_joints_[i].getPosition();
+#endif
+        // TODO: to be fixed
+        double lp = 0;
+        double rp = 0;
         if (std::isnan(lp) || std::isnan(rp))
           return;
 
