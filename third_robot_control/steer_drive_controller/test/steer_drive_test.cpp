@@ -143,6 +143,10 @@ private:
     {
         this->GetWheelJointNames(_nh);
         this->GetSteerJointNames(_nh);
+
+        _nh.getParam(ns_ + "rear_wheel", wheel_jnt_name_);
+        _nh.getParam(ns_ + "front_steer", steer_jnt_name_);
+
     }
 
     void GetWheelJointNames(ros::NodeHandle &_nh)
@@ -161,9 +165,10 @@ private:
 
         // rear wheel name
         std::string wheel_joint_name;
-
+        /*
         _nh.getParam(ns_ + "rear_wheel", wheel_joint_name);
         wheel_joint_name_ = wheel_joint_name;
+        */
     }
 
     void GetSteerJointNames(ros::NodeHandle &_nh)
@@ -182,15 +187,40 @@ private:
 
         // front steer name
         std::string steer_joint_name;
-
+        /*
         _nh.getParam(ns_ + "front_steer", steer_joint_name);
         wheel_joint_name_ = steer_joint_name;
+        */
     }
 
     void RegisterHardwareInterfaces()
     {
-      this->RegisterSteerInterfaces();
-      this->RegisterWheelInterfaces();
+        this->RegisterSteerInterfaces();
+        hardware_interface::JointStateHandle state_handle_steer(wheel_jnt_name_,
+                                                                &wheel_jnt_pos_,
+                                                                &wheel_jnt_vel_,
+                                                                &wheel_jnt_eff_);
+        wheel_joint_state_interface_.registerHandle(state_handle_steer);
+        // joint velocity command
+        hardware_interface::JointHandle vel_handle(wheel_joint_state_interface_.getHandle(wheel_jnt_name_),
+                                                   &wheel_jnt_vel_cmd_);
+        wheel_vel_joint_interface_.registerHandle(vel_handle);
+
+        ROS_DEBUG_STREAM("Registered joint '" << wheel_joint_name_ << " ' in the VelocityJointInterface");
+
+        this->RegisterWheelInterfaces();
+        hardware_interface::JointStateHandle state_handle_wheel(steer_jnt_name_,
+                                                                &steer_jnt_pos_,
+                                                                &steer_jnt_vel_,
+                                                                &steer_jnt_eff_);
+        steer_joint_state_interface_.registerHandle(state_handle_wheel);
+
+        // joint position command
+        hardware_interface::JointHandle pos_handle(steer_joint_state_interface_.getHandle(steer_jnt_name_),
+                                                   &steer_jnt_pos_cmd_);
+        steer_pos_joint_interface_.registerHandle(pos_handle);
+
+        ROS_DEBUG_STREAM("Registered joint '" << steer_joint_name_ << " ' in the PositionJointInterface");
     }
 
     void RegisterWheelInterfaces()
@@ -253,8 +283,8 @@ private:
     //
     std::vector<std::string> wheel_joint_names_;
     std::vector<std::string> steer_joint_names_;
-    std::string wheel_joint_name_;
-    std::string steer_joint_name_;
+    std::string wheel_jnt_name_;
+    std::string steer_jnt_name_;
 
     // interface variables
     //-- wheel
