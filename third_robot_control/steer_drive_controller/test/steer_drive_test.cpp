@@ -15,7 +15,9 @@
 
 int configureVelocityJointInterface(hardware_interface::VelocityJointInterface&);
 
-class SteerBot: /*public gazebo_ros_control::RobotHWSim*/public hardware_interface::RobotHW
+class SteerBot:
+        //public gazebo_ros_control::RobotHWSim
+        public hardware_interface::RobotHW
 {
     // methods
 public:
@@ -26,6 +28,35 @@ public:
         this->GetJointNames(_nh);
         this->Resize();
         this->RegisterHardwareInterfaces();
+    }
+
+    bool initSim(const std::string& _robot_namespace,
+      ros::NodeHandle _nh,
+      gazebo::physics::ModelPtr _model,
+      const urdf::Model* const _urdf_model,
+      std::vector<transmission_interface::TransmissionInfo> _transmissions)
+    {
+        using gazebo::physics::JointPtr;
+
+        this->CleanUp();
+
+        // simulation joints
+        sim_joints_ = _model->GetJoints();
+        int n_dof = sim_joints_.size();
+
+        this->GetJointNames(_nh);
+        this->Resize();
+        this->RegisterHardwareInterfaces();
+    }
+
+    void readSim(ros::Time time, ros::Duration period)
+    {
+
+    }
+
+    void writeSim(ros::Time time, ros::Duration period)
+    {
+
     }
 
     void read()
@@ -73,6 +104,11 @@ private:
        wheel_joint_vel_.clear();
        wheel_joint_eff_.clear();
        wheel_joint_vel_cmd_.clear();
+       // rear wheel joint
+        wheel_jnt_pos_ = 0;
+        wheel_jnt_vel_ = 0;
+        wheel_jnt_eff_ = 0;
+        wheel_jnt_vel_cmd_ = 0;
 
        // steer joints
        steer_joint_names_.clear();
@@ -80,6 +116,12 @@ private:
        steer_joint_vel_.clear();
        steer_joint_eff_.clear();
        steer_joint_vel_cmd_.clear();
+       // front steer joint
+       steer_jnt_pos_ = 0;
+       steer_jnt_vel_ = 0;
+       steer_jnt_eff_ = 0;
+       steer_jnt_pos_cmd_ = 0;
+
     }
 
     void Resize()
@@ -221,6 +263,11 @@ private:
     std::vector<double> wheel_joint_vel_;
     std::vector<double> wheel_joint_eff_;
     std::vector<double> wheel_joint_vel_cmd_;
+    //-- rear wheel
+    double wheel_jnt_pos_;
+    double wheel_jnt_vel_;
+    double wheel_jnt_eff_;
+    double wheel_jnt_vel_cmd_;
 
     //-- steer
     int cnt_steer_joints_;
@@ -228,6 +275,11 @@ private:
     std::vector<double> steer_joint_vel_;
     std::vector<double> steer_joint_eff_;
     std::vector<double> steer_joint_vel_cmd_;
+    //-- front steer
+    double steer_jnt_pos_;
+    double steer_jnt_vel_;
+    double steer_jnt_eff_;
+    double steer_jnt_pos_cmd_;
 
     //
     hardware_interface::JointStateInterface wheel_joint_state_interface_;

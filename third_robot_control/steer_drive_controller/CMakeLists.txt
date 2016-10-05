@@ -6,19 +6,38 @@ find_package(catkin REQUIRED COMPONENTS
     urdf
     realtime_tools
     tf
-    nav_msgs)
+    nav_msgs
+    roscpp
+    angles
+    control_toolbox
+    gazebo_ros_control
+    hardware_interface
+    joint_limits_interface
+)
+
+find_package(gazebo REQUIRED)
 
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}
+    INCLUDE_DIRS include
+    LIBRARIES ${PROJECT_NAME}
+    CATKIN_DEPENDS
+      roscpp
+      angles
+      control_toolbox
+      gazebo_ros_control
+      hardware_interface
+      joint_limits_interface
 )
 
 include_directories(
-  include ${catkin_INCLUDE_DIRS}
+  include ${catkin_INCLUDE_DIRS} ${GAZEBO_INCLUDE_DIRS}
 )
 
+link_directories(${GAZEBO_LIBRARY_DIRS})
+list(APPEND CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
+
 add_library(${PROJECT_NAME} src/steer_drive_controller.cpp src/odometry.cpp src/speed_limiter.cpp)
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -30,7 +49,7 @@ install(FILES steer_drive_controller_plugins.xml
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 add_executable(steer_drive_test test/steer_drive_test.cpp src/steer_drive_controller.cpp src/odometry.cpp src/speed_limiter.cpp)
-target_link_libraries(steer_drive_test ${catkin_LIBRARIES})
+target_link_libraries(steer_drive_test ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 if (CATKIN_ENABLE_TESTING)
 #  find_package(catkin COMPONENTS rostest std_srvs controller_manager tf)
