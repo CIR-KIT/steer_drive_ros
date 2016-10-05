@@ -206,7 +206,7 @@ private:
                                                    &wheel_jnt_vel_cmd_);
         wheel_vel_joint_interface_.registerHandle(vel_handle);
 
-        ROS_DEBUG_STREAM("Registered joint '" << wheel_joint_name_ << " ' in the VelocityJointInterface");
+        ROS_DEBUG_STREAM("Registered joint '" << wheel_jnt_name_ << " ' in the VelocityJointInterface");
 
         this->RegisterWheelInterfaces();
         hardware_interface::JointStateHandle state_handle_wheel(steer_jnt_name_,
@@ -220,7 +220,7 @@ private:
                                                    &steer_jnt_pos_cmd_);
         steer_pos_joint_interface_.registerHandle(pos_handle);
 
-        ROS_DEBUG_STREAM("Registered joint '" << steer_joint_name_ << " ' in the PositionJointInterface");
+        ROS_DEBUG_STREAM("Registered joint '" << steer_jnt_name_ << " ' in the PositionJointInterface");
     }
 
     void RegisterWheelInterfaces()
