@@ -19,6 +19,13 @@ class SteerBot:
         //public gazebo_ros_control::RobotHWSim
         public hardware_interface::RobotHW
 {
+    // constant
+private:
+    enum {
+        INDEX_RIGHT = 0,
+        INDEX_LEFT = 1
+    };
+
     // methods
 public:
     SteerBot(ros::NodeHandle &_nh)
@@ -98,6 +105,37 @@ public:
 #endif
             wheel_jnt_pos_ += wheel_jnt_vel_ * getPeriod().toSec(); // update position
             wheel_jnt_vel_ = wheel_jnt_vel_cmd_;
+            steer_jnt_pos_ = steer_jnt_pos_cmd_;
+
+            const int n_dof = sim_joints_.size();
+            for(int i = 0; i < n_dof; i++)
+            {
+                std::string gazebo_jnt_name;
+                /*
+                gazebo_jnt_name = sim_joints_[i]->GetName();
+                */
+                if(gazebo_jnt_name == virtual_wheel_jnt_names_[INDEX_RIGHT])
+                {
+                    //sim_joints_[i]->SetVelocity(0, wheel_jnt_vel_cmd_);
+                }
+                else if(gazebo_jnt_name == virtual_wheel_jnt_names_[INDEX_LEFT])
+                {
+                    //sim_joints_[i]->SetVelocity(0, -1 * wheel_jnt_vel_cmd_);
+                }
+                else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_RIGHT])
+                {
+                    //sim_joints_[i]->SetAngle(0, steer_jnt_pos_cmd_);
+                }
+                else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_LEFT])
+                {
+                    //sim_joints_[i]->SetAngle(0, steer_jnt_pos_cmd_);
+                }
+                else
+                {
+                    // do nothing
+                }
+
+            }
         }
 #if 0
         else
@@ -158,14 +196,36 @@ private:
 #endif
     void GetJointNames(ros::NodeHandle &_nh)
     {
-#ifdef MULTIPLE_JOINTS
         this->GetWheelJointNames(_nh);
         this->GetSteerJointNames(_nh);
-#endif
+    }
 
+    void GetWheelJointNames(ros::NodeHandle &_nh)
+    {
+        // wheel joint to get linear command
         _nh.getParam(ns_ + "rear_wheel", wheel_jnt_name_);
+
+        // virtual wheel joint for gazebo control
+        std::vector<std::string> virtual_wheel_jnt_names;
+
+        _nh.getParam(ns_ + "gazebo/virtual_rear_wheel", virtual_wheel_jnt_names);
+
+        virtual_wheel_jnt_names_ = virtual_wheel_jnt_names;
+        cnt_wheel_joints_ = virtual_wheel_jnt_names_.size();
+    }
+
+    void GetSteerJointNames(ros::NodeHandle &_nh)
+    {
+        // steer joint to get angular command
         _nh.getParam(ns_ + "front_steer", steer_jnt_name_);
 
+        // virtual steer joint for gazebo control
+        std::vector<std::string> virtual_steer_jnt_names;
+
+        _nh.getParam(ns_ + "gazebo/virtual_front_steer", virtual_steer_jnt_names);
+
+        virtual_steer_jnt_names_ = virtual_steer_jnt_names;
+        cnt_steer_joints_ = virtual_steer_jnt_names_.size();
     }
 
 #ifdef MULTIPLE_JOINTS
@@ -251,18 +311,18 @@ private:
         // map members to hardware interfaces
         for (size_t i = 0; i < cnt_wheel_joints_; ++i) {
             // joint states
-            hardware_interface::JointStateHandle state_handle(wheel_joint_names_[i],
+            hardware_interface::JointStateHandle state_handle(virtual_wheel_jnt_names_[i],
                                                               &wheel_joint_pos_[i],
                                                               &wheel_joint_vel_[i],
                                                               &wheel_joint_eff_[i]);
             wheel_joint_state_interface_.registerHandle(state_handle);
 
             // joint velocity command
-            hardware_interface::JointHandle vel_handle(wheel_joint_state_interface_.getHandle(wheel_joint_names_[i]),
+            hardware_interface::JointHandle vel_handle(wheel_joint_state_interface_.getHandle(virtual_wheel_jnt_names_[i]),
                                                        &wheel_joint_vel_cmd_[i]);
             wheel_vel_joint_interface_.registerHandle(vel_handle);
 
-            ROS_DEBUG_STREAM("Registered joint '" << wheel_joint_names_[i] << " ' in the VelocityJointInterface");
+            ROS_DEBUG_STREAM("Registered joint '" << virtual_wheel_jnt_names_[i] << " ' in the VelocityJointInterface");
         }
 
         // register mapped interface to ros_control
@@ -295,18 +355,18 @@ private:
         // map members to hardware interfaces
         for (size_t i = 0; i < cnt_steer_joints_; ++i) {
             // joint states
-            hardware_interface::JointStateHandle state_handle(steer_joint_names_[i],
+            hardware_interface::JointStateHandle state_handle(virtual_steer_jnt_names_[i],
                                                               &steer_joint_pos_[i],
                                                               &steer_joint_vel_[i],
                                                               &steer_joint_eff_[i]);
             steer_joint_state_interface_.registerHandle(state_handle);
 
             // joint position command
-            hardware_interface::JointHandle pos_handle(steer_joint_state_interface_.getHandle(steer_joint_names_[i]),
+            hardware_interface::JointHandle pos_handle(steer_joint_state_interface_.getHandle(virtual_steer_jnt_names_[i]),
                                                        &steer_joint_vel_cmd_[i]);
             steer_pos_joint_interface_.registerHandle(pos_handle);
 
-            ROS_DEBUG_STREAM("Registered joint '" << steer_joint_names_[i] << " ' in the PositionJointInterface");
+            ROS_DEBUG_STREAM("Registered joint '" << virtual_steer_jnt_names_[i] << " ' in the PositionJointInterface");
         }
 
         // register mapped interface to ros_control
@@ -324,8 +384,8 @@ private:
 
     std::string ns_;
     //
-    std::vector<std::string> wheel_joint_names_;
-    std::vector<std::string> steer_joint_names_;
+    std::vector<std::string> virtual_wheel_jnt_names_;
+    std::vector<std::string> virtual_steer_jnt_names_;
     std::string wheel_jnt_name_;
     std::string steer_jnt_name_;
 
@@ -360,6 +420,8 @@ private:
 
     // gazebo
     std::vector<gazebo::physics::JointPtr> sim_joints_;
+    // PID Controller
+    std::vector<control_toolbox::Pid> pids_;
 
 };
 
