@@ -25,8 +25,8 @@ public:
         : ns_("steer_drive_controller/")
     {
         this->CleanUp();
-#ifdef MULTIPLE_JOINTS
         this->GetJointNames(_nh);
+#ifdef MULTIPLE_JOINTS
         this->Resize();
 #endif
         this->RegisterHardwareInterfaces();
@@ -66,11 +66,15 @@ public:
     void read()
     {
         std::ostringstream os;
+
+#ifdef MULTIPLE_JOINTS
         for (unsigned int i = 0; i < cnt_wheel_joints_ - 1; ++i)
         {
             os << wheel_joint_vel_cmd_[i] << ", ";
         }
         os << wheel_joint_vel_cmd_[cnt_wheel_joints_ - 1];
+#endif
+        os << wheel_jnt_vel_cmd_;
 
         ROS_INFO_STREAM("Commands for wheel joints: " << os.str());
     }
@@ -82,6 +86,7 @@ public:
         bool running_ = true;
         if (running_)
         {
+#ifdef MULTIPLE_JOINTS
             for (unsigned int i = 0; i < cnt_wheel_joints_; ++i)
             {
                 // Note that pos_[i] will be NaN for one more cycle after we start(),
@@ -90,6 +95,9 @@ public:
                 wheel_joint_pos_[i] += wheel_joint_vel_[i]*getPeriod().toSec(); // update position
                 wheel_joint_vel_[i] = wheel_joint_vel_cmd_[i]; // might add smoothing here later
             }
+#endif
+            wheel_jnt_pos_ += wheel_jnt_vel_ * getPeriod().toSec(); // update position
+            wheel_jnt_vel_ = wheel_jnt_vel_cmd_;
         }
 #if 0
         else
@@ -147,17 +155,20 @@ private:
        steer_joint_eff_.resize(cnt_steer_joints_);
        steer_joint_vel_cmd_.resize(cnt_steer_joints_);
     }
-
+#endif
     void GetJointNames(ros::NodeHandle &_nh)
     {
+#ifdef MULTIPLE_JOINTS
         this->GetWheelJointNames(_nh);
         this->GetSteerJointNames(_nh);
+#endif
 
         _nh.getParam(ns_ + "rear_wheel", wheel_jnt_name_);
         _nh.getParam(ns_ + "front_steer", steer_jnt_name_);
 
     }
 
+#ifdef MULTIPLE_JOINTS
     void GetWheelJointNames(ros::NodeHandle &_nh)
     {
         // wheel names
@@ -205,7 +216,19 @@ private:
 
     void RegisterHardwareInterfaces()
     {
+#ifdef MULTIPLE_JOINTS
         this->RegisterSteerInterfaces();
+#endif
+        this->RegisterSteerInterface();
+
+#ifdef MULTIPLE_JOINTS
+        this->RegisterWheelInterfaces();
+#endif
+        this->RegisterWheelInterface();
+    }
+
+    void RegisterWheelInterface()
+    {
         hardware_interface::JointStateHandle state_handle_steer(wheel_jnt_name_,
                                                                 &wheel_jnt_pos_,
                                                                 &wheel_jnt_vel_,
@@ -218,19 +241,9 @@ private:
 
         ROS_DEBUG_STREAM("Registered joint '" << wheel_jnt_name_ << " ' in the VelocityJointInterface");
 
-        this->RegisterWheelInterfaces();
-        hardware_interface::JointStateHandle state_handle_wheel(steer_jnt_name_,
-                                                                &steer_jnt_pos_,
-                                                                &steer_jnt_vel_,
-                                                                &steer_jnt_eff_);
-        steer_joint_state_interface_.registerHandle(state_handle_wheel);
-
-        // joint position command
-        hardware_interface::JointHandle pos_handle(steer_joint_state_interface_.getHandle(steer_jnt_name_),
-                                                   &steer_jnt_pos_cmd_);
-        steer_pos_joint_interface_.registerHandle(pos_handle);
-
-        ROS_DEBUG_STREAM("Registered joint '" << steer_jnt_name_ << " ' in the PositionJointInterface");
+        // register mapped interface to ros_control
+        registerInterface(&wheel_joint_state_interface_);
+        registerInterface(&wheel_vel_joint_interface_);
     }
 
     void RegisterWheelInterfaces()
@@ -255,6 +268,26 @@ private:
         // register mapped interface to ros_control
         registerInterface(&wheel_joint_state_interface_);
         registerInterface(&wheel_vel_joint_interface_);
+    }
+
+    void RegisterSteerInterface()
+    {
+        hardware_interface::JointStateHandle state_handle_wheel(steer_jnt_name_,
+                                                                &steer_jnt_pos_,
+                                                                &steer_jnt_vel_,
+                                                                &steer_jnt_eff_);
+        steer_joint_state_interface_.registerHandle(state_handle_wheel);
+
+        // joint position command
+        hardware_interface::JointHandle pos_handle(steer_joint_state_interface_.getHandle(steer_jnt_name_),
+                                                   &steer_jnt_pos_cmd_);
+        steer_pos_joint_interface_.registerHandle(pos_handle);
+
+        ROS_DEBUG_STREAM("Registered joint '" << steer_jnt_name_ << " ' in the PositionJointInterface");
+
+        // register mapped interface to ros_control
+        registerInterface(&steer_joint_state_interface_);
+        registerInterface(&steer_pos_joint_interface_);
     }
 
     void RegisterSteerInterfaces()
