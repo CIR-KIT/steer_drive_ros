@@ -101,7 +101,12 @@ private:
   hardware_interface::JointStateInterface wheel_jnt_state_interface_;
   //
   //-- virtual joints(two wheels)
+  //---- joint name
   std::vector<std::string> virtual_wheel_jnt_names_;
+  //---- joint interface parameters
+  std::vector<double> virtual_wheel_jnt_pos_;
+  std::vector<double> virtual_wheel_jnt_vel_;
+  std::vector<double> virtual_wheel_jnt_eff_;
 
   // front steer
   //-- actual joint(single actuator)
@@ -118,8 +123,14 @@ private:
   hardware_interface::JointStateInterface steer_jnt_state_interface_;
   //
   //-- virtual joints(two steers)
+  //---- joint name
   std::vector<std::string> virtual_steer_jnt_names_;
+  //---- joint interface parameters
+  std::vector<double> virtual_steer_jnt_pos_;
+  std::vector<double> virtual_steer_jnt_vel_;
+  std::vector<double> virtual_steer_jnt_eff_;
 
+  int log_cnt_;
 
   template <class T>
   std::string containerToString(const T& cont, const std::string& prefix)
