@@ -11,7 +11,9 @@
     <!-- robot_description はgazeboのworld起動用launchファイル内で既にロードされている． -->
 
     <!-- Load joint controller configurations from YAML file to parameter server -->
+    <!--
     <rosparam file="$(find third_robot_gazebo)/config/third_robot_diff_drive_controller.yaml" command="load"/>
+    -->
 
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
         <!-- GUIで回しながらデバッグしたいときはuse_guiオプションを有効にする． -->
