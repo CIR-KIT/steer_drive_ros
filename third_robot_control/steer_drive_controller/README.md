@@ -2,15 +2,13 @@
 
 Controller for a steer drive mobile base.
 
-Detailed user documentation can be found in the controller's [forest_robot_project wiki page](https://github.com/Nishida-Lab/forest_robot_project/wiki/rocker_bogie_controller).
+## 仕様
+- Subscribe
+  - `steer_drive_controller/cmd_vel` にTwist型のメッセージを投げて下さい．
+- Publish
+  - `steer_drive_controller/odom` を出すべきなのですが，未完成です．
 
-- 左方向
-![左方向](https://github.com/Nishida-Lab/forest_robot_project/blob/add_fr01_rocker_bogie_controller/fr01_control/rocker_bogie_controller/.fig/rocker_bogie_right.png)
-
-- 右方向
-![右方向](https://github.com/Nishida-Lab/forest_robot_project/blob/add_fr01_rocker_bogie_controller/fr01_control/rocker_bogie_controller/.fig/rocker_bogie_left.png)
-
-## SteerDriveController + SteerBot(RobotHWSim) で起動して，以下のメッセージで動く
+- 例：SteerDriveController + SteerBot(RobotHWSim) で起動して，以下のメッセージで動く
 ```bash
 rostopic pub -1 steer_drive_controller/cmd_vel geometry_msgs/Twist -- '[1.0, 0.0, 0.0]' '[0.0, 0.0, 0.5]'
 ```
