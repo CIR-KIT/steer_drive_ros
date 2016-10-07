@@ -2,10 +2,10 @@
 
   <class
     name="steer_bot_hardware_gazebo/SteerBotHardwareGazebo"
-    type="steer_bot_hardware_gazebo/SteerBotHardwareGazebo"
+    type="steer_bot_hardware_gazebo::SteerBotHardwareGazebo"
     base_class_type="gazebo_ros_control::RobotHWSim">
     <description>
-      Steer bot simulation interface.
+      Steer Book arm simulation interface.
     </description>
   </class>
 </library>

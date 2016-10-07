@@ -2,10 +2,10 @@
 <package>
   <name>steer_bot_hardware_gazebo</name>
   <version>0.0.0</version>
-  <description>ROS book hardware for gazebo simulation</description>
+  <description>steer bot hardware for gazebo simulation</description>
 
-  <maintainer email="p595201m@mail.kyutech.jp">Enrique Fernandez</maintainer>
-  <author email="p595201m@mail.kyutech.jp">Enrique Fernandez</author>
+  <maintainer email="enrique.fernandez.perdomo@gmail.com">Enrique Fernandez</maintainer>
+  <author email="enrique.fernandez.perdomo@gmail.com">Enrique Fernandez</author>
 
   <license>BSD</license>
 

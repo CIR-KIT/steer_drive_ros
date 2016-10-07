@@ -15,20 +15,20 @@
 
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
         <!-- GUIで回しながらデバッグしたいときはuse_guiオプションを有効にする． -->
+        <!--
         <param name="use_gui" value="true"/>
+        -->
     </node>
 
     <!-- load the controllers -->
     <!-- GUIデバッグ時はコメントアウト -->
-    <!--
     <node name="controller_spawner" pkg="controller_manager"
         type="spawner" respawn="false"
         output="screen" 
-        args="steer_drive_controller 
-            joint_state_controller
+        args="joint_state_controller
         " />
-    -->
 
+    <!-- args="steer_drive_controller -->
     <!-- convert joint states to TF transforms for rviz, etc -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
         respawn="false" output="screen">
