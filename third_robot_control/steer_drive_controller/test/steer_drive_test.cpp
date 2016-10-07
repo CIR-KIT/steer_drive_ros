@@ -149,32 +149,40 @@ private:
     void CleanUp()
     {
 #ifdef MULTIPLE_JOINTS
-       // wheel joints
-       wheel_joint_names_.clear();
-       wheel_joint_pos_.clear();
-       wheel_joint_vel_.clear();
-       wheel_joint_eff_.clear();
-       wheel_joint_vel_cmd_.clear();
+        // wheel joints
+        wheel_joint_names_.clear();
+        wheel_joint_pos_.clear();
+        wheel_joint_vel_.clear();
+        wheel_joint_eff_.clear();
+        wheel_joint_vel_cmd_.clear();
 #endif
-       // rear wheel joint
+
+        // wheel joint names
+        wheel_jnt_name_.empty();
+        virtual_wheel_jnt_names_.clear();
+        // rear wheel joint
         wheel_jnt_pos_ = 0;
         wheel_jnt_vel_ = 0;
         wheel_jnt_eff_ = 0;
         wheel_jnt_vel_cmd_ = 0;
 
 #ifdef MULTIPLE_JOINTS
-       // steer joints
-       steer_joint_names_.clear();
-       steer_joint_pos_.clear();
-       steer_joint_vel_.clear();
-       steer_joint_eff_.clear();
-       steer_joint_vel_cmd_.clear();
+        // steer joints
+        steer_joint_names_.clear();
+        steer_joint_pos_.clear();
+        steer_joint_vel_.clear();
+        steer_joint_eff_.clear();
+        steer_joint_vel_cmd_.clear();
 #endif
-       // front steer joint
-       steer_jnt_pos_ = 0;
-       steer_jnt_vel_ = 0;
-       steer_jnt_eff_ = 0;
-       steer_jnt_pos_cmd_ = 0;
+
+        // steer joint names
+        steer_jnt_name_.empty();
+        virtual_steer_jnt_names_.clear();
+        // front steer joint
+        steer_jnt_pos_ = 0;
+        steer_jnt_vel_ = 0;
+        steer_jnt_eff_ = 0;
+        steer_jnt_pos_cmd_ = 0;
 
     }
 
@@ -211,7 +219,7 @@ private:
         _nh.getParam(ns_ + "gazebo/virtual_rear_wheel", virtual_wheel_jnt_names);
 
         virtual_wheel_jnt_names_ = virtual_wheel_jnt_names;
-        cnt_wheel_joints_ = virtual_wheel_jnt_names_.size();
+        cnt_virtual_wheel_joints_ = virtual_wheel_jnt_names_.size();
     }
 
     void GetSteerJointNames(ros::NodeHandle &_nh)
@@ -225,7 +233,7 @@ private:
         _nh.getParam(ns_ + "gazebo/virtual_front_steer", virtual_steer_jnt_names);
 
         virtual_steer_jnt_names_ = virtual_steer_jnt_names;
-        cnt_steer_joints_ = virtual_steer_jnt_names_.size();
+        cnt_virtual_steer_joints_ = virtual_steer_jnt_names_.size();
     }
 
 #ifdef MULTIPLE_JOINTS
@@ -306,6 +314,7 @@ private:
         registerInterface(&wheel_vel_joint_interface_);
     }
 
+#ifdef MULTIPLE_JOINTS
     void RegisterWheelInterfaces()
     {
         // map members to hardware interfaces
@@ -329,7 +338,7 @@ private:
         registerInterface(&wheel_joint_state_interface_);
         registerInterface(&wheel_vel_joint_interface_);
     }
-
+#endif
     void RegisterSteerInterface()
     {
         hardware_interface::JointStateHandle state_handle_wheel(steer_jnt_name_,
@@ -350,6 +359,7 @@ private:
         registerInterface(&steer_pos_joint_interface_);
     }
 
+#ifdef MULTIPLE_JOINTS
     void RegisterSteerInterfaces()
     {
         // map members to hardware interfaces
@@ -373,7 +383,7 @@ private:
         registerInterface(&steer_joint_state_interface_);
         registerInterface(&steer_pos_joint_interface_);
     }
-
+#endif
     // member variables
 public:
     hardware_interface::VelocityJointInterface wheel_vel_joint_interface_;
@@ -391,7 +401,7 @@ private:
 
     // interface variables
     //-- wheel
-    int cnt_wheel_joints_;
+    int cnt_virtual_wheel_joints_;
     std::vector<double> wheel_joint_pos_;
     std::vector<double> wheel_joint_vel_;
     std::vector<double> wheel_joint_eff_;
@@ -403,7 +413,7 @@ private:
     double wheel_jnt_vel_cmd_;
 
     //-- steer
-    int cnt_steer_joints_;
+    int cnt_virtual_steer_joints_;
     std::vector<double> steer_joint_pos_;
     std::vector<double> steer_joint_vel_;
     std::vector<double> steer_joint_eff_;

@@ -38,8 +38,26 @@ public:
   void writeSim(ros::Time time, ros::Duration period);
 
 private:
+  void CleanUp();
+
+  void GetJointNames(ros::NodeHandle &_nh);
+  void GetWheelJointNames(ros::NodeHandle &_nh);
+  void GetSteerJointNames(ros::NodeHandle &_nh);
+
+  void RegisterHardwareInterfaces();
+  void RegisterWheelInterface();
+  void RegisterSteerInterface();
+
+private:
+  // constant
+  enum {
+      INDEX_RIGHT = 0,
+      INDEX_LEFT = 1
+  };
   // Raw data
   unsigned int n_dof_;
+  ros::NodeHandle nh_;
+  std::string ns_;
 
   std::vector<std::string> transmission_names_;
 
@@ -48,6 +66,40 @@ private:
   std::vector<double> jnt_eff_;
 
   std::vector<double> jnt_pos_cmd_;
+
+  // rear wheel
+  //-- actual joint(single actuator)
+  //---- joint name
+  std::string wheel_jnt_name_;
+  //---- joint interface parameters
+  double wheel_jnt_pos_;
+  double wheel_jnt_vel_;
+  double wheel_jnt_eff_;
+  //---- joint interface command
+  double wheel_jnt_vel_cmd_;
+  //---- Hardware interface: joint
+  hardware_interface::VelocityJointInterface wheel_vel_joint_interface_;
+  hardware_interface::JointStateInterface wheel_joint_state_interface_;
+  //
+  //-- virtual joints(two wheels)
+  std::vector<std::string> virtual_wheel_jnt_names_;
+
+  // front steer
+  //-- actual joint(single actuator)
+  //---- joint name
+  std::string steer_jnt_name_;
+  //---- joint interface parameters
+  double steer_jnt_pos_;
+  double steer_jnt_vel_;
+  double steer_jnt_eff_;
+  //---- joint interface command
+  double steer_jnt_pos_cmd_;
+  //---- Hardware interface: joint
+  hardware_interface::PositionJointInterface steer_pos_joint_interface_;
+  hardware_interface::JointStateInterface steer_joint_state_interface_;
+  //
+  //-- virtual joints(two steers)
+  std::vector<std::string> virtual_steer_jnt_names_;
 
   std::vector<gazebo::physics::JointPtr> sim_joints_;
 
