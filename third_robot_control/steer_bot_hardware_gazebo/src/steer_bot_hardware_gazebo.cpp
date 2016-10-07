@@ -217,46 +217,31 @@ namespace steer_bot_hardware_gazebo
 
         if(gazebo_jnt_name == virtual_wheel_jnt_names_[INDEX_RIGHT])
         {
-            const double error = wheel_jnt_vel_cmd_ - virtual_wheel_jnt_vel_[INDEX_RIGHT];
-            const double command = pids_[INDEX_RIGHT].computeCommand(error, period);
-
-            const double effort_limit = 10.0;
-            const double effort = clamp(command,
-                                        -effort_limit, effort_limit);
-            sim_joints_[i]->SetForce(0u, effort);
+            const double eff_cmd = ComputeEffCommandFromVelError(INDEX_RIGHT, period);
+            sim_joints_[i]->SetForce(0u, eff_cmd);
 
             if(log_cnt_ % 500 == 0)
             {
                 ROS_DEBUG_STREAM("wheel_jnt_vel_cmd_ = " << wheel_jnt_vel_cmd_);
                 ROS_DEBUG_STREAM("virtual_wheel_jnt_vel_[INDEX_RIGHT] = " << virtual_wheel_jnt_vel_[INDEX_RIGHT]);
-                ROS_DEBUG_STREAM("error[INDEX_RIGHT] " << error);
-                ROS_DEBUG_STREAM("command[INDEX_RIGHT] = " << command);
+                ROS_DEBUG_STREAM("error[INDEX_RIGHT] " <<  wheel_jnt_vel_cmd_ - virtual_wheel_jnt_vel_[INDEX_RIGHT]);
+                ROS_DEBUG_STREAM("command[INDEX_RIGHT] = " << eff_cmd);
             }
         }
         else if(gazebo_jnt_name == virtual_wheel_jnt_names_[INDEX_LEFT])
         {
-            const double error = wheel_jnt_vel_cmd_ - virtual_wheel_jnt_vel_[INDEX_LEFT];
-            const double command = pids_[INDEX_LEFT].computeCommand(error, period);
-
-            const double effort_limit = 10.0;
-            const double effort = clamp(command,
-                                        -effort_limit, effort_limit);
-            sim_joints_[i]->SetForce(0u, effort);
+            const double eff_cmd = ComputeEffCommandFromVelError(INDEX_LEFT, period);
+            sim_joints_[i]->SetForce(0u, eff_cmd);
 
             if(log_cnt_ % 500 == 0)
             {
                 ROS_DEBUG_STREAM("wheel_jnt_vel_cmd_ = " << wheel_jnt_vel_cmd_);
                 ROS_DEBUG_STREAM("virtual_wheel_jnt_vel_[INDEX_LEFT] = " << virtual_wheel_jnt_vel_[INDEX_LEFT]);
-                ROS_DEBUG_STREAM("error[INDEX_LEFT] " << error);
-                ROS_DEBUG_STREAM("command[INDEX_LEFT] = " << command);
+                ROS_DEBUG_STREAM("error[INDEX_LEFT] " <<  wheel_jnt_vel_cmd_ - virtual_wheel_jnt_vel_[INDEX_LEFT]);
+                ROS_DEBUG_STREAM("command[INDEX_LEFT] = " << eff_cmd);
             }
-
         }
-        else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_RIGHT])
-        {
-            sim_joints_[i]->SetAngle(0, steer_jnt_pos_cmd_);
-        }
-        else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_LEFT])
+        else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_RIGHT] || gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_LEFT])
         {
             sim_joints_[i]->SetAngle(0, steer_jnt_pos_cmd_);
         }
@@ -363,6 +348,17 @@ namespace steer_bot_hardware_gazebo
     // register mapped interface to ros_control
     registerInterface(&steer_jnt_state_interface_);
     registerInterface(&steer_jnt_pos_cmd_interface_);
+  }
+
+  double SteerBotHardwareGazebo::ComputeEffCommandFromVelError(const int _index, ros::Duration _period)
+  {
+      const double vel_error = wheel_jnt_vel_cmd_ - virtual_wheel_jnt_vel_[INDEX_LEFT];
+      const double command = pids_[_index].computeCommand(vel_error, _period);
+
+      const double effort_limit = 10.0;
+      const double effort = clamp(command,
+                                  -effort_limit, effort_limit);
+      return effort;
   }
 
 } // namespace rosbook_hardware_gazebo

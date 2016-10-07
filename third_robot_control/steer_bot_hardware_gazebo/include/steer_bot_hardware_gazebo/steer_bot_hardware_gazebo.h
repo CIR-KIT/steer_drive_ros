@@ -52,6 +52,7 @@ private:
   void RegisterHardwareInterfaces();
   void RegisterWheelInterface();
   void RegisterSteerInterface();
+  double ComputeEffCommandFromVelError(const int _index, ros::Duration _period);
 
 private:
   // constant
