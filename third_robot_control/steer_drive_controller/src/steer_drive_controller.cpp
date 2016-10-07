@@ -343,7 +343,6 @@ namespace steer_drive_controller{
 
   void SteerDriveController::update(const ros::Time& time, const ros::Duration& period)
   {
-    ROS_INFO_STREAM_NAMED(name_, "Started controller update");
     // COMPUTE AND PUBLISH ODOMETRY
     if (open_loop_)
     {
@@ -443,7 +442,6 @@ namespace steer_drive_controller{
     wheel_joint_.setCommand(curr_cmd.lin);
     steer_joint_.setCommand(curr_cmd.ang);
 
-    ROS_INFO_STREAM_NAMED(name_, "Finished controller update");
   }
 
   void SteerDriveController::starting(const ros::Time& time)
