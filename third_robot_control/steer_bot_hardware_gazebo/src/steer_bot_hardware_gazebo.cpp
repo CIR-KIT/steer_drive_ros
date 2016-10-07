@@ -80,11 +80,16 @@ namespace steer_bot_hardware_gazebo
 
 #ifdef SPAWN_DEBUG
     // Position joint limits interface
-    std::vector<std::string> cmd_handle_names = jnt_pos_cmd_interface_.getNames();
+    std::vector<std::string> cmd_handle_names = steer_jnt_pos_cmd_interface_.getNames();
     for (size_t i = 0; i < n_dof_; ++i)
     {
       const std::string name = cmd_handle_names[i];
-      JointHandle cmd_handle = jnt_pos_cmd_interface_.getHandle(name);
+
+      // unless current handle is not pos interface for steer, skip
+      if(name != virtual_steer_jnt_names_[INDEX_RIGHT] && name != virtual_steer_jnt_names_[INDEX_LEFT])
+          continue;
+
+      JointHandle cmd_handle = steer_jnt_pos_cmd_interface_.getHandle(name);
 
       using namespace joint_limits_interface;
       boost::shared_ptr<const urdf::Joint> urdf_joint = urdf_model->getJoint(name);
@@ -102,19 +107,30 @@ namespace steer_bot_hardware_gazebo
         ROS_DEBUG_STREAM("Joint limits will be enforced for joint '" << name << "'.");
       }
     }
+#endif
 
-    // PID controllers
-    pids_.resize(n_dof_);
-    for (size_t i = 0; i < n_dof_; ++i)
+    // PID controllers for wheel
+    const int virtual_jnt_cnt_ = virtual_wheel_jnt_names_.size();
+    pids_.resize(virtual_jnt_cnt_);
+
+    for (size_t i = 0; i < virtual_jnt_cnt_; ++i)
     {
-      ros::NodeHandle joint_nh(nh, "gains/" + jnt_names[i]);
+      std::string jnt_name = sim_joints_[i]->GetName();
+
+      ROS_INFO_STREAM("CurrenReadingt gazebo joint '" << jnt_name << " ' at PID proc in init()");
+      // unless current handle is not pos interface for steer, skip
+      if(jnt_name != virtual_wheel_jnt_names_[INDEX_RIGHT] && jnt_name != virtual_wheel_jnt_names_[INDEX_LEFT])
+          continue;
+
+      ros::NodeHandle joint_nh(nh, "gains/" + jnt_name);
 
       if (!pids_[i].init(joint_nh))
       {
+        ROS_INFO_STREAM("Faied to set pid param of " << jnt_name << " ' at PID proc in init()");
         return false;
       }
+      ROS_INFO_STREAM("Succeeded to set pid param of " << jnt_name << " ' at PID proc in init()");
     }
-#endif
     return true;
   }
 
@@ -232,31 +248,31 @@ namespace steer_bot_hardware_gazebo
         std::string gazebo_jnt_name;
         gazebo_jnt_name = sim_joints_[i]->GetName();
 
-        ROS_INFO_STREAM("CurrenReadingt gazebo joint '" << gazebo_jnt_name << " ' in writeSim()");
+        //ROS_INFO_STREAM("CurrenReadingt gazebo joint '" << gazebo_jnt_name << " ' in writeSim()");
 
         if(gazebo_jnt_name == virtual_wheel_jnt_names_[INDEX_RIGHT])
         {
-            ROS_INFO_STREAM("Writing gazebo joint '" << gazebo_jnt_name << " <- " << wheel_jnt_vel_cmd_<< "' in writeSim()");
+            //ROS_INFO_STREAM("Writing gazebo joint '" << gazebo_jnt_name << " <- " << wheel_jnt_vel_cmd_<< "' in writeSim()");
             //sim_joints_[i]->SetVelocity(0, wheel_jnt_vel_cmd_);
             sim_joints_[i]->SetVelocity(0, 2500);
             //sim_joints_[i]->SetForce(0, 25);
         }
         else if(gazebo_jnt_name == virtual_wheel_jnt_names_[INDEX_LEFT])
         {
-            ROS_INFO_STREAM("Writing gazebo joint '" << gazebo_jnt_name << " <- " << -1 * wheel_jnt_vel_cmd_<< "' in writeSim()");
+            //ROS_INFO_STREAM("Writing gazebo joint '" << gazebo_jnt_name << " <- " << -1 * wheel_jnt_vel_cmd_<< "' in writeSim()");
             //sim_joints_[i]->SetVelocity(0, -1 * wheel_jnt_vel_cmd_);
             sim_joints_[i]->SetVelocity(0, -1 * 2500);
             //sim_joints_[i]->SetForce(0, 25);
         }
         else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_RIGHT])
         {
-            ROS_INFO_STREAM("Writing gazebo joint '" << gazebo_jnt_name << " <- " << steer_jnt_pos_cmd_<< "' in writeSim()");
+            //ROS_INFO_STREAM("Writing gazebo joint '" << gazebo_jnt_name << " <- " << steer_jnt_pos_cmd_<< "' in writeSim()");
             sim_joints_[i]->SetAngle(0, steer_jnt_pos_cmd_);
             //sim_joints_[i]->SetAngle(0, 0.8);
         }
         else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_LEFT])
         {
-            ROS_INFO_STREAM("Writing gazebo joint '" << gazebo_jnt_name << " <- " << steer_jnt_pos_cmd_<< "' in writeSim()");
+            //ROS_INFO_STREAM("Writing gazebo joint '" << gazebo_jnt_name << " <- " << steer_jnt_pos_cmd_<< "' in writeSim()");
             sim_joints_[i]->SetAngle(0, steer_jnt_pos_cmd_);
             //sim_joints_[i]->SetAngle(0, 0.8);
         }
@@ -324,17 +340,17 @@ namespace steer_bot_hardware_gazebo
         &wheel_jnt_pos_,
         &wheel_jnt_vel_,
         &wheel_jnt_eff_);
-    wheel_joint_state_interface_.registerHandle(state_handle_steer);
+    wheel_jnt_state_interface_.registerHandle(state_handle_steer);
     // joint velocity command
-    hardware_interface::JointHandle vel_handle(wheel_joint_state_interface_.getHandle(wheel_jnt_name_),
+    hardware_interface::JointHandle vel_handle(wheel_jnt_state_interface_.getHandle(wheel_jnt_name_),
         &wheel_jnt_vel_cmd_);
-    wheel_vel_joint_interface_.registerHandle(vel_handle);
+    wheel_jnt_vel_cmd_interface_.registerHandle(vel_handle);
 
     ROS_INFO_STREAM("Registered joint '" << wheel_jnt_name_ << " ' in the VelocityJointInterface");
 
     // register mapped interface to ros_control
-    registerInterface(&wheel_joint_state_interface_);
-    registerInterface(&wheel_vel_joint_interface_);
+    registerInterface(&wheel_jnt_state_interface_);
+    registerInterface(&wheel_jnt_vel_cmd_interface_);
   }
 
   void SteerBotHardwareGazebo::RegisterSteerInterface()
@@ -343,18 +359,18 @@ namespace steer_bot_hardware_gazebo
         &steer_jnt_pos_,
         &steer_jnt_vel_,
         &steer_jnt_eff_);
-    steer_joint_state_interface_.registerHandle(state_handle_wheel);
+    steer_jnt_state_interface_.registerHandle(state_handle_wheel);
 
     // joint position command
-    hardware_interface::JointHandle pos_handle(steer_joint_state_interface_.getHandle(steer_jnt_name_),
+    hardware_interface::JointHandle pos_handle(steer_jnt_state_interface_.getHandle(steer_jnt_name_),
         &steer_jnt_pos_cmd_);
-    steer_pos_joint_interface_.registerHandle(pos_handle);
+    steer_jnt_pos_cmd_interface_.registerHandle(pos_handle);
 
     ROS_INFO_STREAM("Registered joint '" << steer_jnt_name_ << " ' in the PositionJointInterface");
 
     // register mapped interface to ros_control
-    registerInterface(&steer_joint_state_interface_);
-    registerInterface(&steer_pos_joint_interface_);
+    registerInterface(&steer_jnt_state_interface_);
+    registerInterface(&steer_jnt_pos_cmd_interface_);
   }
 
 } // namespace rosbook_hardware_gazebo

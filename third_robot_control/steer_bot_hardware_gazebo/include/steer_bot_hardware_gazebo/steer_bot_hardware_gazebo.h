@@ -56,7 +56,7 @@ private:
   };
   // Raw data
   unsigned int n_dof_;
-
+#ifdef SPAWN_DEBUG
   std::vector<std::string> transmission_names_;
 
   std::vector<double> jnt_pos_;
@@ -65,11 +65,12 @@ private:
 
   std::vector<double> jnt_pos_cmd_;
 
-  std::vector<gazebo::physics::JointPtr> sim_joints_;
-
   // Hardware interface: joints
   hardware_interface::JointStateInterface    jnt_state_interface_;
   hardware_interface::PositionJointInterface jnt_pos_cmd_interface_;
+#endif
+
+  std::vector<gazebo::physics::JointPtr> sim_joints_;
 
   // Joint limits interface
   joint_limits_interface::PositionJointSoftLimitsInterface jnt_limits_interface_;
@@ -91,8 +92,8 @@ private:
   //---- joint interface command
   double wheel_jnt_vel_cmd_;
   //---- Hardware interface: joint
-  hardware_interface::VelocityJointInterface wheel_vel_joint_interface_;
-  hardware_interface::JointStateInterface wheel_joint_state_interface_;
+  hardware_interface::VelocityJointInterface wheel_jnt_vel_cmd_interface_;
+  hardware_interface::JointStateInterface wheel_jnt_state_interface_;
   //
   //-- virtual joints(two wheels)
   std::vector<std::string> virtual_wheel_jnt_names_;
@@ -108,8 +109,8 @@ private:
   //---- joint interface command
   double steer_jnt_pos_cmd_;
   //---- Hardware interface: joint
-  hardware_interface::PositionJointInterface steer_pos_joint_interface_;
-  hardware_interface::JointStateInterface steer_joint_state_interface_;
+  hardware_interface::PositionJointInterface steer_jnt_pos_cmd_interface_;
+  hardware_interface::JointStateInterface steer_jnt_state_interface_;
   //
   //-- virtual joints(two steers)
   std::vector<std::string> virtual_steer_jnt_names_;
