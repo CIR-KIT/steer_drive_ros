@@ -227,10 +227,10 @@ namespace steer_bot_hardware_gazebo
 
             if(log_cnt_ % 500 == 0)
             {
-                ROS_INFO_STREAM("wheel_jnt_vel_cmd_ = " << wheel_jnt_vel_cmd_);
-                ROS_INFO_STREAM("virtual_wheel_jnt_vel_[INDEX_RIGHT] = " << virtual_wheel_jnt_vel_[INDEX_RIGHT]);
-                ROS_INFO_STREAM("error[INDEX_RIGHT] " << error);
-                ROS_INFO_STREAM("command[INDEX_RIGHT] = " << command);
+                ROS_DEBUG_STREAM("wheel_jnt_vel_cmd_ = " << wheel_jnt_vel_cmd_);
+                ROS_DEBUG_STREAM("virtual_wheel_jnt_vel_[INDEX_RIGHT] = " << virtual_wheel_jnt_vel_[INDEX_RIGHT]);
+                ROS_DEBUG_STREAM("error[INDEX_RIGHT] " << error);
+                ROS_DEBUG_STREAM("command[INDEX_RIGHT] = " << command);
             }
         }
         else if(gazebo_jnt_name == virtual_wheel_jnt_names_[INDEX_LEFT])
@@ -245,10 +245,10 @@ namespace steer_bot_hardware_gazebo
 
             if(log_cnt_ % 500 == 0)
             {
-                ROS_INFO_STREAM("wheel_jnt_vel_cmd_ = " << wheel_jnt_vel_cmd_);
-                ROS_INFO_STREAM("virtual_wheel_jnt_vel_[INDEX_LEFT] = " << virtual_wheel_jnt_vel_[INDEX_LEFT]);
-                ROS_INFO_STREAM("error[INDEX_LEFT] " << error);
-                ROS_INFO_STREAM("command[INDEX_LEFT] = " << command);
+                ROS_DEBUG_STREAM("wheel_jnt_vel_cmd_ = " << wheel_jnt_vel_cmd_);
+                ROS_DEBUG_STREAM("virtual_wheel_jnt_vel_[INDEX_LEFT] = " << virtual_wheel_jnt_vel_[INDEX_LEFT]);
+                ROS_DEBUG_STREAM("error[INDEX_LEFT] " << error);
+                ROS_DEBUG_STREAM("command[INDEX_LEFT] = " << command);
             }
 
         }
