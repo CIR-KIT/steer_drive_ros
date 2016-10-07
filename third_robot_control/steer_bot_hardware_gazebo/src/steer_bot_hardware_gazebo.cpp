@@ -109,11 +109,12 @@ namespace steer_bot_hardware_gazebo
     }
 #endif
 
+#ifdef SPAWN_DEBUG
     // PID controllers for wheel
     const int virtual_jnt_cnt_ = virtual_wheel_jnt_names_.size();
     pids_.resize(virtual_jnt_cnt_);
 
-    for (size_t i = 0; i < virtual_jnt_cnt_; ++i)
+    for (size_t i = 0; i < n_dof_; ++i)
     {
       std::string jnt_name = sim_joints_[i]->GetName();
 
@@ -122,15 +123,21 @@ namespace steer_bot_hardware_gazebo
       if(jnt_name != virtual_wheel_jnt_names_[INDEX_RIGHT] && jnt_name != virtual_wheel_jnt_names_[INDEX_LEFT])
           continue;
 
-      ros::NodeHandle joint_nh(nh, "gains/" + jnt_name);
+      const ros::NodeHandle joint_nh(nh, "gains/" + jnt_name);
 
+      ROS_INFO_STREAM("Trying to set pid param of '" << jnt_name << " ' at PID proc in init()");
+      bool ret = pids_[i].init(joint_nh);
+      ROS_INFO_STREAM("pid_[i].init(joint_nh) = " << ret << " ' at PID proc in init()");
+      /*
       if (!pids_[i].init(joint_nh))
       {
-        ROS_INFO_STREAM("Faied to set pid param of " << jnt_name << " ' at PID proc in init()");
+        ROS_INFO_STREAM("Faied to set pid param of '" << jnt_name << " ' at PID proc in init()");
         return false;
       }
-      ROS_INFO_STREAM("Succeeded to set pid param of " << jnt_name << " ' at PID proc in init()");
+      */
+      ROS_INFO_STREAM("Succeeded to set pid param of '" << jnt_name << " ' at PID proc in init()");
     }
+#endif
     return true;
   }
 
@@ -240,8 +247,8 @@ namespace steer_bot_hardware_gazebo
       sim_joints_[i]->SetForce(0u, effort);
     }
 #endif
-    wheel_jnt_vel_ = wheel_jnt_vel_cmd_;
-    steer_jnt_pos_ = steer_jnt_pos_cmd_;
+    //wheel_jnt_vel_ = wheel_jnt_vel_cmd_;
+    //steer_jnt_pos_ = steer_jnt_pos_cmd_;
 
     for(int i = 0; i <  sim_joints_.size(); i++)
     {
@@ -254,14 +261,42 @@ namespace steer_bot_hardware_gazebo
         {
             //ROS_INFO_STREAM("Writing gazebo joint '" << gazebo_jnt_name << " <- " << wheel_jnt_vel_cmd_<< "' in writeSim()");
             //sim_joints_[i]->SetVelocity(0, wheel_jnt_vel_cmd_);
-            sim_joints_[i]->SetVelocity(0, 2500);
+            //sim_joints_[i]->SetVelocity(0, 2500);
+
+            const double error = wheel_jnt_vel_cmd_ - wheel_jnt_vel_;
+
+            const double effort_limit = 10.0;
+            const double effort = clamp(error*10.0,
+                                        -effort_limit, effort_limit);
+            sim_joints_[i]->SetForce(0u, effort);
+#ifdef SPAWN_DEBUG
+            const double effort = clamp(pids_[i].computeCommand(error, period),
+                                        -effort_limit, effort_limit);
+            sim_joints_[i]->SetForce(0u, effort);
+#endif
             //sim_joints_[i]->SetForce(0, 25);
         }
         else if(gazebo_jnt_name == virtual_wheel_jnt_names_[INDEX_LEFT])
         {
             //ROS_INFO_STREAM("Writing gazebo joint '" << gazebo_jnt_name << " <- " << -1 * wheel_jnt_vel_cmd_<< "' in writeSim()");
             //sim_joints_[i]->SetVelocity(0, -1 * wheel_jnt_vel_cmd_);
-            sim_joints_[i]->SetVelocity(0, -1 * 2500);
+            //sim_joints_[i]->SetVelocity(0, -1 * 2500);
+
+            const double error = wheel_jnt_vel_cmd_ - wheel_jnt_vel_;
+
+            const double effort_limit = 10.0;
+            const double effort = clamp(error*10.0,
+                                        -effort_limit, effort_limit);
+            sim_joints_[i]->SetForce(0u, -effort);
+
+#ifdef SPAWN_DEBUG
+            const double error = wheel_jnt_vel_cmd_ - wheel_jnt_vel_;
+
+            const double effort_limit = 10.0;
+            const double effort = clamp(pids_[i].computeCommand(error, period),
+                                        -effort_limit, effort_limit);
+            sim_joints_[i]->SetForce(0u, -effort);
+#endif
             //sim_joints_[i]->SetForce(0, 25);
         }
         else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_RIGHT])

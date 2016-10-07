@@ -21,6 +21,11 @@
 namespace steer_bot_hardware_gazebo
 {
 
+double clamp(const double val, const double min_val, const double max_val)
+{
+  return std::min(std::max(val, min_val), max_val);
+}
+
 class SteerBotHardwareGazebo : public gazebo_ros_control::RobotHWSim
 {
 public:

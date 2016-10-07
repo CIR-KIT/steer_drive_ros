@@ -146,6 +146,7 @@ namespace steer_drive_controller{
     std::size_t id = complete_ns.find_last_of("/");
     name_ = complete_ns.substr(id + 1);
 
+#ifdef MULTIPLE_JOINTS
     // Get joint names from the parameter server
     //-- wheels
     std::vector<std::string> left_wheel_names, right_wheel_names;
@@ -196,6 +197,7 @@ namespace steer_drive_controller{
       right_steer_joints_.resize(steer_joints_size_);
 #endif
     }
+#endif
 
     //-- single rear drive
     std::string wheel_name = "wheel_joint";
@@ -274,6 +276,7 @@ namespace steer_drive_controller{
     bool lookup_wheel_separation_h = !controller_nh.getParam(ns_ + "wheel_separation_h", wheel_separation_h_);
     bool lookup_wheel_radius = !controller_nh.getParam(ns_ + "wheel_radius", wheel_radius_);
 
+#ifdef ODOM
     if (!setOdomParamsFromUrdf(root_nh,
                               left_wheel_names[0],
                               right_wheel_names[0],
@@ -282,6 +285,7 @@ namespace steer_drive_controller{
     {
       return false;
     }
+#endif
 
     // Regardless of how we got the separation and radius, use them
     // to set the odometry parameters
@@ -294,16 +298,17 @@ namespace steer_drive_controller{
                           << ", wheel separation height" << ws_h
                           << ", wheel radius " << wr);
 
+#ifdef ODOM
     setOdomPubFields(root_nh, controller_nh);
-
+#endif
     // Get the joint object to use in the realtime loop
     //-- wheels
     for (int i = 0; i < wheel_joints_size_; ++i)
     {
+#ifdef MULTIPLE_JOINTS
       ROS_INFO_STREAM_NAMED(name_,
                             "Adding left wheel with joint name: " << left_wheel_names[i]
                             << " and right wheel with joint name: " << right_wheel_names[i]);
-#ifdef MULTIPLE_JOINTS
       left_wheel_joints_[i] = vel_joint_if->getHandle(left_wheel_names[i]);  // throws on failure
       right_wheel_joints_[i] = vel_joint_if->getHandle(right_wheel_names[i]);  // throws on failure
 #endif
@@ -311,10 +316,10 @@ namespace steer_drive_controller{
     //-- steers
     for (int i = 0; i < steer_joints_size_; ++i)
     {
+#ifdef MULTIPLE_JOINTS
       ROS_INFO_STREAM_NAMED(name_,
                             "Adding left steer with joint name: " << left_steer_names[i]
                             << " and right steer with joint name: " << right_steer_names[i]);
-#ifdef MULTIPLE_JOINTS
       left_steer_joints_[i] = pos_joint_if->getHandle(left_steer_names[i]);  // throws on failure
       right_steer_joints_[i] = pos_joint_if->getHandle(right_steer_names[i]);  // throws on failure
 #endif
@@ -328,18 +333,23 @@ namespace steer_drive_controller{
     ROS_INFO_STREAM_NAMED(name_,
                           "Adding the steer with joint name: " << steer_name);
     steer_joint_ = pos_joint_if->getHandle(steer_name); // throws on failure
-
+    ROS_INFO_STREAM_NAMED(name_,
+                          "Adding the subscriber: cmd_vel");
     sub_command_ = controller_nh.subscribe("cmd_vel", 1, &SteerDriveController::cmdVelCallback, this);
+    ROS_INFO_STREAM_NAMED(name_, "Finished controller initialization");
 
     return true;
   }
 
   void SteerDriveController::update(const ros::Time& time, const ros::Duration& period)
   {
+    ROS_INFO_STREAM_NAMED(name_, "Started controller update");
     // COMPUTE AND PUBLISH ODOMETRY
     if (open_loop_)
     {
+#ifdef ODOM
       odometry_.updateOpenLoop(last0_cmd_.lin, last0_cmd_.ang, time);
+#endif
     }
     else
     {
@@ -364,9 +374,12 @@ namespace steer_drive_controller{
       right_pos /= wheel_joints_size_;
 
       // Estimate linear and angular velocity using joint information
+#ifdef ODOM
       odometry_.update(left_pos, right_pos, time);
+#endif
     }
 
+#ifdef ODOM
     // Publish odometry message
     if (last_state_publish_time_ + publish_period_ < time)
     {
@@ -398,6 +411,7 @@ namespace steer_drive_controller{
         tf_odom_pub_->unlockAndPublish();
       }
     }
+#endif
 
     // MOVE ROBOT
     // Retreive current velocity command and time step:
@@ -428,6 +442,8 @@ namespace steer_drive_controller{
     // Set Command
     wheel_joint_.setCommand(curr_cmd.lin);
     steer_joint_.setCommand(curr_cmd.ang);
+
+    ROS_INFO_STREAM_NAMED(name_, "Finished controller update");
   }
 
   void SteerDriveController::starting(const ros::Time& time)

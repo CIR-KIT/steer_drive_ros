@@ -50,7 +50,7 @@
 #include <steer_drive_controller/speed_limiter.h>
 #include <steer_drive_controller/multi_interface_controller.h>
 
-#define GUI_DEBUG // uncommentout when you use qtcreator for debugging
+//#define GUI_DEBUG // uncommentout when you use qtcreator for debugging
 
 namespace steer_drive_controller{
 
