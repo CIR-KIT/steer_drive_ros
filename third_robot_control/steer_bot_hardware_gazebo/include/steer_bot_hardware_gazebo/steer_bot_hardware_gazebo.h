@@ -52,11 +52,13 @@ private:
   void RegisterHardwareInterfaces();
   void RegisterWheelInterface();
   void RegisterSteerInterface();
-  void RegisterInterfaceHandle(
-          hardware_interface::JointStateInterface& _jnt_state_interface,
-          hardware_interface::JointCommandInterface& _jnt_cmd_interface,
-          const std::string _jnt_name,
-          double& _jnt_pos, double& _jnt_vel, double& _jnt_eff, double& _jnt_pos_cmd);
+  void RegisterJointStateInterfaceHandle(
+      hardware_interface::JointStateInterface& _jnt_state_interface,
+      const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff);
+  void RegisterCommandJointInterfaceHandle(
+      hardware_interface::JointStateInterface& _jnt_state_interface,
+      hardware_interface::JointCommandInterface& _jnt_cmd_interface,
+      const std::string _jnt_name, double& _jnt_cmd);
   double ComputeEffCommandFromVelError(const int _index, ros::Duration _period);
 
 private:
@@ -92,6 +94,10 @@ private:
   // new added
   ros::NodeHandle nh_;
   std::string ns_;
+
+  // common
+  hardware_interface::JointStateInterface jnt_state_interface_;
+  //
   // rear wheel
   //-- actual joint(single actuator)
   //---- joint name
@@ -104,7 +110,7 @@ private:
   double wheel_jnt_vel_cmd_;
   //---- Hardware interface: joint
   hardware_interface::VelocityJointInterface wheel_jnt_vel_cmd_interface_;
-  hardware_interface::JointStateInterface wheel_jnt_state_interface_;
+  //hardware_interface::JointStateInterface wheel_jnt_state_interface_;
   //
   //-- virtual joints(two wheels)
   //---- joint name
@@ -126,7 +132,7 @@ private:
   double steer_jnt_pos_cmd_;
   //---- Hardware interface: joint
   hardware_interface::PositionJointInterface steer_jnt_pos_cmd_interface_;
-  hardware_interface::JointStateInterface steer_jnt_state_interface_;
+  //hardware_interface::JointStateInterface steer_jnt_state_interface_;
   //
   //-- virtual joints(two steers)
   //---- joint name
