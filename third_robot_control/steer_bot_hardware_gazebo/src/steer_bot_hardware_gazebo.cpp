@@ -334,36 +334,40 @@ namespace steer_bot_hardware_gazebo
     registerInterface(&steer_jnt_pos_cmd_interface_);
   }
 
+  void SteerBotHardwareGazebo::RegisterInterfaceHandles(
+          hardware_interface::JointStateInterface& _jnt_state_interface,
+          hardware_interface::JointCommandInterface& _jnt_cmd_interface,
+          const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff,  double& _jnt_cmd ,
+          const std::vector<std::string> _virtual_jnt_names, std::vector<double>& _virtual_jnt_pos, std::vector<double>& _virtual_jnt_vel,
+          std::vector<double>& _virtual_jnt_eff)
+  {
+    // actual joint (both JointState and CommandJoint)
+    this->RegisterJointStateInterfaceHandle(_jnt_state_interface, _jnt_name,
+                                            _jnt_pos, _jnt_vel, _jnt_eff);
+    this->RegisterCommandJointInterfaceHandle(_jnt_state_interface, _jnt_cmd_interface,
+                                              _jnt_name, _jnt_cmd);
+    // virtual joints (only JointState)
+    for (int i = 0; i < _virtual_jnt_names.size(); i++)
+    {
+      this->RegisterJointStateInterfaceHandle(_jnt_state_interface, _virtual_jnt_names[i],
+                                              _virtual_jnt_pos[i], _virtual_jnt_vel[i], _virtual_jnt_eff[i]);
+    }
+  }
+
   void SteerBotHardwareGazebo::RegisterWheelInterface()
   {
-    // actual wheel(both JointState and CommandJoint)
-    this->RegisterJointStateInterfaceHandle(jnt_state_interface_, wheel_jnt_name_,
-                                            wheel_jnt_pos_, wheel_jnt_vel_, wheel_jnt_eff_);
-    this->RegisterCommandJointInterfaceHandle(jnt_state_interface_, wheel_jnt_vel_cmd_interface_,
-                                              wheel_jnt_name_, wheel_jnt_vel_cmd_);
-    // virtual wheel(only JointState)
-    for (int i = 0; i < virtual_wheel_jnt_names_.size(); i++)
-    {
-      this->RegisterJointStateInterfaceHandle(jnt_state_interface_, virtual_wheel_jnt_names_[i],
-                                              virtual_wheel_jnt_pos_[i], virtual_wheel_jnt_vel_[i], virtual_wheel_jnt_eff_[i]);
-    }
+    this->RegisterInterfaceHandles(
+          jnt_state_interface_, wheel_jnt_vel_cmd_interface_,
+          wheel_jnt_name_, wheel_jnt_pos_, wheel_jnt_vel_, wheel_jnt_eff_, wheel_jnt_vel_cmd_,
+          virtual_wheel_jnt_names_, virtual_wheel_jnt_pos_, virtual_wheel_jnt_vel_, virtual_wheel_jnt_eff_);
   }
 
   void SteerBotHardwareGazebo::RegisterSteerInterface()
   {
-    // actual steer(both JointState and CommandJoint)
-    this->RegisterJointStateInterfaceHandle(jnt_state_interface_, steer_jnt_name_,
-                                            steer_jnt_pos_, steer_jnt_vel_, steer_jnt_eff_);
-    this->RegisterCommandJointInterfaceHandle(jnt_state_interface_, steer_jnt_pos_cmd_interface_,
-                                              steer_jnt_name_, steer_jnt_pos_cmd_);
-    // virtual steer(only JointState)
-    for (int i = 0; i < virtual_steer_jnt_names_.size(); i++)
-    {
-      this->RegisterJointStateInterfaceHandle(jnt_state_interface_, virtual_steer_jnt_names_[i],
-                                              virtual_steer_jnt_pos_[i], virtual_steer_jnt_vel_[i], virtual_steer_jnt_eff_[i]);
-    }
-    // register mapped interface to ros_control
-    //registerInterface(&steer_jnt_state_interface_);
+    this->RegisterInterfaceHandles(
+          jnt_state_interface_, steer_jnt_pos_cmd_interface_,
+          steer_jnt_name_, steer_jnt_pos_, steer_jnt_vel_, steer_jnt_eff_, steer_jnt_pos_cmd_,
+          virtual_steer_jnt_names_, virtual_steer_jnt_pos_, virtual_steer_jnt_vel_, virtual_steer_jnt_eff_);
   }
 
   void SteerBotHardwareGazebo::RegisterJointStateInterfaceHandle(

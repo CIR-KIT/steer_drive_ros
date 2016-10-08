@@ -52,6 +52,12 @@ private:
   void RegisterHardwareInterfaces();
   void RegisterWheelInterface();
   void RegisterSteerInterface();
+  void RegisterInterfaceHandles(
+      hardware_interface::JointStateInterface& _jnt_state_interface,
+      hardware_interface::JointCommandInterface& _jnt_cmd_interface,
+      const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff,  double& _jnt_cmd ,
+      const std::vector<std::string> _virtual_jnt_names, std::vector<double>& _virtual_jnt_pos, std::vector<double>& virtual_jnt_vel,
+      std::vector<double>& virtual_jnt_eff);
   void RegisterJointStateInterfaceHandle(
       hardware_interface::JointStateInterface& _jnt_state_interface,
       const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff);
