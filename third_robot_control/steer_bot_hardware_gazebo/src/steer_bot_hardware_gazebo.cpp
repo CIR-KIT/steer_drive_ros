@@ -146,8 +146,8 @@ namespace steer_bot_hardware_gazebo
 
     for(int i = 0; i <  sim_joints_.size(); i++)
     {
-        std::string gazebo_jnt_name;
-        gazebo_jnt_name = sim_joints_[i]->GetName();
+      std::string gazebo_jnt_name;
+      gazebo_jnt_name = sim_joints_[i]->GetName();
     }
 #endif
 
@@ -155,42 +155,42 @@ namespace steer_bot_hardware_gazebo
 
     for(int i = 0; i <  sim_joints_.size(); i++)
     {
-        std::string gazebo_jnt_name;
-        gazebo_jnt_name = sim_joints_[i]->GetName();
-        //ROS_INFO_STREAM("CurrenReadingt gazebo joint '" << gazebo_jnt_name << " ' in readSim()");
+      std::string gazebo_jnt_name;
+      gazebo_jnt_name = sim_joints_[i]->GetName();
+      //ROS_INFO_STREAM("CurrenReadingt gazebo joint '" << gazebo_jnt_name << " ' in readSim()");
 
-        if(gazebo_jnt_name == virtual_wheel_jnt_names_[INDEX_RIGHT])
-        {
-            //ROS_INFO_STREAM("Reading gazebo joint '" << gazebo_jnt_name << " ' in readSim()");
-            virtual_wheel_jnt_pos_[INDEX_RIGHT] = sim_joints_[i]->GetAngle(0u).Radian();
-            virtual_wheel_jnt_vel_[INDEX_RIGHT] = sim_joints_[i]->GetVelocity(0u);
-            virtual_wheel_jnt_eff_[INDEX_RIGHT] = sim_joints_[i]->GetForce(0u);
-        }
-        else if(gazebo_jnt_name == virtual_wheel_jnt_names_[INDEX_LEFT])
-        {
-            //ROS_INFO_STREAM("Reading gazebo joint '" << gazebo_jnt_name << " ' in readSim()");
-            virtual_wheel_jnt_pos_[INDEX_LEFT] = sim_joints_[i]->GetAngle(0u).Radian();
-            virtual_wheel_jnt_vel_[INDEX_LEFT] = sim_joints_[i]->GetVelocity(0u);
-            virtual_wheel_jnt_eff_[INDEX_LEFT] = sim_joints_[i]->GetForce(0u);
-        }
-        else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_RIGHT])
-        {
-            //ROS_INFO_STREAM("Reading gazebo joint '" << gazebo_jnt_name << " ' in readSim()");
-            virtual_steer_jnt_pos_[INDEX_RIGHT] = sim_joints_[i]->GetAngle(0u).Radian();
-            virtual_steer_jnt_vel_[INDEX_RIGHT] = sim_joints_[i]->GetVelocity(0u);
-            virtual_steer_jnt_eff_[INDEX_RIGHT] = sim_joints_[i]->GetForce(0u);
-        }
-        else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_LEFT])
-        {
-            //ROS_INFO_STREAM("Reading gazebo joint '" << gazebo_jnt_name << " ' in readSim()");
-            virtual_steer_jnt_pos_[INDEX_LEFT] = sim_joints_[i]->GetAngle(0u).Radian();
-            virtual_steer_jnt_vel_[INDEX_LEFT] = sim_joints_[i]->GetVelocity(0u);
-            virtual_steer_jnt_eff_[INDEX_LEFT] = sim_joints_[i]->GetForce(0u);
-        }
-        else
-        {
-            // do nothing
-        }
+      if(gazebo_jnt_name == virtual_wheel_jnt_names_[INDEX_RIGHT])
+      {
+        //ROS_INFO_STREAM("Reading gazebo joint '" << gazebo_jnt_name << " ' in readSim()");
+        virtual_wheel_jnt_pos_[INDEX_RIGHT] = sim_joints_[i]->GetAngle(0u).Radian();
+        virtual_wheel_jnt_vel_[INDEX_RIGHT] = sim_joints_[i]->GetVelocity(0u);
+        virtual_wheel_jnt_eff_[INDEX_RIGHT] = sim_joints_[i]->GetForce(0u);
+      }
+      else if(gazebo_jnt_name == virtual_wheel_jnt_names_[INDEX_LEFT])
+      {
+        //ROS_INFO_STREAM("Reading gazebo joint '" << gazebo_jnt_name << " ' in readSim()");
+        virtual_wheel_jnt_pos_[INDEX_LEFT] = sim_joints_[i]->GetAngle(0u).Radian();
+        virtual_wheel_jnt_vel_[INDEX_LEFT] = sim_joints_[i]->GetVelocity(0u);
+        virtual_wheel_jnt_eff_[INDEX_LEFT] = sim_joints_[i]->GetForce(0u);
+      }
+      else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_RIGHT])
+      {
+        //ROS_INFO_STREAM("Reading gazebo joint '" << gazebo_jnt_name << " ' in readSim()");
+        virtual_steer_jnt_pos_[INDEX_RIGHT] = sim_joints_[i]->GetAngle(0u).Radian();
+        virtual_steer_jnt_vel_[INDEX_RIGHT] = sim_joints_[i]->GetVelocity(0u);
+        virtual_steer_jnt_eff_[INDEX_RIGHT] = sim_joints_[i]->GetForce(0u);
+      }
+      else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_LEFT])
+      {
+        //ROS_INFO_STREAM("Reading gazebo joint '" << gazebo_jnt_name << " ' in readSim()");
+        virtual_steer_jnt_pos_[INDEX_LEFT] = sim_joints_[i]->GetAngle(0u).Radian();
+        virtual_steer_jnt_vel_[INDEX_LEFT] = sim_joints_[i]->GetVelocity(0u);
+        virtual_steer_jnt_eff_[INDEX_LEFT] = sim_joints_[i]->GetForce(0u);
+      }
+      else
+      {
+        // do nothing
+      }
     }
   }
 
@@ -212,43 +212,43 @@ namespace steer_bot_hardware_gazebo
     log_cnt_++;
     for(int i = 0; i <  sim_joints_.size(); i++)
     {
-        std::string gazebo_jnt_name;
-        gazebo_jnt_name = sim_joints_[i]->GetName();
+      std::string gazebo_jnt_name;
+      gazebo_jnt_name = sim_joints_[i]->GetName();
 
-        if(gazebo_jnt_name == virtual_wheel_jnt_names_[INDEX_RIGHT])
-        {
-            const double eff_cmd = ComputeEffCommandFromVelError(INDEX_RIGHT, period);
-            sim_joints_[i]->SetForce(0u, eff_cmd);
+      if(gazebo_jnt_name == virtual_wheel_jnt_names_[INDEX_RIGHT])
+      {
+        const double eff_cmd = ComputeEffCommandFromVelError(INDEX_RIGHT, period);
+        sim_joints_[i]->SetForce(0u, eff_cmd);
 
-            if(log_cnt_ % 500 == 0)
-            {
-                ROS_DEBUG_STREAM("wheel_jnt_vel_cmd_ = " << wheel_jnt_vel_cmd_);
-                ROS_DEBUG_STREAM("virtual_wheel_jnt_vel_[INDEX_RIGHT] = " << virtual_wheel_jnt_vel_[INDEX_RIGHT]);
-                ROS_DEBUG_STREAM("error[INDEX_RIGHT] " <<  wheel_jnt_vel_cmd_ - virtual_wheel_jnt_vel_[INDEX_RIGHT]);
-                ROS_DEBUG_STREAM("command[INDEX_RIGHT] = " << eff_cmd);
-            }
-        }
-        else if(gazebo_jnt_name == virtual_wheel_jnt_names_[INDEX_LEFT])
+        if(log_cnt_ % 500 == 0)
         {
-            const double eff_cmd = ComputeEffCommandFromVelError(INDEX_LEFT, period);
-            sim_joints_[i]->SetForce(0u, eff_cmd);
+          ROS_DEBUG_STREAM("wheel_jnt_vel_cmd_ = " << wheel_jnt_vel_cmd_);
+          ROS_DEBUG_STREAM("virtual_wheel_jnt_vel_[INDEX_RIGHT] = " << virtual_wheel_jnt_vel_[INDEX_RIGHT]);
+          ROS_DEBUG_STREAM("error[INDEX_RIGHT] " <<  wheel_jnt_vel_cmd_ - virtual_wheel_jnt_vel_[INDEX_RIGHT]);
+          ROS_DEBUG_STREAM("command[INDEX_RIGHT] = " << eff_cmd);
+        }
+      }
+      else if(gazebo_jnt_name == virtual_wheel_jnt_names_[INDEX_LEFT])
+      {
+        const double eff_cmd = ComputeEffCommandFromVelError(INDEX_LEFT, period);
+        sim_joints_[i]->SetForce(0u, eff_cmd);
 
-            if(log_cnt_ % 500 == 0)
-            {
-                ROS_DEBUG_STREAM("wheel_jnt_vel_cmd_ = " << wheel_jnt_vel_cmd_);
-                ROS_DEBUG_STREAM("virtual_wheel_jnt_vel_[INDEX_LEFT] = " << virtual_wheel_jnt_vel_[INDEX_LEFT]);
-                ROS_DEBUG_STREAM("error[INDEX_LEFT] " <<  wheel_jnt_vel_cmd_ - virtual_wheel_jnt_vel_[INDEX_LEFT]);
-                ROS_DEBUG_STREAM("command[INDEX_LEFT] = " << eff_cmd);
-            }
-        }
-        else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_RIGHT] || gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_LEFT])
+        if(log_cnt_ % 500 == 0)
         {
-            sim_joints_[i]->SetAngle(0, steer_jnt_pos_cmd_);
+          ROS_DEBUG_STREAM("wheel_jnt_vel_cmd_ = " << wheel_jnt_vel_cmd_);
+          ROS_DEBUG_STREAM("virtual_wheel_jnt_vel_[INDEX_LEFT] = " << virtual_wheel_jnt_vel_[INDEX_LEFT]);
+          ROS_DEBUG_STREAM("error[INDEX_LEFT] " <<  wheel_jnt_vel_cmd_ - virtual_wheel_jnt_vel_[INDEX_LEFT]);
+          ROS_DEBUG_STREAM("command[INDEX_LEFT] = " << eff_cmd);
         }
-        else
-        {
-            // do nothing
-        }
+      }
+      else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_RIGHT] || gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_LEFT])
+      {
+        sim_joints_[i]->SetAngle(0, steer_jnt_pos_cmd_);
+      }
+      else
+      {
+        // do nothing
+      }
     }
   }
 
@@ -334,7 +334,6 @@ namespace steer_bot_hardware_gazebo
 
   void SteerBotHardwareGazebo::RegisterSteerInterface()
   {
-    // actual steer
     this->RegisterInterfaceHandle(steer_jnt_state_interface_, steer_jnt_pos_cmd_interface_,steer_jnt_name_,
                                   steer_jnt_pos_, steer_jnt_vel_, steer_jnt_eff_, steer_jnt_pos_cmd_);
 
@@ -344,20 +343,20 @@ namespace steer_bot_hardware_gazebo
   }
 
   void SteerBotHardwareGazebo::RegisterInterfaceHandle(
-          hardware_interface::JointStateInterface& _jnt_state_interface,
-          hardware_interface::JointCommandInterface& _jnt_cmd_interface,
-          const std::string _jnt_name,
-          double& _jnt_pos, double& _jnt_vel, double& _jnt_eff, double& _jnt_cmd)
+      hardware_interface::JointStateInterface& _jnt_state_interface,
+      hardware_interface::JointCommandInterface& _jnt_cmd_interface,
+      const std::string _jnt_name,
+      double& _jnt_pos, double& _jnt_vel, double& _jnt_eff, double& _jnt_cmd)
   {
     hardware_interface::JointStateHandle state_handle_wheel(_jnt_name,
-        &_jnt_pos,
-        &_jnt_vel,
-        &_jnt_eff);
+                                                            &_jnt_pos,
+                                                            &_jnt_vel,
+                                                            &_jnt_eff);
     _jnt_state_interface.registerHandle(state_handle_wheel);
 
     // joint position command
     hardware_interface::JointHandle pos_handle(_jnt_state_interface.getHandle(_jnt_name),
-        &_jnt_cmd);
+                                               &_jnt_cmd);
     _jnt_cmd_interface.registerHandle(pos_handle);
 
     ROS_INFO_STREAM("Registered joint '" << _jnt_name << " ' in the CommandJointInterface");
@@ -365,13 +364,13 @@ namespace steer_bot_hardware_gazebo
 
   double SteerBotHardwareGazebo::ComputeEffCommandFromVelError(const int _index, ros::Duration _period)
   {
-      const double vel_error = wheel_jnt_vel_cmd_ - virtual_wheel_jnt_vel_[INDEX_LEFT];
-      const double command = pids_[_index].computeCommand(vel_error, _period);
+    const double vel_error = wheel_jnt_vel_cmd_ - virtual_wheel_jnt_vel_[INDEX_LEFT];
+    const double command = pids_[_index].computeCommand(vel_error, _period);
 
-      const double effort_limit = 10.0;
-      const double effort = clamp(command,
-                                  -effort_limit, effort_limit);
-      return effort;
+    const double effort_limit = 10.0;
+    const double effort = clamp(command,
+                                -effort_limit, effort_limit);
+    return effort;
   }
 
 } // namespace rosbook_hardware_gazebo
