@@ -52,6 +52,11 @@ private:
   void RegisterHardwareInterfaces();
   void RegisterWheelInterface();
   void RegisterSteerInterface();
+  void RegisterInterfaceHandle(
+          hardware_interface::JointStateInterface& _jnt_state_interface,
+          hardware_interface::JointCommandInterface& _jnt_cmd_interface,
+          const std::string _jnt_name,
+          double& _jnt_pos, double& _jnt_vel, double& _jnt_eff, double& _jnt_pos_cmd);
   double ComputeEffCommandFromVelError(const int _index, ros::Duration _period);
 
 private:
