@@ -254,23 +254,33 @@ namespace steer_bot_hardware_gazebo
 
   void SteerBotHardwareGazebo::CleanUp()
   {
-    // wheel joint names
+    // wheel
+    //-- wheel joint names
     wheel_jnt_name_.empty();
     virtual_wheel_jnt_names_.clear();
-    // rear wheel joint
+    //-- actual rear wheel joint
     wheel_jnt_pos_ = 0;
     wheel_jnt_vel_ = 0;
     wheel_jnt_eff_ = 0;
     wheel_jnt_vel_cmd_ = 0;
+    //-- virtual wheel joint
+    virtual_wheel_jnt_pos_.clear();
+    virtual_wheel_jnt_vel_.clear();
+    virtual_wheel_jnt_eff_.clear();
 
-    // steer joint names
+    // steer
+    //-- steer joint names
     steer_jnt_name_.empty();
     virtual_steer_jnt_names_.clear();
-    // front steer joint
+    //-- front steer joint
     steer_jnt_pos_ = 0;
     steer_jnt_vel_ = 0;
     steer_jnt_eff_ = 0;
     steer_jnt_pos_cmd_ = 0;
+    //-- virtual wheel joint
+    virtual_steer_jnt_pos_.clear();
+    virtual_steer_jnt_vel_.clear();
+    virtual_steer_jnt_eff_.clear();
   }
 
   void SteerBotHardwareGazebo::GetJointNames(ros::NodeHandle &_nh)

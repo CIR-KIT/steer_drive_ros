@@ -352,14 +352,13 @@ namespace steer_drive_controller{
     }
     else
     {
+#ifdef MULTIPLE_JOINTS
       double left_pos  = 0.0;
       double right_pos = 0.0;
       for (size_t i = 0; i < wheel_joints_size_; ++i)
       {
-#ifdef MULTIPLE_JOINTS
         const double lp = left_wheel_joints_[i].getPosition();
         const double rp = right_wheel_joints_[i].getPosition();
-#endif
         // TODO: to be fixed
         double lp = 0;
         double rp = 0;
@@ -371,9 +370,10 @@ namespace steer_drive_controller{
       }
       left_pos  /= wheel_joints_size_;
       right_pos /= wheel_joints_size_;
+#endif
 
-      // Estimate linear and angular velocity using joint information
 #ifdef ODOM
+      // Estimate linear and angular velocity using joint information
       odometry_.update(left_pos, right_pos, time);
 #endif
     }
