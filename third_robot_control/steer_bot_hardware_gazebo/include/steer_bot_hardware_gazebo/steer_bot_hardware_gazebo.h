@@ -147,6 +147,7 @@ private:
   std::vector<double> virtual_steer_jnt_pos_;
   std::vector<double> virtual_steer_jnt_vel_;
   std::vector<double> virtual_steer_jnt_eff_;
+  bool first_flg;
 
   int log_cnt_;
 

@@ -190,7 +190,7 @@ namespace steer_bot_hardware_gazebo
         //ROS_INFO_STREAM("Reading gazebo joint '" << gazebo_jnt_name << " ' in readSim()");
         virtual_steer_jnt_pos_[INDEX_LEFT] +=
                 angles::shortest_angular_distance(virtual_steer_jnt_pos_[INDEX_LEFT], sim_joints_[i]->GetAngle(0u).Radian());
-        ROS_INFO_STREAM("Reading gazebo joint '" << gazebo_jnt_name << " ' = " << virtual_steer_jnt_pos_[INDEX_LEFT] << " in readSim()");
+        //ROS_INFO_STREAM("Reading gazebo joint '" << gazebo_jnt_name << " ' = " << virtual_steer_jnt_pos_[INDEX_LEFT] << " in readSim()");
         //virtual_steer_jnt_pos_[INDEX_LEFT] = sim_joints_[i]->GetAngle(0u).Radian();
         virtual_steer_jnt_vel_[INDEX_LEFT] = sim_joints_[i]->GetVelocity(0u);
         virtual_steer_jnt_eff_[INDEX_LEFT] = sim_joints_[i]->GetForce(0u);
@@ -374,11 +374,11 @@ namespace steer_bot_hardware_gazebo
       hardware_interface::JointStateInterface& _jnt_state_interface,
       const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff)
   {
-    hardware_interface::JointStateHandle state_handle_wheel(_jnt_name,
-                                                            &_jnt_pos,
-                                                            &_jnt_vel,
-                                                            &_jnt_eff);
-    _jnt_state_interface.registerHandle(state_handle_wheel);
+    hardware_interface::JointStateHandle state_handle(_jnt_name,
+                                                      &_jnt_pos,
+                                                      &_jnt_vel,
+                                                      &_jnt_eff);
+    _jnt_state_interface.registerHandle(state_handle);
 
     ROS_INFO_STREAM("Registered joint '" << _jnt_name << " ' in the JointStateInterface");
   }
@@ -390,7 +390,7 @@ namespace steer_bot_hardware_gazebo
   {
     // joint command
     hardware_interface::JointHandle _handle(_jnt_state_interface.getHandle(_jnt_name),
-                                               &_jnt_cmd);
+                                            &_jnt_cmd);
     _jnt_cmd_interface.registerHandle(_handle);
 
     ROS_INFO_STREAM("Registered joint '" << _jnt_name << " ' in the CommandJointInterface");
