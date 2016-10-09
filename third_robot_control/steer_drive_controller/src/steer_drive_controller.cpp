@@ -136,6 +136,7 @@ namespace steer_drive_controller{
   {
     typedef hardware_interface::VelocityJointInterface VelIface;
     typedef hardware_interface::PositionJointInterface PosIface;
+    typedef hardware_interface::JointStateInterface StateIface;
 
     // get multiple types of hardware_interface
     VelIface *vel_joint_if = robot_hw->get<VelIface>(); // vel for wheels
@@ -146,7 +147,6 @@ namespace steer_drive_controller{
     std::size_t id = complete_ns.find_last_of("/");
     name_ = complete_ns.substr(id + 1);
 
-#ifdef MULTIPLE_JOINTS
     // Get joint names from the parameter server
     //-- wheels
     std::vector<std::string> left_wheel_names, right_wheel_names;
@@ -167,12 +167,16 @@ namespace steer_drive_controller{
     {
       wheel_joints_size_ = left_wheel_names.size();
 
-#ifdef MULTIPLE_JOINTS
       left_wheel_joints_.resize(wheel_joints_size_);
       right_wheel_joints_.resize(wheel_joints_size_);
+
+#ifdef MULTIPLE_JOINTS
+      left_wheel_joint_states_.resize(wheel_joints_size_);
+      right_wheel_joint_states_.resize(wheel_joints_size_);
 #endif
     }
 
+#ifdef MULTIPLE_JOINTS
     //-- steers
     std::vector<std::string> left_steer_names, right_steer_names;
     if (!getSteerNames(controller_nh, ns_ + "left_steer", left_steer_names) or
@@ -192,13 +196,10 @@ namespace steer_drive_controller{
     {
       steer_joints_size_ = left_steer_names.size();
 
-#ifdef MULTIPLE_JOINTS
       left_steer_joints_.resize(steer_joints_size_);
       right_steer_joints_.resize(steer_joints_size_);
-#endif
     }
 #endif
-
     //-- single rear drive
     std::string wheel_name = "wheel_joint";
     controller_nh.param(ns_ + "rear_wheel", wheel_name, wheel_name);
@@ -276,7 +277,6 @@ namespace steer_drive_controller{
     bool lookup_wheel_separation_h = !controller_nh.getParam(ns_ + "wheel_separation_h", wheel_separation_h_);
     bool lookup_wheel_radius = !controller_nh.getParam(ns_ + "wheel_radius", wheel_radius_);
 
-#ifdef ODOM
     if (!setOdomParamsFromUrdf(root_nh,
                               left_wheel_names[0],
                               right_wheel_names[0],
@@ -285,7 +285,6 @@ namespace steer_drive_controller{
     {
       return false;
     }
-#endif
 
     // Regardless of how we got the separation and radius, use them
     // to set the odometry parameters
@@ -298,20 +297,29 @@ namespace steer_drive_controller{
                           << ", wheel separation height" << ws_h
                           << ", wheel radius " << wr);
 
-#ifdef ODOM
     setOdomPubFields(root_nh, controller_nh);
-#endif
+
+
+    for(int i = 0; i < vel_joint_if->getNames().size(); i++)
+    {
+      ROS_INFO_STREAM_NAMED(name_, vel_joint_if->getNames()[i]);
+    }
+
     // Get the joint object to use in the realtime loop
     //-- wheels
     for (int i = 0; i < wheel_joints_size_; ++i)
     {
-#ifdef MULTIPLE_JOINTS
       ROS_INFO_STREAM_NAMED(name_,
                             "Adding left wheel with joint name: " << left_wheel_names[i]
                             << " and right wheel with joint name: " << right_wheel_names[i]);
+
+#ifdef MULTIPLE_JOINTS
+      left_wheel_joint_states_[i] = joint_state_if->getHandle(left_wheel_names[i]);
+      right_wheel_joint_states_[i] = joint_state_if->getHandle(right_wheel_names[i]);
+#endif
+
       left_wheel_joints_[i] = vel_joint_if->getHandle(left_wheel_names[i]);  // throws on failure
       right_wheel_joints_[i] = vel_joint_if->getHandle(right_wheel_names[i]);  // throws on failure
-#endif
     }
     //-- steers
     for (int i = 0; i < steer_joints_size_; ++i)
@@ -346,22 +354,18 @@ namespace steer_drive_controller{
     // COMPUTE AND PUBLISH ODOMETRY
     if (open_loop_)
     {
-#ifdef ODOM
       odometry_.updateOpenLoop(last0_cmd_.lin, last0_cmd_.ang, time);
-#endif
     }
     else
     {
-#ifdef MULTIPLE_JOINTS
       double left_pos  = 0.0;
       double right_pos = 0.0;
       for (size_t i = 0; i < wheel_joints_size_; ++i)
       {
+
         const double lp = left_wheel_joints_[i].getPosition();
         const double rp = right_wheel_joints_[i].getPosition();
-        // TODO: to be fixed
-        double lp = 0;
-        double rp = 0;
+
         if (std::isnan(lp) || std::isnan(rp))
           return;
 
@@ -370,15 +374,12 @@ namespace steer_drive_controller{
       }
       left_pos  /= wheel_joints_size_;
       right_pos /= wheel_joints_size_;
-#endif
 
-#ifdef ODOM
       // Estimate linear and angular velocity using joint information
       odometry_.update(left_pos, right_pos, time);
-#endif
     }
 
-#ifdef ODOM
+#ifndef ODOM
     // Publish odometry message
     if (last_state_publish_time_ + publish_period_ < time)
     {

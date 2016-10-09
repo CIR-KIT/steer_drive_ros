@@ -57,7 +57,7 @@ private:
       hardware_interface::JointCommandInterface& _jnt_cmd_interface,
       const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff,  double& _jnt_cmd ,
       const std::vector<std::string> _virtual_jnt_names, std::vector<double>& _virtual_jnt_pos, std::vector<double>& virtual_jnt_vel,
-      std::vector<double>& virtual_jnt_eff);
+      std::vector<double>& virtual_jnt_eff, std::vector<double>& _virtual_jnt_cmd);
   void RegisterJointStateInterfaceHandle(
       hardware_interface::JointStateInterface& _jnt_state_interface,
       const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff);
@@ -125,6 +125,8 @@ private:
   std::vector<double> virtual_wheel_jnt_pos_;
   std::vector<double> virtual_wheel_jnt_vel_;
   std::vector<double> virtual_wheel_jnt_eff_;
+  //---- joint interface command
+  std::vector<double> virtual_wheel_jnt_vel_cmd_;
 
   // front steer
   //-- actual joint(single actuator)
@@ -147,7 +149,8 @@ private:
   std::vector<double> virtual_steer_jnt_pos_;
   std::vector<double> virtual_steer_jnt_vel_;
   std::vector<double> virtual_steer_jnt_eff_;
-  bool first_flg;
+  //---- joint interface command
+  std::vector<double> virtual_steer_jnt_pos_cmd_;
 
   int log_cnt_;
 

@@ -123,8 +123,12 @@ namespace steer_drive_controller{
 
     /// Hardware handles:
 #ifdef MULTIPLE_JOINTS
+    std::vector<hardware_interface::JointStateHandle> left_wheel_joint_states_;
+    std::vector<hardware_interface::JointStateHandle> right_wheel_joint_states_;
+#endif
     std::vector<hardware_interface::JointHandle> left_wheel_joints_;
     std::vector<hardware_interface::JointHandle> right_wheel_joints_;
+#ifdef MULTIPLE_JOINTS
     std::vector<hardware_interface::JointHandle> left_steer_joints_;
     std::vector<hardware_interface::JointHandle> right_steer_joints_;
 #endif

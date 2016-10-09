@@ -275,6 +275,7 @@ namespace steer_bot_hardware_gazebo
     virtual_wheel_jnt_pos_.clear();
     virtual_wheel_jnt_vel_.clear();
     virtual_wheel_jnt_eff_.clear();
+    virtual_wheel_jnt_vel_cmd_.clear();
 
     // steer
     //-- steer joint names
@@ -289,6 +290,7 @@ namespace steer_bot_hardware_gazebo
     virtual_steer_jnt_pos_.clear();
     virtual_steer_jnt_vel_.clear();
     virtual_steer_jnt_eff_.clear();
+    virtual_steer_jnt_pos_cmd_.clear();
   }
 
   void SteerBotHardwareGazebo::GetJointNames(ros::NodeHandle &_nh)
@@ -305,9 +307,11 @@ namespace steer_bot_hardware_gazebo
     // virtual wheel joint for gazebo control
     _nh.getParam(ns_ + "gazebo/virtual_rear_wheel", virtual_wheel_jnt_names_);
 
-    virtual_wheel_jnt_pos_.resize(virtual_wheel_jnt_names_.size());
-    virtual_wheel_jnt_vel_.resize(virtual_wheel_jnt_names_.size());
-    virtual_wheel_jnt_eff_.resize(virtual_wheel_jnt_names_.size());
+    const int dof = virtual_wheel_jnt_names_.size();
+    virtual_wheel_jnt_pos_.resize(dof);
+    virtual_wheel_jnt_vel_.resize(dof);
+    virtual_wheel_jnt_eff_.resize(dof);
+    virtual_wheel_jnt_vel_cmd_.resize(dof);
   }
 
   void SteerBotHardwareGazebo::GetSteerJointNames(ros::NodeHandle &_nh)
@@ -318,9 +322,11 @@ namespace steer_bot_hardware_gazebo
     // virtual steer joint for gazebo control
     _nh.getParam(ns_ + "gazebo/virtual_front_steer", virtual_steer_jnt_names_);
 
-    virtual_steer_jnt_pos_.resize(virtual_steer_jnt_names_.size());
-    virtual_steer_jnt_vel_.resize(virtual_steer_jnt_names_.size());
-    virtual_steer_jnt_eff_.resize(virtual_steer_jnt_names_.size());
+    const int dof = virtual_steer_jnt_names_.size();
+    virtual_steer_jnt_pos_.resize(dof);
+    virtual_steer_jnt_vel_.resize(dof);
+    virtual_steer_jnt_eff_.resize(dof);
+    virtual_steer_jnt_pos_cmd_.resize(dof);
   }
 
   void SteerBotHardwareGazebo::RegisterHardwareInterfaces()
@@ -339,7 +345,7 @@ namespace steer_bot_hardware_gazebo
           hardware_interface::JointCommandInterface& _jnt_cmd_interface,
           const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff,  double& _jnt_cmd ,
           const std::vector<std::string> _virtual_jnt_names, std::vector<double>& _virtual_jnt_pos, std::vector<double>& _virtual_jnt_vel,
-          std::vector<double>& _virtual_jnt_eff)
+          std::vector<double>& _virtual_jnt_eff, std::vector<double>& _virtual_jnt_cmd)
   {
     // actual joint (both JointState and CommandJoint)
     this->RegisterJointStateInterfaceHandle(_jnt_state_interface, _jnt_name,
@@ -351,6 +357,8 @@ namespace steer_bot_hardware_gazebo
     {
       this->RegisterJointStateInterfaceHandle(_jnt_state_interface, _virtual_jnt_names[i],
                                               _virtual_jnt_pos[i], _virtual_jnt_vel[i], _virtual_jnt_eff[i]);
+      this->RegisterCommandJointInterfaceHandle(_jnt_state_interface, _jnt_cmd_interface,
+                                                _virtual_jnt_names[i], _virtual_jnt_cmd[i]);
     }
   }
 
@@ -359,7 +367,7 @@ namespace steer_bot_hardware_gazebo
     this->RegisterInterfaceHandles(
           jnt_state_interface_, wheel_jnt_vel_cmd_interface_,
           wheel_jnt_name_, wheel_jnt_pos_, wheel_jnt_vel_, wheel_jnt_eff_, wheel_jnt_vel_cmd_,
-          virtual_wheel_jnt_names_, virtual_wheel_jnt_pos_, virtual_wheel_jnt_vel_, virtual_wheel_jnt_eff_);
+          virtual_wheel_jnt_names_, virtual_wheel_jnt_pos_, virtual_wheel_jnt_vel_, virtual_wheel_jnt_eff_, virtual_wheel_jnt_vel_cmd_);
   }
 
   void SteerBotHardwareGazebo::RegisterSteerInterface()
@@ -367,7 +375,7 @@ namespace steer_bot_hardware_gazebo
     this->RegisterInterfaceHandles(
           jnt_state_interface_, steer_jnt_pos_cmd_interface_,
           steer_jnt_name_, steer_jnt_pos_, steer_jnt_vel_, steer_jnt_eff_, steer_jnt_pos_cmd_,
-          virtual_steer_jnt_names_, virtual_steer_jnt_pos_, virtual_steer_jnt_vel_, virtual_steer_jnt_eff_);
+          virtual_steer_jnt_names_, virtual_steer_jnt_pos_, virtual_steer_jnt_vel_, virtual_steer_jnt_eff_, virtual_steer_jnt_pos_cmd_);
   }
 
   void SteerBotHardwareGazebo::RegisterJointStateInterfaceHandle(
