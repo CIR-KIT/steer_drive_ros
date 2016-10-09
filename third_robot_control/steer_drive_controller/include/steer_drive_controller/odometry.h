@@ -193,7 +193,7 @@ namespace steer_drive_controller
     double wheel_separation_;
     double wheel_radius_;
 
-    /// Previou wheel position/state [rad]:
+    /// Previous wheel position/state [rad]:
     double left_wheel_old_pos_;
     double right_wheel_old_pos_;
 

@@ -79,7 +79,11 @@ namespace steer_drive_controller{
       INDX_STEER_FRNT = 0,
       INDX_STEER_BACK = 1,
     };
-
+    // constant
+    enum INDEX_WHEEL {
+      INDEX_RIGHT = 0,
+      INDEX_LEFT = 1
+    };
   public:
     SteerDriveController();
 
@@ -244,7 +248,8 @@ namespace steer_drive_controller{
     bool setOdomParamsFromUrdf(ros::NodeHandle& root_nh,
                                const std::string& left_wheel_name,
                                const std::string& right_wheel_name,
-                               bool lookup_wheel_separation,
+                               bool lookup_wheel_separation_w,
+                               bool lookup_wheel_separation_h,
                                bool lookup_wheel_radius);
 
     /**

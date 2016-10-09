@@ -118,15 +118,24 @@ private:
   hardware_interface::VelocityJointInterface wheel_jnt_vel_cmd_interface_;
   //hardware_interface::JointStateInterface wheel_jnt_state_interface_;
   //
-  //-- virtual joints(two wheels)
+  //-- virtual joints(two rear wheels)
   //---- joint name
-  std::vector<std::string> virtual_wheel_jnt_names_;
+  std::vector<std::string> virtual_rear_wheel_jnt_names_;
   //---- joint interface parameters
-  std::vector<double> virtual_wheel_jnt_pos_;
-  std::vector<double> virtual_wheel_jnt_vel_;
-  std::vector<double> virtual_wheel_jnt_eff_;
+  std::vector<double> virtual_rear_wheel_jnt_pos_;
+  std::vector<double> virtual_rear_wheel_jnt_vel_;
+  std::vector<double> virtual_rear_wheel_jnt_eff_;
   //---- joint interface command
-  std::vector<double> virtual_wheel_jnt_vel_cmd_;
+  std::vector<double> virtual_rear_wheel_jnt_vel_cmd_;
+  //-- virtual joints(two front wheels)
+  //---- joint name
+  std::vector<std::string> virtual_front_wheel_jnt_names_;
+  //---- joint interface parameters
+  std::vector<double> virtual_front_wheel_jnt_pos_;
+  std::vector<double> virtual_front_wheel_jnt_vel_;
+  std::vector<double> virtual_front_wheel_jnt_eff_;
+  //---- joint interface command
+  std::vector<double> virtual_front_wheel_jnt_vel_cmd_;
 
   // front steer
   //-- actual joint(single actuator)

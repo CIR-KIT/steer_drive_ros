@@ -149,23 +149,23 @@ namespace steer_drive_controller{
 
     // Get joint names from the parameter server
     //-- wheels
-    std::vector<std::string> left_wheel_names, right_wheel_names;
-    if (!getWheelNames(controller_nh, ns_ + "left_wheel", left_wheel_names) or
-        !getWheelNames(controller_nh, ns_ + "right_wheel", right_wheel_names))
+    std::vector<std::string> rear_wheel_names, front_wheel_names;
+    if (!getWheelNames(controller_nh, ns_ + "rear_wheels", rear_wheel_names) or
+        !getWheelNames(controller_nh, ns_ + "front_wheels", front_wheel_names))
     {
       return false;
     }
 
-    if (left_wheel_names.size() != right_wheel_names.size())
+    if (rear_wheel_names.size() != front_wheel_names.size())
     {
       ROS_ERROR_STREAM_NAMED(name_,
-          "#left wheels (" << left_wheel_names.size() << ") != " <<
-          "#right wheels (" << right_wheel_names.size() << ").");
+          "#rear wheels (" << rear_wheel_names.size() << ") != " <<
+          "#front wheels (" << front_wheel_names.size() << ").");
       return false;
     }
     else
     {
-      wheel_joints_size_ = left_wheel_names.size();
+      wheel_joints_size_ = rear_wheel_names.size();
 
       left_wheel_joints_.resize(wheel_joints_size_);
       right_wheel_joints_.resize(wheel_joints_size_);
@@ -278,9 +278,10 @@ namespace steer_drive_controller{
     bool lookup_wheel_radius = !controller_nh.getParam(ns_ + "wheel_radius", wheel_radius_);
 
     if (!setOdomParamsFromUrdf(root_nh,
-                              left_wheel_names[0],
-                              right_wheel_names[0],
+                              rear_wheel_names[INDEX_RIGHT],
+                              rear_wheel_names[INDEX_LEFT],
                               lookup_wheel_separation_w,
+                              lookup_wheel_separation_h,
                               lookup_wheel_radius))
     {
       return false;
@@ -310,16 +311,16 @@ namespace steer_drive_controller{
     for (int i = 0; i < wheel_joints_size_; ++i)
     {
       ROS_INFO_STREAM_NAMED(name_,
-                            "Adding left wheel with joint name: " << left_wheel_names[i]
-                            << " and right wheel with joint name: " << right_wheel_names[i]);
+                            "Adding left wheel with joint name: " << rear_wheel_names[i]
+                            << " and right wheel with joint name: " << front_wheel_names[i]);
 
 #ifdef MULTIPLE_JOINTS
       left_wheel_joint_states_[i] = joint_state_if->getHandle(left_wheel_names[i]);
       right_wheel_joint_states_[i] = joint_state_if->getHandle(right_wheel_names[i]);
 #endif
 
-      left_wheel_joints_[i] = vel_joint_if->getHandle(left_wheel_names[i]);  // throws on failure
-      right_wheel_joints_[i] = vel_joint_if->getHandle(right_wheel_names[i]);  // throws on failure
+      left_wheel_joints_[i] = vel_joint_if->getHandle(rear_wheel_names[i]);  // throws on failure
+      right_wheel_joints_[i] = vel_joint_if->getHandle(front_wheel_names[i]);  // throws on failure
     }
     //-- steers
     for (int i = 0; i < steer_joints_size_; ++i)
@@ -626,10 +627,11 @@ namespace steer_drive_controller{
   bool SteerDriveController::setOdomParamsFromUrdf(ros::NodeHandle& root_nh,
                              const std::string& left_wheel_name,
                              const std::string& right_wheel_name,
-                             bool lookup_wheel_separation,
+                             bool lookup_wheel_separation_w,
+                             bool lookup_wheel_separation_h,
                              bool lookup_wheel_radius)
   {
-    if (!(lookup_wheel_separation || lookup_wheel_radius))
+    if (!(lookup_wheel_separation_w || lookup_wheel_separation_h || lookup_wheel_radius))
     {
       // Short-circuit in case we don't need to look up anything, so we don't have to parse the URDF
       return true;
@@ -650,7 +652,7 @@ namespace steer_drive_controller{
     boost::shared_ptr<const urdf::Joint> left_wheel_joint(model->getJoint(left_wheel_name));
     boost::shared_ptr<const urdf::Joint> right_wheel_joint(model->getJoint(right_wheel_name));
 
-    if (lookup_wheel_separation)
+    if (lookup_wheel_separation_w)
     {
       // Get wheel separation
       if (!left_wheel_joint)
