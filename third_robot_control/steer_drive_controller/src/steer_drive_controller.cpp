@@ -278,11 +278,11 @@ namespace steer_drive_controller{
     bool lookup_wheel_radius = !controller_nh.getParam(ns_ + "wheel_radius", wheel_radius_);
 
     if (!setOdomParamsFromUrdf(root_nh,
-                              rear_wheel_names[INDEX_RIGHT],
-                              rear_wheel_names[INDEX_LEFT],
-                              lookup_wheel_separation_w,
-                              lookup_wheel_separation_h,
-                              lookup_wheel_radius))
+                               rear_wheel_names,
+                               /*rear_wheel_names[INDEX_LEFT],*/
+                               lookup_wheel_separation_w,
+                               lookup_wheel_separation_h,
+                               lookup_wheel_radius))
     {
       return false;
     }
@@ -625,8 +625,8 @@ namespace steer_drive_controller{
 
 
   bool SteerDriveController::setOdomParamsFromUrdf(ros::NodeHandle& root_nh,
-                             const std::string& left_wheel_name,
-                             const std::string& right_wheel_name,
+                             const std::vector<std::string>& rear_wheel_names,
+                             /*const std::string& right_wheel_name,*/
                              bool lookup_wheel_separation_w,
                              bool lookup_wheel_separation_h,
                              bool lookup_wheel_radius)
@@ -649,22 +649,22 @@ namespace steer_drive_controller{
 
     boost::shared_ptr<urdf::ModelInterface> model(urdf::parseURDF(robot_model_str));
 
-    boost::shared_ptr<const urdf::Joint> left_wheel_joint(model->getJoint(left_wheel_name));
-    boost::shared_ptr<const urdf::Joint> right_wheel_joint(model->getJoint(right_wheel_name));
+    boost::shared_ptr<const urdf::Joint> left_wheel_joint(model->getJoint(rear_wheel_names[INDEX_LEFT]));
+    boost::shared_ptr<const urdf::Joint> right_wheel_joint(model->getJoint(rear_wheel_names[INDEX_RIGHT]));
 
     if (lookup_wheel_separation_w)
     {
       // Get wheel separation
       if (!left_wheel_joint)
       {
-        ROS_ERROR_STREAM_NAMED(name_, left_wheel_name
+        ROS_ERROR_STREAM_NAMED(name_, rear_wheel_names[INDEX_LEFT]
                                << " couldn't be retrieved from model description");
         return false;
       }
 
       if (!right_wheel_joint)
       {
-        ROS_ERROR_STREAM_NAMED(name_, right_wheel_name
+        ROS_ERROR_STREAM_NAMED(name_, rear_wheel_names[INDEX_RIGHT]
                                << " couldn't be retrieved from model description");
         return false;
       }
@@ -686,7 +686,7 @@ namespace steer_drive_controller{
       // Get wheel radius
       if (!getWheelRadius(model->getLink(left_wheel_joint->child_link_name), wheel_radius_))
       {
-        ROS_ERROR_STREAM_NAMED(name_, "Couldn't retrieve " << left_wheel_name << " wheel radius");
+        ROS_ERROR_STREAM_NAMED(name_, "Couldn't retrieve " << rear_wheel_names[INDEX_LEFT] << " wheel radius");
         return false;
       }
     }

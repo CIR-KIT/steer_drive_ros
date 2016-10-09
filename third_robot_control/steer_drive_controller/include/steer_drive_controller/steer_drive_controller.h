@@ -246,8 +246,9 @@ namespace steer_drive_controller{
      * \param right_wheel_name Name of the right wheel joint
      */
     bool setOdomParamsFromUrdf(ros::NodeHandle& root_nh,
-                               const std::string& left_wheel_name,
-                               const std::string& right_wheel_name,
+                               const std::vector<std::string>& rear_wheel_names,
+                              /* const std::string& left_wheel_name,
+                               const std::string& right_wheel_name,*/
                                bool lookup_wheel_separation_w,
                                bool lookup_wheel_separation_h,
                                bool lookup_wheel_radius);

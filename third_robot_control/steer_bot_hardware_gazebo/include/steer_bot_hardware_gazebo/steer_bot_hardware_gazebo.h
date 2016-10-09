@@ -67,6 +67,9 @@ private:
       const std::string _jnt_name, double& _jnt_cmd);
   double ComputeEffCommandFromVelError(const int _index, ros::Duration _period);
 
+  void GetCurrentState(std::vector<double>& _jnt_pos, std::vector<double>& _jnt_vel, std::vector<double>& _jnt_eff,
+                       const int _if_index, const int _sim_jnt_index);
+
 private:
   // constant
   enum {
