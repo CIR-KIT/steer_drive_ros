@@ -167,8 +167,8 @@ namespace steer_drive_controller{
     {
       wheel_joints_size_ = rear_wheel_names.size();
 
-      left_wheel_joints_.resize(wheel_joints_size_);
-      right_wheel_joints_.resize(wheel_joints_size_);
+      rear_wheel_joints_.resize(wheel_joints_size_);
+      front_wheel_joints_.resize(wheel_joints_size_);
 
 #ifdef MULTIPLE_JOINTS
       left_wheel_joint_states_.resize(wheel_joints_size_);
@@ -319,8 +319,8 @@ namespace steer_drive_controller{
       right_wheel_joint_states_[i] = joint_state_if->getHandle(right_wheel_names[i]);
 #endif
 
-      left_wheel_joints_[i] = vel_joint_if->getHandle(rear_wheel_names[i]);  // throws on failure
-      right_wheel_joints_[i] = vel_joint_if->getHandle(front_wheel_names[i]);  // throws on failure
+      rear_wheel_joints_[i] = vel_joint_if->getHandle(rear_wheel_names[i]);  // throws on failure
+      front_wheel_joints_[i] = vel_joint_if->getHandle(front_wheel_names[i]);  // throws on failure
     }
     //-- steers
     for (int i = 0; i < steer_joints_size_; ++i)
@@ -359,8 +359,9 @@ namespace steer_drive_controller{
     }
     else
     {
-      double left_pos  = 0.0;
-      double right_pos = 0.0;
+      double left_pos  = rear_wheel_joints_[INDEX_LEFT].getPosition();
+      double right_pos = rear_wheel_joints_[INDEX_RIGHT].getPosition();
+      /*
       for (size_t i = 0; i < wheel_joints_size_; ++i)
       {
 
@@ -375,6 +376,7 @@ namespace steer_drive_controller{
       }
       left_pos  /= wheel_joints_size_;
       right_pos /= wheel_joints_size_;
+      */
 
       // Estimate linear and angular velocity using joint information
       odometry_.update(left_pos, right_pos, time);
