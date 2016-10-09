@@ -292,7 +292,7 @@ namespace steer_drive_controller{
     const double ws_w = wheel_separation_multiplier_ * wheel_separation_w_;
     const double ws_h = wheel_separation_multiplier_ * wheel_separation_h_;
     const double wr = wheel_radius_multiplier_     * wheel_radius_;
-    odometry_.setWheelParams(ws_w, wr);
+    odometry_.setWheelParams(ws_w, ws_h, wr);
     ROS_INFO_STREAM_NAMED(name_,
                           "Odometry params : wheel separation width" << ws_w
                           << ", wheel separation height" << ws_h
@@ -361,6 +361,7 @@ namespace steer_drive_controller{
     {
       double left_pos  = rear_wheel_joints_[INDEX_LEFT].getPosition();
       double right_pos = rear_wheel_joints_[INDEX_RIGHT].getPosition();
+      double steer_pos = steer_joint_.getPosition();
       /*
       for (size_t i = 0; i < wheel_joints_size_; ++i)
       {
@@ -379,7 +380,7 @@ namespace steer_drive_controller{
       */
 
       // Estimate linear and angular velocity using joint information
-      odometry_.update(left_pos, right_pos, time);
+      odometry_.update(left_pos, right_pos, steer_pos, time);
     }
 
 #ifndef ODOM
@@ -674,10 +675,10 @@ namespace steer_drive_controller{
         return false;
       }
 
-      ROS_INFO_STREAM("left wheel to origin: " << rear_left_wheel_joint->parent_to_joint_origin_transform.position.x << ","
+      ROS_INFO_STREAM("rear left wheel to origin: " << rear_left_wheel_joint->parent_to_joint_origin_transform.position.x << ","
                       << rear_left_wheel_joint->parent_to_joint_origin_transform.position.y << ", "
                       << rear_left_wheel_joint->parent_to_joint_origin_transform.position.z);
-      ROS_INFO_STREAM("right wheel to origin: " << rear_right_wheel_joint->parent_to_joint_origin_transform.position.x << ","
+      ROS_INFO_STREAM("rear right wheel to origin: " << rear_right_wheel_joint->parent_to_joint_origin_transform.position.x << ","
                       << rear_right_wheel_joint->parent_to_joint_origin_transform.position.y << ", "
                       << rear_right_wheel_joint->parent_to_joint_origin_transform.position.z);
 
@@ -696,25 +697,24 @@ namespace steer_drive_controller{
         return false;
       }
 
-      if (!front_right_wheel_joint)
+      if (!front_left_wheel_joint)
       {
-        ROS_ERROR_STREAM_NAMED(name_, front_wheel_names[INDEX_RIGHT]
+        ROS_ERROR_STREAM_NAMED(name_, front_wheel_names[INDEX_LEFT]
                                << " couldn't be retrieved from model description");
         return false;
       }
 
-      ROS_INFO_STREAM("left wheel to origin: " << rear_left_wheel_joint->parent_to_joint_origin_transform.position.x << ","
+      ROS_INFO_STREAM("rear left wheel to origin: " << rear_left_wheel_joint->parent_to_joint_origin_transform.position.x << ","
                       << rear_left_wheel_joint->parent_to_joint_origin_transform.position.y << ", "
                       << rear_left_wheel_joint->parent_to_joint_origin_transform.position.z);
-      ROS_INFO_STREAM("right wheel to origin: " << front_right_wheel_joint->parent_to_joint_origin_transform.position.x << ","
-                      << front_right_wheel_joint->parent_to_joint_origin_transform.position.y << ", "
-                      << front_right_wheel_joint->parent_to_joint_origin_transform.position.z);
+      ROS_INFO_STREAM("front left wheel to origin: " << front_left_wheel_joint->parent_to_joint_origin_transform.position.x << ","
+                      << front_left_wheel_joint->parent_to_joint_origin_transform.position.y << ", "
+                      << front_left_wheel_joint->parent_to_joint_origin_transform.position.z);
 
       wheel_separation_h_ = euclideanOfVectors(rear_left_wheel_joint->parent_to_joint_origin_transform.position,
-                                               front_right_wheel_joint->parent_to_joint_origin_transform.position);
+                                               front_left_wheel_joint->parent_to_joint_origin_transform.position);
 
     }
-
 
     if (lookup_wheel_radius)
     {

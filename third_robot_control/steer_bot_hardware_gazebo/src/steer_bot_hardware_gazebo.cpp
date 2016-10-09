@@ -185,6 +185,10 @@ namespace steer_bot_hardware_gazebo
         // do nothing
       }
     }
+
+    steer_jnt_pos_ = (virtual_steer_jnt_pos_[INDEX_RIGHT] + virtual_steer_jnt_pos_[INDEX_LEFT]) / virtual_steer_jnt_pos_.size();
+    steer_jnt_vel_ = (virtual_steer_jnt_vel_[INDEX_RIGHT] + virtual_steer_jnt_vel_[INDEX_LEFT]) / virtual_steer_jnt_vel_.size();
+    steer_jnt_eff_ = (virtual_steer_jnt_eff_[INDEX_RIGHT] + virtual_steer_jnt_eff_[INDEX_LEFT]) / virtual_steer_jnt_eff_.size();
   }
 
   void SteerBotHardwareGazebo::writeSim(ros::Time time, ros::Duration period)

@@ -54,7 +54,8 @@ namespace steer_drive_controller
   , heading_(0.0)
   , linear_(0.0)
   , angular_(0.0)
-  , wheel_separation_(0.0)
+  , wheel_separation_w_(0.0)
+  , wheel_separation_h_(0.0)
   , wheel_radius_(0.0)
   , left_wheel_old_pos_(0.0)
   , right_wheel_old_pos_(0.0)
@@ -72,7 +73,7 @@ namespace steer_drive_controller
     timestamp_ = time;
   }
 
-  bool Odometry::update(double left_pos, double right_pos, const ros::Time &time)
+  bool Odometry::update(double left_pos, double right_pos, double steer_pos, const ros::Time &time)
   {
     /// Get current wheel joint positions:
     const double left_wheel_cur_pos  = left_pos  * wheel_radius_;
@@ -88,7 +89,8 @@ namespace steer_drive_controller
 
     /// Compute linear and angular diff:
     const double linear  = (right_wheel_est_vel + left_wheel_est_vel) * 0.5 ;
-    const double angular = (right_wheel_est_vel - left_wheel_est_vel) / wheel_separation_;
+    //const double angular = (right_wheel_est_vel - left_wheel_est_vel) / wheel_separation_;
+    const double angular = tan(steer_pos) * linear / wheel_separation_h_;
 
     /// Integrate odometry:
     integrate_fun_(linear, angular);
@@ -122,9 +124,10 @@ namespace steer_drive_controller
     integrate_fun_(linear * dt, angular * dt);
   }
 
-  void Odometry::setWheelParams(double wheel_separation, double wheel_radius)
+  void Odometry::setWheelParams(double wheel_separation_w, double wheel_separation_h, double wheel_radius)
   {
-    wheel_separation_ = wheel_separation;
+    wheel_separation_w_ = wheel_separation_w;
+    wheel_separation_h_ = wheel_separation_h;
     wheel_radius_     = wheel_radius;
   }
 
