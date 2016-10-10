@@ -170,37 +170,8 @@ namespace steer_drive_controller{
 
       rear_wheel_joints_.resize(wheel_joints_size_);
       front_wheel_joints_.resize(wheel_joints_size_);
-
-#ifdef MULTIPLE_JOINTS
-      left_wheel_joint_states_.resize(wheel_joints_size_);
-      right_wheel_joint_states_.resize(wheel_joints_size_);
-#endif
     }
 
-#ifdef MULTIPLE_JOINTS
-    //-- steers
-    std::vector<std::string> left_steer_names, right_steer_names;
-    if (!getSteerNames(controller_nh, ns_ + "left_steer", left_steer_names) or
-        !getSteerNames(controller_nh, ns_ + "right_steer", right_steer_names))
-    {
-      return false;
-    }
-
-    if (left_steer_names.size() != right_steer_names.size())
-    {
-      ROS_ERROR_STREAM_NAMED(name_,
-          "#left steers (" << left_steer_names.size() << ") != " <<
-          "#right steers (" << right_steer_names.size() << ").");
-      return false;
-    }
-    else
-    {
-      steer_joints_size_ = left_steer_names.size();
-
-      left_steer_joints_.resize(steer_joints_size_);
-      right_steer_joints_.resize(steer_joints_size_);
-    }
-#endif
     //-- single rear drive
     std::string wheel_name = "wheel_joint";
     controller_nh.param(ns_ + "rear_wheel", wheel_name, wheel_name);
@@ -302,7 +273,6 @@ namespace steer_drive_controller{
 
     setOdomPubFields(root_nh, controller_nh);
 
-
     for(int i = 0; i < vel_joint_if->getNames().size(); i++)
     {
       ROS_INFO_STREAM_NAMED(name_, vel_joint_if->getNames()[i]);
@@ -316,24 +286,8 @@ namespace steer_drive_controller{
                             "Adding left wheel with joint name: " << rear_wheel_names[i]
                             << " and right wheel with joint name: " << front_wheel_names[i]);
 
-#ifdef MULTIPLE_JOINTS
-      left_wheel_joint_states_[i] = joint_state_if->getHandle(left_wheel_names[i]);
-      right_wheel_joint_states_[i] = joint_state_if->getHandle(right_wheel_names[i]);
-#endif
-
       rear_wheel_joints_[i] = vel_joint_if->getHandle(rear_wheel_names[i]);  // throws on failure
       front_wheel_joints_[i] = vel_joint_if->getHandle(front_wheel_names[i]);  // throws on failure
-    }
-    //-- steers
-    for (int i = 0; i < steer_joints_size_; ++i)
-    {
-#ifdef MULTIPLE_JOINTS
-      ROS_INFO_STREAM_NAMED(name_,
-                            "Adding left steer with joint name: " << left_steer_names[i]
-                            << " and right steer with joint name: " << right_steer_names[i]);
-      left_steer_joints_[i] = pos_joint_if->getHandle(left_steer_names[i]);  // throws on failure
-      right_steer_joints_[i] = pos_joint_if->getHandle(right_steer_names[i]);  // throws on failure
-#endif
     }
     //-- rear wheel
     //---- handles need to be previously registerd in steer_drive_test.cpp
@@ -364,28 +318,11 @@ namespace steer_drive_controller{
       double left_pos  = rear_wheel_joints_[INDEX_LEFT].getPosition();
       double right_pos = rear_wheel_joints_[INDEX_RIGHT].getPosition();
       double steer_pos = steer_joint_.getPosition();
-      /*
-      for (size_t i = 0; i < wheel_joints_size_; ++i)
-      {
-
-        const double lp = left_wheel_joints_[i].getPosition();
-        const double rp = right_wheel_joints_[i].getPosition();
-
-        if (std::isnan(lp) || std::isnan(rp))
-          return;
-
-        left_pos  += lp;
-        right_pos += rp;
-      }
-      left_pos  /= wheel_joints_size_;
-      right_pos /= wheel_joints_size_;
-      */
 
       // Estimate linear and angular velocity using joint information
       odometry_.update(left_pos, right_pos, steer_pos, time);
     }
 
-#ifndef ODOM
     // Publish odometry message
     if (last_state_publish_time_ + publish_period_ < time)
     {
@@ -417,7 +354,6 @@ namespace steer_drive_controller{
         tf_odom_pub_->unlockAndPublish();
       }
     }
-#endif
 
     // MOVE ROBOT
     // Retreive current velocity command and time step:
@@ -441,9 +377,11 @@ namespace steer_drive_controller{
     last0_cmd_ = curr_cmd;
 
     // Apply multipliers:
+    /*
     const double ws_w = wheel_separation_multiplier_ * wheel_separation_w_;
     const double ws_h = wheel_separation_multiplier_ * wheel_separation_h_;
     const double wr = wheel_radius_multiplier_     * wheel_radius_;
+    */
 
     // Set Command
     wheel_joint_.setCommand(curr_cmd.lin);

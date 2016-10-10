@@ -16,6 +16,8 @@ namespace steer_bot_hardware_gazebo
 
   SteerBotHardwareGazebo::SteerBotHardwareGazebo()
     : gazebo_ros_control::RobotHWSim()
+    , ns_("steer_bot_hardware_gazebo/")
+    , log_cnt_(0)
   {}
 
 
@@ -27,9 +29,6 @@ namespace steer_bot_hardware_gazebo
   {
     using gazebo::physics::JointPtr;
 
-    log_cnt_ = 0;
-
-    ns_ = "steer_bot_hardware_gazebo/";//robot_namespace;
     nh_ = nh;
 
     // Simulation joints
@@ -40,47 +39,7 @@ namespace steer_bot_hardware_gazebo
     this->GetJointNames(nh_);
     this->RegisterHardwareInterfaces();
 
-#ifdef SPAWN_DEBUG
-    // Cleanup
-    sim_joints_.clear();
-    jnt_pos_.clear();
-    jnt_vel_.clear();
-    jnt_eff_.clear();
-    jnt_pos_cmd_.clear();
-
-    // Simulation joints
-    sim_joints_ = model->GetJoints();
-    n_dof_ = sim_joints_.size();
-
-    std::vector<std::string> jnt_names;
-    for (size_t i = 0; i < n_dof_; ++i)
-    {
-      jnt_names.push_back(sim_joints_[i]->GetName());
-    }
-
-    // Raw data
-    jnt_pos_.resize(n_dof_);
-    jnt_vel_.resize(n_dof_);
-    jnt_eff_.resize(n_dof_);
-    jnt_pos_cmd_.resize(n_dof_);
-
-    // Hardware interfaces
-    for (size_t i = 0; i < n_dof_; ++i)
-    {
-      jnt_state_interface_.registerHandle(
-          JointStateHandle(jnt_names[i], &jnt_pos_[i], &jnt_vel_[i], &jnt_eff_[i]));
-
-      jnt_pos_cmd_interface_.registerHandle(
-          JointHandle(jnt_state_interface_.getHandle(jnt_names[i]), &jnt_pos_cmd_[i]));
-
-      ROS_INFO_STREAM("Registered joint '" << jnt_names[i] << "' in the PositionJointInterface.");
-    }
-
-    registerInterface(&jnt_state_interface_);
-    registerInterface(&jnt_pos_cmd_interface_);
-#endif
-
-#ifdef SPAWN_DEBUG
+#ifdef JOINT_LIMIT
     // Position joint limits interface
     std::vector<std::string> cmd_handle_names = steer_jnt_pos_cmd_interface_.getNames();
     for (size_t i = 0; i < n_dof_; ++i)
@@ -134,23 +93,6 @@ namespace steer_bot_hardware_gazebo
 
   void SteerBotHardwareGazebo::readSim(ros::Time time, ros::Duration period)
   {
-
-#ifdef SPAWN_DEBUG
-    for (size_t i = 0; i < n_dof_; ++i)
-    {
-      jnt_pos_[i] += angles::shortest_angular_distance
-          (jnt_pos_[i], sim_joints_[i]->GetAngle(0u).Radian());
-      jnt_vel_[i] = sim_joints_[i]->GetVelocity(0u);
-      jnt_eff_[i] = sim_joints_[i]->GetForce(0u);
-    }
-
-    for(int i = 0; i <  sim_joints_.size(); i++)
-    {
-      std::string gazebo_jnt_name;
-      gazebo_jnt_name = sim_joints_[i]->GetName();
-    }
-#endif
-
     for(int i = 0; i <  sim_joints_.size(); i++)
     {
       std::string gazebo_jnt_name;
@@ -194,17 +136,8 @@ namespace steer_bot_hardware_gazebo
   void SteerBotHardwareGazebo::writeSim(ros::Time time, ros::Duration period)
   {
     // Enforce joint limits
-    //jnt_limits_interface_.enforceLimits(period);
-#ifdef SPAWN_DEBUG
-    // Compute and send commands
-    for (size_t i = 0; i < n_dof_; ++i)
-    {
-      const double error = jnt_pos_cmd_[i] - jnt_pos_[i];
-      //const double effort = pids_[i].computeCommand(error, period);
-      const double effort = 0.;
-
-      sim_joints_[i]->SetForce(0u, effort);
-    }
+#ifdef JOINT_LIMIT
+    jnt_limits_interface_.enforceLimits(period);
 #endif
     log_cnt_++;
     for(int i = 0; i <  sim_joints_.size(); i++)
