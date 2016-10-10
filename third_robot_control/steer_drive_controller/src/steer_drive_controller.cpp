@@ -149,9 +149,10 @@ namespace steer_drive_controller{
 
     // Get joint names from the parameter server
     //-- wheels
-    std::vector<std::string> rear_wheel_names, front_wheel_names;
+    std::vector<std::string> rear_wheel_names, front_wheel_names, front_steer_names;
     if (!getWheelNames(controller_nh, ns_ + "rear_wheels", rear_wheel_names) or
-        !getWheelNames(controller_nh, ns_ + "front_wheels", front_wheel_names))
+        !getWheelNames(controller_nh, ns_ + "front_wheels", front_wheel_names) or
+        !getWheelNames(controller_nh, ns_ + "front_steers", front_steer_names))
     {
       return false;
     }
@@ -280,6 +281,7 @@ namespace steer_drive_controller{
     if (!setOdomParamsFromUrdf(root_nh,
                                rear_wheel_names,
                                front_wheel_names,
+                               front_steer_names,
                                lookup_wheel_separation_w,
                                lookup_wheel_separation_h,
                                lookup_wheel_radius))
@@ -630,6 +632,7 @@ namespace steer_drive_controller{
   bool SteerDriveController::setOdomParamsFromUrdf(ros::NodeHandle& root_nh,
                              const std::vector<std::string>& rear_wheel_names,
                              const std::vector<std::string>& front_wheel_names,
+                             const std::vector<std::string>& front_steer_names,
                              bool lookup_wheel_separation_w,
                              bool lookup_wheel_separation_h,
                              bool lookup_wheel_radius)
@@ -655,6 +658,7 @@ namespace steer_drive_controller{
     boost::shared_ptr<const urdf::Joint> rear_left_wheel_joint(model->getJoint(rear_wheel_names[INDEX_LEFT]));
     boost::shared_ptr<const urdf::Joint> rear_right_wheel_joint(model->getJoint(rear_wheel_names[INDEX_RIGHT]));
 
+    boost::shared_ptr<const urdf::Joint> front_left_steer_joint(model->getJoint(front_steer_names[INDEX_LEFT]));
     boost::shared_ptr<const urdf::Joint> front_left_wheel_joint(model->getJoint(front_wheel_names[INDEX_LEFT]));
     boost::shared_ptr<const urdf::Joint> front_right_wheel_joint(model->getJoint(front_wheel_names[INDEX_RIGHT]));
 
@@ -707,12 +711,20 @@ namespace steer_drive_controller{
       ROS_INFO_STREAM("rear left wheel to origin: " << rear_left_wheel_joint->parent_to_joint_origin_transform.position.x << ","
                       << rear_left_wheel_joint->parent_to_joint_origin_transform.position.y << ", "
                       << rear_left_wheel_joint->parent_to_joint_origin_transform.position.z);
-      ROS_INFO_STREAM("front left wheel to origin: " << front_left_wheel_joint->parent_to_joint_origin_transform.position.x << ","
-                      << front_left_wheel_joint->parent_to_joint_origin_transform.position.y << ", "
-                      << front_left_wheel_joint->parent_to_joint_origin_transform.position.z);
+
+      urdf::Vector3 front_left_wheel_to_origin;
+      front_left_wheel_to_origin.x = front_left_steer_joint->parent_to_joint_origin_transform.position.x +
+              front_left_wheel_joint->parent_to_joint_origin_transform.position.x;
+      front_left_wheel_to_origin.y = front_left_steer_joint->parent_to_joint_origin_transform.position.y +
+              front_left_wheel_joint->parent_to_joint_origin_transform.position.y;
+      front_left_wheel_to_origin.z = front_left_steer_joint->parent_to_joint_origin_transform.position.z +
+              front_left_wheel_joint->parent_to_joint_origin_transform.position.z;
+      ROS_INFO_STREAM("front left wheel to origin: " << front_left_wheel_to_origin.x << ","
+                      << front_left_wheel_to_origin.y << ", "
+                      << front_left_wheel_to_origin.z);
 
       wheel_separation_h_ = euclideanOfVectors(rear_left_wheel_joint->parent_to_joint_origin_transform.position,
-                                               front_left_wheel_joint->parent_to_joint_origin_transform.position);
+                                               front_left_wheel_to_origin);
 
     }
 

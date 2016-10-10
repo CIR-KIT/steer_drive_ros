@@ -29,7 +29,7 @@ namespace steer_bot_hardware_gazebo
 
     log_cnt_ = 0;
 
-    ns_ = "steer_drive_controller/";//robot_namespace;
+    ns_ = "steer_bot_hardware_gazebo/";//robot_namespace;
     nh_ = nh;
 
     // Simulation joints
@@ -117,7 +117,7 @@ namespace steer_bot_hardware_gazebo
 
     for (size_t i = 0; i < virtual_jnt_cnt_; ++i)
     {
-      const std::string jnt_name = virtual_steer_jnt_names_[i];
+      const std::string jnt_name = virtual_rear_wheel_jnt_names_[i];
       const ros::NodeHandle joint_nh(nh, "gains/" +  jnt_name);
 
       ROS_INFO_STREAM("Trying to set pid param of '" << jnt_name << " ' at PID proc in init()");
@@ -299,14 +299,14 @@ namespace steer_bot_hardware_gazebo
     _nh.getParam(ns_ + "rear_wheel", wheel_jnt_name_);
 
     // virtual wheel joint for gazebo control
-    _nh.getParam(ns_ + "gazebo/virtual_rear_wheels", virtual_rear_wheel_jnt_names_);
+    _nh.getParam(ns_ + "virtual_rear_wheels", virtual_rear_wheel_jnt_names_);
     int dof = virtual_rear_wheel_jnt_names_.size();
     virtual_rear_wheel_jnt_pos_.resize(dof);
     virtual_rear_wheel_jnt_vel_.resize(dof);
     virtual_rear_wheel_jnt_eff_.resize(dof);
     virtual_rear_wheel_jnt_vel_cmd_.resize(dof);
 
-    _nh.getParam(ns_ + "gazebo/virtual_front_wheels", virtual_front_wheel_jnt_names_);
+    _nh.getParam(ns_ + "virtual_front_wheels", virtual_front_wheel_jnt_names_);
     dof = virtual_front_wheel_jnt_names_.size();
     virtual_front_wheel_jnt_pos_.resize(dof);
     virtual_front_wheel_jnt_vel_.resize(dof);
@@ -321,7 +321,7 @@ namespace steer_bot_hardware_gazebo
     _nh.getParam(ns_ + "front_steer", steer_jnt_name_);
 
     // virtual steer joint for gazebo control
-    _nh.getParam(ns_ + "gazebo/virtual_front_steers", virtual_steer_jnt_names_);
+    _nh.getParam(ns_ + "virtual_front_steers", virtual_steer_jnt_names_);
 
     const int dof = virtual_steer_jnt_names_.size();
     virtual_steer_jnt_pos_.resize(dof);

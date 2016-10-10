@@ -248,6 +248,7 @@ namespace steer_drive_controller{
     bool setOdomParamsFromUrdf(ros::NodeHandle& root_nh,
                                const std::vector<std::string>& rear_wheel_names,
                                const std::vector<std::string>& front_wheel_names,
+                               const std::vector<std::string>& front_steer_names,
                                bool lookup_wheel_separation_w,
                                bool lookup_wheel_separation_h,
                                bool lookup_wheel_radius);
