@@ -296,8 +296,8 @@ namespace steer_drive_controller{
     const double wr = wheel_radius_multiplier_     * wheel_radius_;
     odometry_.setWheelParams(ws_w, ws_h, wr);
     ROS_INFO_STREAM_NAMED(name_,
-                          "Odometry params : wheel separation width" << ws_w
-                          << ", wheel separation height" << ws_h
+                          "Odometry params : wheel separation width " << ws_w
+                          << ", wheel separation height " << ws_h
                           << ", wheel radius " << wr);
 
     setOdomPubFields(root_nh, controller_nh);
@@ -660,7 +660,7 @@ namespace steer_drive_controller{
 
     boost::shared_ptr<const urdf::Joint> front_left_steer_joint(model->getJoint(front_steer_names[INDEX_LEFT]));
     boost::shared_ptr<const urdf::Joint> front_left_wheel_joint(model->getJoint(front_wheel_names[INDEX_LEFT]));
-    boost::shared_ptr<const urdf::Joint> front_right_wheel_joint(model->getJoint(front_wheel_names[INDEX_RIGHT]));
+    //boost::shared_ptr<const urdf::Joint> front_right_wheel_joint(model->getJoint(front_wheel_names[INDEX_RIGHT]));
 
     if (lookup_wheel_separation_w)
     {
