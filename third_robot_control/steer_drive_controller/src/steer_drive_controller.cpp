@@ -273,11 +273,6 @@ namespace steer_drive_controller{
 
     setOdomPubFields(root_nh, controller_nh);
 
-    for(int i = 0; i < vel_joint_if->getNames().size(); i++)
-    {
-      ROS_INFO_STREAM_NAMED(name_, vel_joint_if->getNames()[i]);
-    }
-
     // Get the joint object to use in the realtime loop
     //-- wheels
     for (int i = 0; i < wheel_joints_size_; ++i)

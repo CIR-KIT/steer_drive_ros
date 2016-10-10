@@ -277,70 +277,52 @@ namespace steer_bot_hardware_gazebo
   void SteerBotHardwareGazebo::RegisterInterfaceHandles(
           hardware_interface::JointStateInterface& _jnt_state_interface,
           hardware_interface::JointCommandInterface& _jnt_cmd_interface,
-          const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff,  double& _jnt_cmd ,
-          const std::vector<std::string> _virtual_jnt_names, std::vector<double>& _virtual_jnt_pos, std::vector<double>& _virtual_jnt_vel,
-          std::vector<double>& _virtual_jnt_eff, std::vector<double>& _virtual_jnt_cmd)
+          const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff,  double& _jnt_cmd)
   {
-    // actual joint (both JointState and CommandJoint)
+    // register joint (both JointState and CommandJoint)
     this->RegisterJointStateInterfaceHandle(_jnt_state_interface, _jnt_name,
                                             _jnt_pos, _jnt_vel, _jnt_eff);
     this->RegisterCommandJointInterfaceHandle(_jnt_state_interface, _jnt_cmd_interface,
                                               _jnt_name, _jnt_cmd);
-    // virtual joints (only JointState)
-    for (int i = 0; i < _virtual_jnt_names.size(); i++)
-    {
-      this->RegisterJointStateInterfaceHandle(_jnt_state_interface, _virtual_jnt_names[i],
-                                              _virtual_jnt_pos[i], _virtual_jnt_vel[i], _virtual_jnt_eff[i]);
-      this->RegisterCommandJointInterfaceHandle(_jnt_state_interface, _jnt_cmd_interface,
-                                                _virtual_jnt_names[i], _virtual_jnt_cmd[i]);
-    }
   }
 
   void SteerBotHardwareGazebo::RegisterWheelInterface()
   {
-    /*
-    // rear wheels
+    // actual wheel joints
     this->RegisterInterfaceHandles(
           jnt_state_interface_, wheel_jnt_vel_cmd_interface_,
-          wheel_jnt_name_, wheel_jnt_pos_, wheel_jnt_vel_, wheel_jnt_eff_, wheel_jnt_vel_cmd_,
-          virtual_rear_wheel_jnt_names_, virtual_rear_wheel_jnt_pos_, virtual_rear_wheel_jnt_vel_, virtual_rear_wheel_jnt_eff_, virtual_rear_wheel_jnt_vel_cmd_);
-    */
+          wheel_jnt_name_, wheel_jnt_pos_, wheel_jnt_vel_, wheel_jnt_eff_, wheel_jnt_vel_cmd_);
 
-    // actual joint (both JointState and CommandJoint)
-    this->RegisterJointStateInterfaceHandle(jnt_state_interface_, wheel_jnt_name_,
-                                            wheel_jnt_pos_, wheel_jnt_vel_, wheel_jnt_eff_);
-    this->RegisterCommandJointInterfaceHandle(jnt_state_interface_, wheel_jnt_vel_cmd_interface_,
-                                              wheel_jnt_name_, wheel_jnt_vel_cmd_);
     // virtual rear wheel joints
     for (int i = 0; i < virtual_rear_wheel_jnt_names_.size(); i++)
     {
-      this->RegisterJointStateInterfaceHandle(jnt_state_interface_, virtual_rear_wheel_jnt_names_[i],
-                                              virtual_rear_wheel_jnt_pos_[i], virtual_rear_wheel_jnt_vel_[i], virtual_rear_wheel_jnt_eff_[i]);
-      this->RegisterCommandJointInterfaceHandle(jnt_state_interface_, wheel_jnt_vel_cmd_interface_,
-                                                virtual_rear_wheel_jnt_names_[i], virtual_rear_wheel_jnt_vel_cmd_[i]);
+      this->RegisterInterfaceHandles(
+            jnt_state_interface_, wheel_jnt_vel_cmd_interface_,
+            virtual_rear_wheel_jnt_names_[i], virtual_rear_wheel_jnt_pos_[i], virtual_rear_wheel_jnt_vel_[i], virtual_rear_wheel_jnt_eff_[i], virtual_rear_wheel_jnt_vel_cmd_[i]);
     }
     // virtual front wheel joints
     for (int i = 0; i < virtual_front_wheel_jnt_names_.size(); i++)
     {
-      this->RegisterJointStateInterfaceHandle(jnt_state_interface_, virtual_front_wheel_jnt_names_[i],
-                                              virtual_front_wheel_jnt_pos_[i], virtual_front_wheel_jnt_vel_[i], virtual_front_wheel_jnt_eff_[i]);
-      this->RegisterCommandJointInterfaceHandle(jnt_state_interface_, wheel_jnt_vel_cmd_interface_,
-                                                virtual_front_wheel_jnt_names_[i], virtual_front_wheel_jnt_vel_cmd_[i]);
+      this->RegisterInterfaceHandles(
+            jnt_state_interface_, wheel_jnt_vel_cmd_interface_,
+            virtual_front_wheel_jnt_names_[i], virtual_front_wheel_jnt_pos_[i], virtual_front_wheel_jnt_vel_[i], virtual_front_wheel_jnt_eff_[i], virtual_front_wheel_jnt_vel_cmd_[i]);
     }
-
-    // front wheels
-    this->RegisterInterfaceHandles(
-          jnt_state_interface_, wheel_jnt_vel_cmd_interface_,
-          wheel_jnt_name_, wheel_jnt_pos_, wheel_jnt_vel_, wheel_jnt_eff_, wheel_jnt_vel_cmd_,
-          virtual_rear_wheel_jnt_names_, virtual_rear_wheel_jnt_pos_, virtual_rear_wheel_jnt_vel_, virtual_rear_wheel_jnt_eff_, virtual_rear_wheel_jnt_vel_cmd_);
   }
 
   void SteerBotHardwareGazebo::RegisterSteerInterface()
   {
+    // actual steer joints
     this->RegisterInterfaceHandles(
           jnt_state_interface_, steer_jnt_pos_cmd_interface_,
-          steer_jnt_name_, steer_jnt_pos_, steer_jnt_vel_, steer_jnt_eff_, steer_jnt_pos_cmd_,
-          virtual_steer_jnt_names_, virtual_steer_jnt_pos_, virtual_steer_jnt_vel_, virtual_steer_jnt_eff_, virtual_steer_jnt_pos_cmd_);
+          steer_jnt_name_, steer_jnt_pos_, steer_jnt_vel_, steer_jnt_eff_, steer_jnt_pos_cmd_);
+
+    // virtual steer joints
+    for (int i = 0; i < virtual_steer_jnt_names_.size(); i++)
+    {
+      this->RegisterInterfaceHandles(
+            jnt_state_interface_, steer_jnt_pos_cmd_interface_,
+            virtual_steer_jnt_names_[i], virtual_steer_jnt_pos_[i], virtual_steer_jnt_vel_[i], virtual_steer_jnt_eff_[i], virtual_steer_jnt_pos_cmd_[i]);
+    }
   }
 
   void SteerBotHardwareGazebo::RegisterJointStateInterfaceHandle(
@@ -384,10 +366,10 @@ namespace steer_bot_hardware_gazebo
   void SteerBotHardwareGazebo::GetCurrentState(std::vector<double>& _jnt_pos, std::vector<double>& _jnt_vel, std::vector<double>& _jnt_eff,
                                                const int _if_index, const int _sim_jnt_index)
   {
-        _jnt_pos[_if_index] +=
-                angles::shortest_angular_distance(_jnt_pos[_if_index], sim_joints_[_sim_jnt_index]->GetAngle(0u).Radian());
-        _jnt_vel[_if_index] = sim_joints_[_sim_jnt_index]->GetVelocity(0u);
-        _jnt_eff[_if_index] = sim_joints_[_sim_jnt_index]->GetForce(0u);
+    _jnt_pos[_if_index] +=
+        angles::shortest_angular_distance(_jnt_pos[_if_index], sim_joints_[_sim_jnt_index]->GetAngle(0u).Radian());
+    _jnt_vel[_if_index] = sim_joints_[_sim_jnt_index]->GetVelocity(0u);
+    _jnt_eff[_if_index] = sim_joints_[_sim_jnt_index]->GetForce(0u);
   }
 
 } // namespace rosbook_hardware_gazebo

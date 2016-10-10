@@ -53,11 +53,9 @@ private:
   void RegisterWheelInterface();
   void RegisterSteerInterface();
   void RegisterInterfaceHandles(
-      hardware_interface::JointStateInterface& _jnt_state_interface,
-      hardware_interface::JointCommandInterface& _jnt_cmd_interface,
-      const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff,  double& _jnt_cmd ,
-      const std::vector<std::string> _virtual_jnt_names, std::vector<double>& _virtual_jnt_pos, std::vector<double>& virtual_jnt_vel,
-      std::vector<double>& virtual_jnt_eff, std::vector<double>& _virtual_jnt_cmd);
+          hardware_interface::JointStateInterface& _jnt_state_interface,
+          hardware_interface::JointCommandInterface& _jnt_cmd_interface,
+          const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff,  double& _jnt_cmd);
   void RegisterJointStateInterfaceHandle(
       hardware_interface::JointStateInterface& _jnt_state_interface,
       const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff);
@@ -78,20 +76,6 @@ private:
   };
   // Raw data
   unsigned int n_dof_;
-#ifdef SPAWN_DEBUG
-  std::vector<std::string> transmission_names_;
-
-  std::vector<double> jnt_pos_;
-  std::vector<double> jnt_vel_;
-  std::vector<double> jnt_eff_;
-
-  std::vector<double> jnt_pos_cmd_;
-
-  // Hardware interface: joints
-  hardware_interface::JointStateInterface    jnt_state_interface_;
-  hardware_interface::PositionJointInterface jnt_pos_cmd_interface_;
-#endif
-
   std::vector<gazebo::physics::JointPtr> sim_joints_;
 
   // Joint limits interface
