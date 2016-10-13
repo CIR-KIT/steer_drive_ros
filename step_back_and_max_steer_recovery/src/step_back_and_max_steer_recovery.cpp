@@ -133,10 +133,16 @@ double StepBackAndMaxSteerRecovery::normalizedPoseCost (const gm::Pose2D& pose) 
   p.y = pose.y;
   vector<gm::Point> oriented_footprint;// = local_costmap_->getRobotFootprint();
   //local_costmap_->getOrientedFootprint(pose.x, pose.y, pose.theta, oriented_footprint);
-  local_costmap_->getOrientedFootprint(oriented_footprint);
-  const double c = world_model_->footprintCost(p, oriented_footprint, 5.0, 5.0);
+  //local_costmap_->getOrientedFootprint(oriented_footprint);
+  //const double c = world_model_->footprintCost(p, oriented_footprint, 5.0, 5.0);
+
+  unsigned int pose_map_idx_x, pose_map_idx_y;
+  costmap_2d::Costmap2D* costmap = local_costmap_->getCostmap();
+  costmap->worldToMap(p.x, p.y, pose_map_idx_x, pose_map_idx_y);
+  const double c = costmap->getCost(pose_map_idx_x, pose_map_idx_y);
   //double cost = local_costmap_->getCostmap()->getCost(pose.x, pose.y);
   //return cost < 0 ? 1e9 : cost;
+
   return c < 0 ? 1e9 : c;
 }
 
@@ -174,7 +180,8 @@ double StepBackAndMaxSteerRecovery::nonincreasingCostInterval (const gm::Pose2D&
     twist_foward.linear.x = twist.linear.x;
     current_tmp = forwardSimulate(current_tmp, twist_foward, simulation_inc_);
     const double next_cost = normalizedPoseCost(current_tmp);
-    if (next_cost > cost) {
+    //if (next_cost > cost) {
+    if (next_cost > 250) {
       ROS_INFO_NAMED ("top", "fowardsim");
       ROS_INFO_NAMED ("top", "cost = %.2f, next_cost = %.2f", cost, next_cost);
       ROS_INFO_NAMED ("top", "twist.linear.x = %.2f, twist.angular.z = %.2f", twist_foward.linear.x, twist_foward.angular.z);
