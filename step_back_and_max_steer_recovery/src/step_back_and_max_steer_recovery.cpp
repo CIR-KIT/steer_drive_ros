@@ -154,23 +154,11 @@ double StepBackAndMaxSteerRecovery::normalizedPoseCost (const gm::Pose2D& pose) 
 double StepBackAndMaxSteerRecovery::nonincreasingCostInterval (const gm::Pose2D& current, const gm::Twist& twist) const
 {
   double cost = 0;
-  /*
-  unsigned int pose_map_idx_x, pose_map_idx_y;
-  costmap_2d::Costmap2D* costmap = local_costmap_->getCostmap();
-  costmap->worldToMap(current.x, current.y, pose_map_idx_x, pose_map_idx_y);
-  cost = costmap->getCost(pose_map_idx_x, pose_map_idx_y);
-  */
   cost = normalizedPoseCost(current);
-  //double cost = normalizedPoseCost(current);
   double t; // Will hold the first time that is invalid
   gm::Pose2D current_tmp = current;
    double next_cost;
   for (t=simulation_inc_; t<=duration_ + 1000; t+=simulation_inc_) {
-    /*
-    current_tmp = forwardSimulate(current_tmp, twist, simulation_inc_);
-    const double next_cost = normalizedPoseCost(current_tmp);
-    */
-
     current_tmp = forwardSimulate(current, twist, t);
     next_cost = normalizedPoseCost(current_tmp);
     //next_cost = normalizedPoseCost(forwardSimulate(current_tmp, twist, t));
@@ -182,37 +170,13 @@ double StepBackAndMaxSteerRecovery::nonincreasingCostInterval (const gm::Pose2D&
     }
     cost = next_cost;
   }
-
-  ROS_INFO_NAMED ("top", " ");
-  ROS_INFO_NAMED ("top", "cost = %.2f, next_cost = %.2f", cost, next_cost);
-  ROS_INFO_NAMED ("top", "twist.linear.x = %.2f, twist.angular.z = %.2f", twist.linear.x, twist.angular.z);
-  ROS_INFO_NAMED ("top", "init = (%.2f, %.2f, %.2f), current = (%.2f, %.2f, %.2f)",
+  ROS_DEBUG_NAMED ("top", " ");
+  ROS_DEBUG_NAMED ("top", "cost = %.2f, next_cost = %.2f", cost, next_cost);
+  ROS_DEBUG_NAMED ("top", "twist.linear.x = %.2f, twist.angular.z = %.2f", twist.linear.x, twist.angular.z);
+  ROS_DEBUG_NAMED ("top", "init = (%.2f, %.2f, %.2f), current = (%.2f, %.2f, %.2f)",
                   current.x, current.y, current.theta, current_tmp.x, current_tmp.y, current_tmp.theta);
-  ROS_INFO_NAMED ("top", "time = %.2f", t);
-  /*
-  ROS_INFO_NAMED ("top", " ");
-  ROS_INFO_NAMED ("top", "twist.linear.x = %.2f, twist.angular.z = %.2f", twist.linear.x, twist.angular.z);
-  ROS_INFO_NAMED ("top", "init = (%.2f, %.2f), current = (%.2f, %.2f)", current.x, current.y, current_tmp.x, current_tmp.y);
+  ROS_DEBUG_NAMED ("top", "time = %.2f", t);
 
-  for (double t2=simulation_inc_; t2<=200.0; t2+=simulation_inc_) {
-    gm::Twist twist_foward;
-    twist_foward.linear.x = twist.linear.x;
-    current_tmp = forwardSimulate(current_tmp, twist_foward, simulation_inc_);
-    const double next_cost = normalizedPoseCost(current_tmp);
-    //if (next_cost > cost) {
-    if (next_cost == costmap_2d::INSCRIBED_INFLATED_OBSTACLE || next_cost == costmap_2d::LETHAL_OBSTACLE) {
-      ROS_INFO_NAMED ("top", "fowardsim");
-      ROS_INFO_NAMED ("top", "cost = %.2f, next_cost = %.2f", cost, next_cost);
-      ROS_INFO_NAMED ("top", "twist.linear.x = %.2f, twist.angular.z = %.2f", twist_foward.linear.x, twist_foward.angular.z);
-      ROS_INFO_NAMED ("top", "init = (%.2f, %.2f), current = (%.2f, %.2f)", current.x, current.y, current_tmp.x, current_tmp.y);
-      ROS_INFO_NAMED ("top", "time = %.2f", t2);
-      ROS_DEBUG_STREAM_NAMED ("cost", "Cost at " << t2 << " and pose " << forwardSimulate(current, twist_foward, t2)
-                              << " is " << next_cost << " which is greater than previous cost " << cost);
-      break;
-    }
-    cost = next_cost;
-  }
-  */
   return t-simulation_inc_;
 }
 
@@ -256,137 +220,167 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
 {
   ROS_ASSERT (initialized_);
 
-  // Figure out how long we can safely run the behavior
-  const gm::Pose2D& current = getCurrentLocalPose();
-  //local_costmap_->getCostmapCopy(costmap_); // This affects world_model_, which is used in the next step
-  // this should be affected automatically
+  int cnt = 0;
+  while(true)
+  {
+      cnt++;
+      // Figure out how long we can safely run the behavior
+      const gm::Pose2D& current = getCurrentLocalPose();
+      //local_costmap_->getCostmapCopy(costmap_); // This affects world_model_, which is used in the next step
+      // this should be affected automatically
 
-  base_frame_twist_.angular.z = 0.0;
-  const double d = nonincreasingCostInterval(current, base_frame_twist_);
-  ros::Rate r(controller_frequency_);
-  ROS_INFO_NAMED ("top", "Applying (%.2f, %.2f, %.2f) for %.2f seconds", base_frame_twist_.linear.x,
-                   base_frame_twist_.linear.y, base_frame_twist_.angular.z, d);
+      base_frame_twist_.angular.z = 0.0;
+      double d = nonincreasingCostInterval(current, base_frame_twist_);
+      ros::Rate r(controller_frequency_);
+      ROS_INFO_NAMED ("top", "Applying (%.2f, %.2f, %.2f) for %.2f seconds", base_frame_twist_.linear.x,
+                      base_frame_twist_.linear.y, base_frame_twist_.angular.z, d);
 
-  const double back_time = 3.0;
-  for (double t=0; t<back_time; t+=1/controller_frequency_) {
-    pub_.publish(scaleGivenAccelerationLimits(base_frame_twist_, back_time-t));
-    r.sleep();
+      const double back_time = 3.0;
+      for (double t=0; t<back_time; t+=1/controller_frequency_) {
+          pub_.publish(scaleGivenAccelerationLimits(base_frame_twist_, back_time-t));
+          r.sleep();
+      }
+
+      gm::Twist twist_stop;
+      pub_.publish(twist_stop);
+      ROS_INFO_NAMED ("top", "stop");
+      for(int i = 0; i < 50; i++)
+          r.sleep();
+
+      const gm::Pose2D& current2 = getCurrentLocalPose();
+
+      gm::Twist twist_f, twist_l, twist_r;
+      twist_f.linear.x = -0.3;
+      const double d_f = nonincreasingCostInterval(current2, twist_f);
+      ROS_INFO_NAMED ("top", "forward (%.2f, %.2f, %.2f) for %.2f seconds",
+                      twist_f.linear.x, twist_f.linear.y, twist_f.angular.z, d_f);
+      double d_l;
+      gm::Twist twist;
+      twist.linear.x = 0.3;
+      vector<double> times_until_obstacle_r;
+      vector<double> times_until_obstacle_l;
+      double max = 1.0;
+      double min = - max;
+      for(double angle = min; angle < max; angle+=0.1)
+      {
+          //if (angle == 0.0)
+          //    continue;
+
+          twist.angular.z = angle;
+          double time_until_obstacle = nonincreasingCostInterval(current2, twist);
+          ROS_INFO_NAMED ("top", "(%.2f, %.2f, %.2f) for %.2f seconds",
+                          twist.linear.x, twist.linear.y, twist.angular.z, time_until_obstacle);
+
+          if (time_until_obstacle > 50)
+              time_until_obstacle = 50;
+
+          if(angle > 0.0)
+              times_until_obstacle_l.push_back(time_until_obstacle);
+          else if(angle < 0.0)
+              times_until_obstacle_r.push_back(time_until_obstacle);
+          else
+              ;// do nothing
+      }
+
+      double sum_l = 0.0;
+      double sum_r = 0.0;
+      double ave_l = 0.0;
+      double ave_r = 0.0;
+      for(int i = 0; i < times_until_obstacle_l.size(); i++)
+          sum_l += times_until_obstacle_l[i];
+      for(int i = 0; i < times_until_obstacle_r.size(); i++)
+          sum_r += times_until_obstacle_r[i];
+      ave_l = sum_l / times_until_obstacle_l.size();
+      ave_r = sum_r / times_until_obstacle_r.size();
+      ROS_INFO_NAMED ("top", "sum_l = %.2f, sum_r = %.2f", sum_l, sum_r);
+      ROS_INFO_NAMED ("top", "size_l = %d, size_r = %d", times_until_obstacle_l.size(), times_until_obstacle_r.size());
+      ROS_INFO_NAMED ("top", "ave_l = %.2f, ave_r = %.2f", ave_l, ave_r);
+
+      double min_l = *min_element(times_until_obstacle_l.begin(), times_until_obstacle_l.end());
+      double min_r = *min_element(times_until_obstacle_r.begin(), times_until_obstacle_r.end());
+      ROS_INFO_NAMED ("top", "min_l = %.2f, min_r = %.2f", min_l, min_r);
+
+      twist.linear.x = 0.3;
+      double z = 0.0;
+      //if(ave_l > ave_r)
+      if(min_l > min_r)
+          z = 0.5;
+      else
+          z = -0.5;
+
+      twist.angular.z = z;
+      d = 2.0;
+      for (double t=0; t<d; t+=1/controller_frequency_) {
+          pub_.publish(scaleGivenAccelerationLimits(twist, d-t));
+          r.sleep();
+      }
+
+      d = 2.0;
+      twist.linear.x = 0.3;
+      twist.angular.z = 0.0;
+      for (double t=0; t<d; t+=1/controller_frequency_) {
+          pub_.publish(scaleGivenAccelerationLimits(twist, d-t));
+          r.sleep();
+      }
+
+      /*
+      pub_.publish(twist_stop);
+      ROS_INFO_NAMED ("top", "stop");
+      for(int i = 0; i < 20; i++)
+          r.sleep();
+  */
+
+      twist.linear.x = 0.3;
+      twist.angular.z = -z;
+      d = 2.0;
+      for (double t=0; t<d; t+=1/controller_frequency_) {
+          pub_.publish(scaleGivenAccelerationLimits(twist, d-t));
+          r.sleep();
+      }
+
+      d = 1.0;
+      twist.linear.x = 0.0;
+      twist.angular.z = 0.0;
+      for (double t=0; t<d; t+=1/controller_frequency_) {
+          pub_.publish(scaleGivenAccelerationLimits(twist, d-t));
+          r.sleep();
+      }
+
+      if(cnt == 5)
+      {
+          ROS_INFO_NAMED ("top", "break after %d times recovery", cnt);
+          break;
+      }
+
+      const  gm::Pose2D& current3 = getCurrentLocalPose();
+      //max = 0.05;
+      max = 0.1;
+      min = -max;
+      double max_time = 0;
+      for(double angle = min; angle < max; angle+=0.01)
+      {
+          twist.linear.x = 3.0;
+          twist.angular.z = angle;
+          double time_until_obstacle = nonincreasingCostInterval(current3, twist);
+          if(time_until_obstacle > max_time)
+              max_time = time_until_obstacle;
+      }
+      ROS_INFO_NAMED ("top", "max_time = %.2f", max_time);
+
+
+      if(max_time < 50)
+      {
+          ROS_INFO_NAMED ("top", "continue at (%.2f, %.2f, %.2f) for %.2f seconds",
+                          twist.linear.x, twist.linear.y, twist.angular.z, max_time);
+          continue;
+      }
+      else
+      {
+          ROS_INFO_NAMED ("top", "break at (%.2f, %.2f, %.2f) for %.2f seconds",
+                          twist.linear.x, twist.linear.y, twist.angular.z, max_time);
+          break;
+      }
   }
-
-  gm::Twist twist_stop;
-  pub_.publish(twist_stop);
-  ROS_INFO_NAMED ("top", "stop");
-  for(int i = 0; i < 50; i++)
-    r.sleep();
-
-  const gm::Pose2D& current2 = getCurrentLocalPose();
-
-  gm::Twist twist_f, twist_l, twist_r;
-  twist_f.linear.x = -0.3;
-  const double d_f = nonincreasingCostInterval(current2, twist_f);
-  ROS_INFO_NAMED ("top", "forward (%.2f, %.2f, %.2f) for %.2f seconds",
-                  twist_f.linear.x, twist_f.linear.y, twist_f.angular.z, d_f);
-  double d_l;
-  twist_l.linear.x = 0.3;
-  twist_l.angular.z = 0.05;
-  d_l = nonincreasingCostInterval(current2, twist_l);
-  ROS_INFO_NAMED ("top", "left (%.2f, %.2f, %.2f) for %.2f seconds",
-                  twist_l.linear.x, twist_l.linear.y, twist_l.angular.z, d_l);
-  twist_l.angular.z = 0.1;
-  d_l = nonincreasingCostInterval(current2, twist_l);
-  ROS_INFO_NAMED ("top", "left (%.2f, %.2f, %.2f) for %.2f seconds",
-                  twist_l.linear.x, twist_l.linear.y, twist_l.angular.z, d_l);
-  twist_l.angular.z = 0.15;
-  d_l = nonincreasingCostInterval(current2, twist_l);
-  ROS_INFO_NAMED ("top", "right (%.2f, %.2f, %.2f) for %.2f seconds",
-                  twist_l.linear.x, twist_l.linear.y, twist_l.angular.z, d_l);
-  twist_l.angular.z = 0.2;
-  d_l = nonincreasingCostInterval(current2, twist_l);
-  ROS_INFO_NAMED ("top", "left (%.2f, %.2f, %.2f) for %.2f seconds",
-                  twist_l.linear.x, twist_l.linear.y, twist_l.angular.z, d_l);
-  twist_l.angular.z = 0.3;
-  d_l = nonincreasingCostInterval(current2, twist_l);
-  ROS_INFO_NAMED ("top", "left (%.2f, %.2f, %.2f) for %.2f seconds",
-                  twist_l.linear.x, twist_l.linear.y, twist_l.angular.z, d_l);
-  twist_l.angular.z = 0.4;
-  d_l = nonincreasingCostInterval(current2, twist_l);
-  ROS_INFO_NAMED ("top", "left (%.2f, %.2f, %.2f) for %.2f seconds",
-                  twist_l.linear.x, twist_l.linear.y, twist_l.angular.z, d_l);
-  twist_l.angular.z = 0.5;
-  d_l = nonincreasingCostInterval(current2, twist_l);
-  ROS_INFO_NAMED ("top", "left (%.2f, %.2f, %.2f) for %.2f seconds",
-                  twist_l.linear.x, twist_l.linear.y, twist_l.angular.z, d_l);
-
-  double d_r;
-  twist_r.linear.x = 0.3;
-  twist_r.angular.z = -0.05;
-  d_r = nonincreasingCostInterval(current2, twist_r);
-  ROS_INFO_NAMED ("top", "right (%.2f, %.2f, %.2f) for %.2f seconds",
-                  twist_r.linear.x, twist_r.linear.y, twist_r.angular.z, d_r);
-  twist_r.angular.z = -0.1;
-  d_r = nonincreasingCostInterval(current2, twist_r);
-  ROS_INFO_NAMED ("top", "right (%.2f, %.2f, %.2f) for %.2f seconds",
-                  twist_r.linear.x, twist_r.linear.y, twist_r.angular.z, d_r);
-  twist_r.angular.z = -0.15;
-  d_r = nonincreasingCostInterval(current2, twist_r);
-  ROS_INFO_NAMED ("top", "right (%.2f, %.2f, %.2f) for %.2f seconds",
-                  twist_r.linear.x, twist_r.linear.y, twist_r.angular.z, d_r);
-  twist_l.angular.z = -0.2;
-  d_l = nonincreasingCostInterval(current2, twist_l);
-  ROS_INFO_NAMED ("top", "right (%.2f, %.2f, %.2f) for %.2f seconds",
-                  twist_l.linear.x, twist_l.linear.y, twist_l.angular.z, d_l);
-  twist_r.angular.z = -0.3;
-  d_r = nonincreasingCostInterval(current2, twist_r);
-  ROS_INFO_NAMED ("top", "right (%.2f, %.2f, %.2f) for %.2f seconds",
-                  twist_r.linear.x, twist_r.linear.y, twist_r.angular.z, d_r);
-  twist_l.angular.z = -0.4;
-  d_l = nonincreasingCostInterval(current2, twist_l);
-  ROS_INFO_NAMED ("top", "right (%.2f, %.2f, %.2f) for %.2f seconds",
-                  twist_l.linear.x, twist_l.linear.y, twist_l.angular.z, d_l);
-  twist_r.angular.z = -0.5;
-  d_r = nonincreasingCostInterval(current2, twist_r);
-  ROS_INFO_NAMED ("top", "right (%.2f, %.2f, %.2f) for %.2f seconds",
-                  twist_r.linear.x, twist_r.linear.y, twist_r.angular.z, d_r);
-  gm::Twist twist;
-  twist.linear.x = 0.3;
-  /*
-  twist.angular.z = 0.2;
-
-  for (double t=0; t<d; t+=1/controller_frequency_) {
-    pub_.publish(scaleGivenAccelerationLimits(twist, d-t));
-    r.sleep();
-  }
-
-  pub_.publish(twist_stop);
-  ROS_INFO_NAMED ("top", "stop");
-  for(int i = 0; i < 50; i++)
-    r.sleep();
-    */
-
-  twist.angular.z = 0.0;
-  for (double t=0; t<4; t+=1/controller_frequency_) {
-    pub_.publish(scaleGivenAccelerationLimits(twist, d-t));
-    r.sleep();
-  }
-
-  pub_.publish(twist_stop);
-  ROS_INFO_NAMED ("top", "stop");
-  for(int i = 0; i < 50; i++)
-    r.sleep();
-
-  /*
-  // We'll now apply this twist open-loop for d seconds (scaled so we can guarantee stopping at the end)
-  for (double t=0; t<d; t+=1/controller_frequency_) {
-    pub_.publish(scaleGivenAccelerationLimits(base_frame_twist_, d-t));
-    r.sleep();
-  }
-
-  pub_.publish(twist_stop);
-  ROS_INFO_NAMED ("top", "stop");
-  for(int i = 0; i < 50; i++)
-    r.sleep();
-    */
-
 }
 
 
