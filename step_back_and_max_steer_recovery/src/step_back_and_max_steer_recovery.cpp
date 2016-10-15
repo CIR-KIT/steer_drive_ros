@@ -99,6 +99,7 @@ void StepBackAndMaxSteerRecovery::initialize (std::string name, tf::TransformLis
   private_nh.param("controller_frequency", controller_frequency_, 20.0);
   private_nh.param("simulation_inc", simulation_inc_, 1/controller_frequency_);
 
+  private_nh.param("trial_times", trial_times_, 2);
   // back
   private_nh.param("linear_vel_back", linear_vel_back_, -0.3);
   private_nh.param("duration_back", duration_back_, 3.0);
@@ -114,6 +115,7 @@ void StepBackAndMaxSteerRecovery::initialize (std::string name, tf::TransformLis
   ROS_INFO_STREAM_NAMED ("top", "Initialized twist recovery with twist " <<
                           base_frame_twist_ << " and duration " << duration_);
   */
+  ROS_INFO_NAMED ("top", "Initialized with trial_times = %d", trial_times_);
   ROS_INFO_NAMED ("top", "Initialized with linear_vel_back = %.2f, duration_back = %.2f",
                   linear_vel_back_, duration_back_);
   ROS_INFO_NAMED ("top", "Initialized with linear_vel_steer = %.2f, angular_vel_steer = %.2f, duration_steer = %.2f",
@@ -343,7 +345,14 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
       twist.angular.z = z;
       d = duration_steer_;
       for (double t=0; t<d; t+=1/controller_frequency_) {
-          pub_.publish(scaleGivenAccelerationLimits(twist, d-t));
+          // TODO: obstacle detect and stop required
+          const gm::Pose2D& current_tmp = getCurrentLocalPose();
+          double time_until_obstacle = nonincreasingCostInterval(current_tmp, twist);
+          if(time_until_obstacle < 1.0)
+            pub_.publish(scaleGivenAccelerationLimits(twist_stop, d-t));
+          else
+            pub_.publish(scaleGivenAccelerationLimits(twist, d-t));
+
           r.sleep();
       }
 
@@ -351,7 +360,14 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
       twist.angular.z = 0.0;
       d = duration_forward_;
       for (double t=0; t<d; t+=1/controller_frequency_) {
-          pub_.publish(scaleGivenAccelerationLimits(twist, d-t));
+          // TODO: obstacle detect and stop required
+          const gm::Pose2D& current_tmp = getCurrentLocalPose();
+          double time_until_obstacle = nonincreasingCostInterval(current_tmp, twist);
+          if(time_until_obstacle < 1.0)
+            pub_.publish(scaleGivenAccelerationLimits(twist_stop, d-t));
+          else
+            pub_.publish(scaleGivenAccelerationLimits(twist, d-t));
+
           r.sleep();
       }
 
@@ -359,7 +375,14 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
       twist.angular.z = -z;
       d = duration_steer_;
       for (double t=0; t<d; t+=1/controller_frequency_) {
-          pub_.publish(scaleGivenAccelerationLimits(twist, d-t));
+          // TODO: obstacle detect and stop required
+          const gm::Pose2D& current_tmp = getCurrentLocalPose();
+          double time_until_obstacle = nonincreasingCostInterval(current_tmp, twist);
+          if(time_until_obstacle < 1.0)
+            pub_.publish(scaleGivenAccelerationLimits(twist_stop, d-t));
+          else
+            pub_.publish(scaleGivenAccelerationLimits(twist, d-t));
+
           r.sleep();
       }
 

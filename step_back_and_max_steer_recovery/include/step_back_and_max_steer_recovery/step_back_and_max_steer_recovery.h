@@ -97,6 +97,7 @@ private:
   double controller_frequency_;
   double simulation_inc_;
   
+  int trial_times_;
   //-- back
   double linear_vel_back_;
   double duration_back_;
