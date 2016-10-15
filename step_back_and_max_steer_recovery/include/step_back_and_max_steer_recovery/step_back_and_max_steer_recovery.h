@@ -97,7 +97,17 @@ private:
   double controller_frequency_;
   double simulation_inc_;
   
-  
+  //-- back
+  double linear_vel_back_;
+  double duration_back_;
+  //-- steer
+  double linear_vel_steer_;
+  double angular_vel_steer_;
+  double duration_steer_;
+  //-- forward
+  double linear_vel_forward_;
+  double duration_forward_;
+
 };
 
 } // namespace step_back_and_max_steer_recovery

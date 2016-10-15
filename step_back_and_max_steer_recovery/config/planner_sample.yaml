@@ -1,0 +1,11 @@
+step_back_and_max_steer_recovery:
+    # back
+    linear_vel_back     : -0.3
+    duration_back       : 3.0
+    # steer
+    linear_vel_steer   : 0.3
+    angular_vel_steer  : 0.5
+    duration_steer     : 2.0
+    # forward
+    linear_vel_forward   : 0.3
+    duration_forward     : 3.0
