@@ -13,6 +13,13 @@
 - navigation の `planner.yaml`(NavfanROSやTrajectoryPlannerROSの設定が入っているファイル)に，以下のパラメータを追加する．
 
 ``` yaml:
+recovery_behaviour_enabled: true
+
+recovery_behaviors:
+  - {name: conservative_reset, type: clear_costmap_recovery/ClearCostmapRecovery}
+  - {name: step_back_and_max_steer_recovery, type: step_back_and_max_steer_recovery/StepBackAndMaxSteerRecovery}
+  - {name: aggressive_reset, type: clear_costmap_recovery/ClearCostmapRecovery}
+  
 step_back_and_max_steer_recovery:
     # リカバリ行動の試行回数
     trial_times         : 3
