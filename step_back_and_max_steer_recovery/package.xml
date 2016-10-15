@@ -7,9 +7,8 @@
         proceed with max steer angle
 
     </description>
-    <author>Masaru Morita</author>
-    <author>p595201m@mail.kyutech.jp</author>
     <maintainer email="p595201m@mail.kyutech.jp">Masaru Morita</maintainer>
+    <author email="p595201m@mail.kyutech.jp">Masaru Morita</author>
 
     <license>BSD</license>
     <url>http://wiki.ros.org/TODO</url>
