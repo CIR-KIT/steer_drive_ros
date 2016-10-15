@@ -49,7 +49,7 @@ step_back_and_max_steer_recovery:
 
 - パラメータサーバに次のように登録されていればOK
 ```bash
-rosparam list | step_back_and_max_steer_recovery
+rosparam list | grep step_back_and_max_steer_recovery
 /move_base/step_back_and_max_steer_recovery/angular_vel_steer
 /move_base/step_back_and_max_steer_recovery/duration_back
 /move_base/step_back_and_max_steer_recovery/duration_forward
