@@ -47,6 +47,18 @@ step_back_and_max_steer_recovery:
 
 ```
 
+- パラメータサーバに次のように登録されていればOK
+```bash
+rosparam list | step_back_and_max_steer_recovery
+/move_base/step_back_and_max_steer_recovery/angular_vel_steer
+/move_base/step_back_and_max_steer_recovery/duration_back
+/move_base/step_back_and_max_steer_recovery/duration_forward
+/move_base/step_back_and_max_steer_recovery/duration_steer
+/move_base/step_back_and_max_steer_recovery/linear_vel_back
+/move_base/step_back_and_max_steer_recovery/linear_vel_forward
+/move_base/step_back_and_max_steer_recovery/linear_vel_steer
+```
+
 - リカバリ行動に入ったら以下のようなメッセージが出る．
 ```bash
 [ INFO] [1476491565.790291005, 1677.830000000]: *****************************************************
