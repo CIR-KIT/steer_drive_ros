@@ -11,7 +11,7 @@
     <author email="p595201m@mail.kyutech.jp">Masaru Morita</author>
 
     <license>BSD</license>
-    <url>http://wiki.ros.org/TODO</url>
+    <url>https://github.com/CIR-KIT/third_robot_pkg</url>
 
     <buildtool_depend>catkin</buildtool_depend>
 
