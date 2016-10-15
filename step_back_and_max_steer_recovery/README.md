@@ -10,6 +10,8 @@
 
 ## 使い方
 ### 事前設定
+- まずは`catkin_make`する．
+
 - navigation の `planner.yaml`(NavfanROSやTrajectoryPlannerROSの設定が入っているファイル)に，以下のパラメータを追加する．
 
 ``` yaml:
