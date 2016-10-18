@@ -99,7 +99,9 @@ void StepBackAndMaxSteerRecovery::initialize (std::string name, tf::TransformLis
   private_nh.param("controller_frequency", controller_frequency_, 20.0);
   private_nh.param("simulation_inc", simulation_inc_, 1/controller_frequency_);
 
-  private_nh.param("trial_times", trial_times_, 2);
+  private_nh.param("global_frame", global_frame_, std::string("/odom"));
+  private_nh.param("robot_base_frame", robot_base_frame_, std::string("/base_link"));
+  private_nh.param("only_single_steering", only_single_steering_, true);
   // back
   private_nh.param("linear_vel_back", linear_vel_back_, -0.3);
   private_nh.param("duration_back", duration_back_, 3.0);
@@ -115,7 +117,10 @@ void StepBackAndMaxSteerRecovery::initialize (std::string name, tf::TransformLis
   ROS_INFO_STREAM_NAMED ("top", "Initialized twist recovery with twist " <<
                           base_frame_twist_ << " and duration " << duration_);
   */
+
+  ROS_INFO_NAMED ("top", "Initialized with global_frame = %s, robot_base_frame = %s", global_frame_.c_str(), robot_base_frame_.c_str());
   ROS_INFO_NAMED ("top", "Initialized with trial_times = %d", trial_times_);
+  ROS_INFO_NAMED ("top", "Initialized with only_single_steering = %s", (only_single_steering_ ? "true" : "false"));
   ROS_INFO_NAMED ("top", "Initialized with linear_vel_back = %.2f, duration_back = %.2f",
                   linear_vel_back_, duration_back_);
   ROS_INFO_NAMED ("top", "Initialized with linear_vel_steer = %.2f, angular_vel_steer = %.2f, duration_steer = %.2f",
@@ -235,6 +240,86 @@ gm::Pose2D StepBackAndMaxSteerRecovery::getCurrentLocalPose () const
   return pose;
 }
 
+void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, const double duaration) const
+{
+    ros::Rate r(controller_frequency_);
+
+    gm::Twist twist_stop;
+    twist_stop.linear.x = 0.0;
+    twist_stop.linear.y = 0.0;
+    twist_stop.linear.z = 0.0;
+    twist_stop.angular.x = 0.0;
+    twist_stop.angular.y = 0.0;
+    twist_stop.angular.z = 0.0;
+
+    for (double t=0; t<duaration; t+=1/controller_frequency_) {
+        // TODO: obstacle detect and stop required
+        const gm::Pose2D& current_tmp = getCurrentLocalPose();
+        double time_until_obstacle = nonincreasingCostInterval(current_tmp, twist);
+        if(time_until_obstacle < 1.0)
+            pub_.publish(scaleGivenAccelerationLimits(twist_stop, duaration-t));
+        else
+            pub_.publish(scaleGivenAccelerationLimits(twist, duaration-t));
+
+        r.sleep();
+    }
+
+    return;
+}
+
+double StepBackAndMaxSteerRecovery::getTranslation(double x0, double y0) const
+{
+    /*
+    tf::StampedTransform transform;
+    tf_->lookupTransform(global_frame_, robot_base_frame_,ros::Time(0), transform);
+    geometry_msgs::TransformStamped msg;
+    tf::transformStampedTFToMsg(transform, msg);
+    double translation = (msg.transform.translation.x -x0)*(msg.transform.translation.x -x0) + (msg.transform.translation.y -y0)*(msg.transform.translation.y -y0);
+    */
+    const gm::Pose2D currentPos = getCurrentLocalPose();
+    double translation = (currentPos.x -x0)*(currentPos.x -x0) + (currentPos.y -y0)*(currentPos.y -y0);
+    translation = sqrt(translation);
+    return translation;
+}
+
+gm::Pose2D StepBackAndMaxSteerRecovery::getCurrentTFPos() const
+{
+    tf::StampedTransform transform;
+    tf_->lookupTransform(global_frame_, robot_base_frame_, ros::Time(0), transform);
+    geometry_msgs::TransformStamped msg;
+    tf::transformStampedTFToMsg(transform, msg);
+
+    gm::Pose2D currentPos;
+    currentPos.x = msg.transform.translation.x;
+    currentPos.y = msg.transform.translation.y;
+
+    return currentPos;
+}
+
+double StepBackAndMaxSteerRecovery::getCurrentDiff(const gm::Pose2D initialPose)
+{
+
+    const gm::Pose2D& currentPose = getCurrentLocalPose();
+    ROS_DEBUG_NAMED ("top", "current pose (%.2f, %.2f, %.2f)", currentPose.x,
+                       currentPose.y, currentPose.theta);
+
+    double current_diff = (currentPose.x - initialPose.x)*(currentPose.x - initialPose.x) +
+                       (currentPose.y - initialPose.y)*(currentPose.y - initialPose.y);
+
+    current_diff = sqrt(current_diff);
+    ROS_DEBUG_NAMED ("top", "current_diff = %.2f", current_diff);
+
+    return current_diff;
+}
+
+double StepBackAndMaxSteerRecovery::getCurrentDistDiff( const gm::Pose2D initialPose, const double dist_length)
+{
+    double dist_diff = dist_length - getCurrentDiff(initialPose);
+    ROS_DEBUG_NAMED ("top", "dist_diff = %.2f", dist_diff);
+
+    return dist_diff;
+}
+
 void StepBackAndMaxSteerRecovery::runBehavior ()
 {
   ROS_ASSERT (initialized_);
@@ -248,23 +333,37 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
   {
       cnt++;
       // Figure out how long we can safely run the behavior
-      const gm::Pose2D& current = getCurrentLocalPose();
+      const gm::Pose2D& initialPose = getCurrentLocalPose();
       //local_costmap_->getCostmapCopy(costmap_); // This affects world_model_, which is used in the next step
       // this should be affected automatically
 
       // step back
       base_frame_twist_.linear.x = linear_vel_back_;
       base_frame_twist_.angular.z = 0.0;
-      double d = nonincreasingCostInterval(current, base_frame_twist_);
+      double d = nonincreasingCostInterval(initialPose, base_frame_twist_);
+      ROS_DEBUG_NAMED ("top", "initial pose (%.2f, %.2f, %.2f)", initialPose.x,
+                       initialPose.y, initialPose.theta);
       ros::Rate r(controller_frequency_);
       ROS_DEBUG_NAMED ("top", "Applying (%.2f, %.2f, %.2f) for %.2f seconds", base_frame_twist_.linear.x,
                        base_frame_twist_.linear.y, base_frame_twist_.angular.z, d);
-
+/*
       for (double t=0; t<duration_back_; t+=1/controller_frequency_) {
           // TODO: handle rear lrf value here
           pub_.publish(scaleGivenAccelerationLimits(base_frame_twist_, duration_back_-t));
           r.sleep();
       }
+      */
+
+      //const gm::Pose2D& currentPose = getCurrentLocalPose();
+      while (double dist_diff = getCurrentDistDiff(initialPose, 1.0) > 0.01)
+      {
+          double remaining_time = dist_diff / base_frame_twist_.linear.x;
+          pub_.publish(scaleGivenAccelerationLimits(base_frame_twist_, remaining_time));
+          r.sleep();
+      }
+
+      double final_diff = getCurrentDiff(initialPose);
+      ROS_DEBUG_NAMED ("top", "final_diff = %.2f",final_diff);
 
       // temporary stopj
       gm::Twist twist_stop;
@@ -341,49 +440,21 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
       //    z = -0.5;
 
       // clear way
+      //-- first steering
       twist.linear.x = linear_vel_steer_;
       twist.angular.z = z;
-      d = duration_steer_;
-      for (double t=0; t<d; t+=1/controller_frequency_) {
-          // TODO: obstacle detect and stop required
-          const gm::Pose2D& current_tmp = getCurrentLocalPose();
-          double time_until_obstacle = nonincreasingCostInterval(current_tmp, twist);
-          if(time_until_obstacle < 1.0)
-            pub_.publish(scaleGivenAccelerationLimits(twist_stop, d-t));
-          else
-            pub_.publish(scaleGivenAccelerationLimits(twist, d-t));
+      moveSpacifiedLength(twist, duration_steer_);
 
-          r.sleep();
-      }
+      if(only_single_steering_) {
+          //-- go straight
+          twist.linear.x = linear_vel_forward_;
+          twist.angular.z = 0.0;
+          moveSpacifiedLength(twist, duration_forward_);
 
-      twist.linear.x = linear_vel_forward_;
-      twist.angular.z = 0.0;
-      d = duration_forward_;
-      for (double t=0; t<d; t+=1/controller_frequency_) {
-          // TODO: obstacle detect and stop required
-          const gm::Pose2D& current_tmp = getCurrentLocalPose();
-          double time_until_obstacle = nonincreasingCostInterval(current_tmp, twist);
-          if(time_until_obstacle < 1.0)
-            pub_.publish(scaleGivenAccelerationLimits(twist_stop, d-t));
-          else
-            pub_.publish(scaleGivenAccelerationLimits(twist, d-t));
-
-          r.sleep();
-      }
-
-      twist.linear.x = linear_vel_steer_;
-      twist.angular.z = -z;
-      d = duration_steer_;
-      for (double t=0; t<d; t+=1/controller_frequency_) {
-          // TODO: obstacle detect and stop required
-          const gm::Pose2D& current_tmp = getCurrentLocalPose();
-          double time_until_obstacle = nonincreasingCostInterval(current_tmp, twist);
-          if(time_until_obstacle < 1.0)
-            pub_.publish(scaleGivenAccelerationLimits(twist_stop, d-t));
-          else
-            pub_.publish(scaleGivenAccelerationLimits(twist, d-t));
-
-          r.sleep();
+          //-- second steering
+          twist.linear.x = linear_vel_steer_;
+          twist.angular.z = -z;
+          moveSpacifiedLength(twist, duration_steer_);
       }
 
       // stop

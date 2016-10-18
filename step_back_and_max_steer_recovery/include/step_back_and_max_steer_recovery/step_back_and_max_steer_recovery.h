@@ -73,6 +73,11 @@ private:
   double nonincreasingCostInterval (const geometry_msgs::Pose2D& current, const geometry_msgs::Twist& twist) const;
   double normalizedPoseCost (const geometry_msgs::Pose2D& pose) const;
   geometry_msgs::Twist transformTwist (const geometry_msgs::Pose2D& pose) const;
+  void moveSpacifiedLength (const geometry_msgs::Twist twist, const double duaration) const;
+  double getTranslation(double x0, double y0) const;
+  geometry_msgs::Pose2D getCurrentTFPos() const;
+  double getCurrentDiff(const geometry_msgs::Pose2D initialPose);
+  double getCurrentDistDiff(const geometry_msgs::Pose2D initialPose, const double dist_length);
 
   ros::NodeHandle nh_;
   costmap_2d::Costmap2DROS* global_costmap_;
@@ -96,8 +101,11 @@ private:
   double angular_acceleration_limit_;
   double controller_frequency_;
   double simulation_inc_;
-  
+
+  std::string global_frame_;
+  std::string robot_base_frame_;
   int trial_times_;
+  bool only_single_steering_;
   //-- back
   double linear_vel_back_;
   double duration_back_;
