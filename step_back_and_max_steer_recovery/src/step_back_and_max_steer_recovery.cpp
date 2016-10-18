@@ -31,7 +31,7 @@
 /**
  * \file 
  * 
- * \author Bhaskara Marthi
+ * \author Masaru Morita
  * 
  */
 
@@ -188,8 +188,8 @@ double StepBackAndMaxSteerRecovery::nonincreasingCostInterval (const gm::Pose2D&
       ROS_DEBUG_NAMED ("top", "finish fowardSimulate");
       next_cost = normalizedPoseCost(current_tmp);
       ROS_DEBUG_NAMED ("top", "finish Cost");
-    if (next_cost > cost) {
-    //if (/*next_cost == costmap_2d::INSCRIBED_INFLATED_OBSTACLE ||*/ next_cost == costmap_2d::LETHAL_OBSTACLE) {
+    //if (next_cost > cost) {
+    if (/*next_cost == costmap_2d::INSCRIBED_INFLATED_OBSTACLE ||*/ next_cost == costmap_2d::LETHAL_OBSTACLE) {
       ROS_DEBUG_STREAM_NAMED ("cost", "Cost at " << t << " and pose " << forwardSimulate(current, twist, t)
                               << " is " << next_cost << " which is greater than previous cost " << cost);
       break;
@@ -358,11 +358,11 @@ double StepBackAndMaxSteerRecovery::getMinimalDistance(const COSTMAP_SEARCH_MODE
     case FORWARD_LEFT:
         twist.linear.x = linear_vel_forward_;
         max_angle = M_PI/3.0;
-        min_angle = 0.0;
+        min_angle = 0.3;
         break;
     case FORWARD_RIGHT:
         twist.linear.x = linear_vel_forward_;
-        max_angle = 0.0;
+        max_angle = -0.3;
         min_angle = -M_PI/3.0;
         break;
     case BACKWARD:
@@ -469,12 +469,13 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
       // Figure out how long we can safely run the behavior
       const gm::Pose2D& initialPose = getCurrentLocalPose();
 
-      // step back
+      // initial pose
       ROS_DEBUG_NAMED ("top", "initial pose (%.2f, %.2f, %.2f)", initialPose.x,
                        initialPose.y, initialPose.theta);
       ros::Rate r(controller_frequency_);
 
       // step back
+      base_frame_twist_.linear.x = linear_vel_back_;
       ROS_INFO_NAMED ("top", "attempting step back");
       moveSpacifiedLength(base_frame_twist_, step_back_length_, BACKWARD);
       ROS_INFO_NAMED ("top", "complete step back");
@@ -489,19 +490,21 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
       }
 
       int turn_dir = determineTurnDirection();
-      int costmap_search_mode;
+      int costmap_search_mode[2];
 
       double z;
       if(turn_dir == LEFT)
       {
           z = angular_speed_steer_;
-          costmap_search_mode = FORWARD_LEFT;
+          costmap_search_mode[0] = FORWARD_LEFT;
+          costmap_search_mode[1] = FORWARD_RIGHT;
           ROS_INFO_NAMED ("top", "attempting to turn left at the 1st turn");
       }
       else
       {
           z = -1 * angular_speed_steer_;
-          costmap_search_mode = FORWARD_RIGHT;
+          costmap_search_mode[0] = FORWARD_RIGHT;
+          costmap_search_mode[1] = FORWARD_LEFT;
           ROS_INFO_NAMED ("top", "attemping to turn right at the 1st turn");
       }
 
@@ -511,7 +514,7 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
       twist = TWIST_STOP;
       twist.linear.x = linear_vel_steer_;
       twist.angular.z = z;
-      moveSpacifiedLength(twist, turn_angle_, (COSTMAP_SEARCH_MODE)costmap_search_mode);
+      moveSpacifiedLength(twist, turn_angle_, (COSTMAP_SEARCH_MODE)costmap_search_mode[0]);
       ROS_INFO_NAMED ("top", "complete the 1st turn");
 
       if(!only_single_steering_) {
@@ -527,7 +530,7 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
           twist = TWIST_STOP;
           twist.linear.x = linear_vel_steer_;
           twist.angular.z = -z;
-          moveSpacifiedLength(twist, turn_angle_, (COSTMAP_SEARCH_MODE)costmap_search_mode);
+          moveSpacifiedLength(twist, turn_angle_, (COSTMAP_SEARCH_MODE)costmap_search_mode[1]);
           ROS_INFO_NAMED ("top", "complete second turn");
       }
 

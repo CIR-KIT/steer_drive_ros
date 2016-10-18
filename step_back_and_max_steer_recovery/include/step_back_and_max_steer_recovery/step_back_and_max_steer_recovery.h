@@ -31,9 +31,9 @@
 /**
  * \file 
  * 
- * Recovery behavior based on executing a particular twist
+ * Recovery behavior of step back and steer turning
  *
- * \author Bhaskara Marthi
+ * \author Masaru Morita
  */
 
 #ifndef STEP_BACK_AND_MAX_STEER_RECOVERY_H
