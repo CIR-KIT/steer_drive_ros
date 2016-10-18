@@ -267,6 +267,46 @@ void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, co
     return;
 }
 
+void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, const gm::Pose2D initialPose, double length)
+{
+    ros::Rate r(controller_frequency_);
+
+    gm::Twist twist_stop;
+    twist_stop.linear.x = 0.0;
+    twist_stop.linear.y = 0.0;
+    twist_stop.linear.z = 0.0;
+    twist_stop.angular.x = 0.0;
+    twist_stop.angular.y = 0.0;
+    twist_stop.angular.z = 0.0;
+
+    while (double dist_diff = getCurrentDistDiff(initialPose, length) > 0.01)
+    {
+        double remaining_time = dist_diff / base_frame_twist_.linear.x;
+        pub_.publish(scaleGivenAccelerationLimits(base_frame_twist_, remaining_time));
+        const gm::Pose2D& current_tmp = getCurrentLocalPose();
+
+        double time_until_obstacle = nonincreasingCostInterval(current_tmp, twist);
+        double dist_to_obstacle = abs(twist.linear.x * time_until_obstacle);
+
+        if(dist_to_obstacle < 0.5)
+        {
+            pub_.publish(scaleGivenAccelerationLimits(twist_stop, remaining_time));
+            ROS_WARN_NAMED ("top", "obstacle detected");
+            ROS_WARN_NAMED ("top", "time_until_obstacle = %f, dist_to_obstacle = %f", time_until_obstacle, dist_to_obstacle);
+            break;
+        }
+
+        pub_.publish(scaleGivenAccelerationLimits(twist, remaining_time));
+        ROS_INFO_NAMED ("top", "no obstacle");
+        ROS_INFO_NAMED ("top", "time_until_obstacle = %f, dist_to_obstacle = %f", time_until_obstacle, dist_to_obstacle);
+
+        r.sleep();
+    }
+
+    return;
+}
+
+
 double StepBackAndMaxSteerRecovery::getTranslation(double x0, double y0) const
 {
     /*
@@ -312,9 +352,9 @@ double StepBackAndMaxSteerRecovery::getCurrentDiff(const gm::Pose2D initialPose)
     return current_diff;
 }
 
-double StepBackAndMaxSteerRecovery::getCurrentDistDiff( const gm::Pose2D initialPose, const double dist_length)
+double StepBackAndMaxSteerRecovery::getCurrentDistDiff(const gm::Pose2D initialPose, const double dist_length)
 {
-    double dist_diff = dist_length - getCurrentDiff(initialPose);
+    const double dist_diff = dist_length - getCurrentDiff(initialPose);
     ROS_DEBUG_NAMED ("top", "dist_diff = %.2f", dist_diff);
 
     return dist_diff;
@@ -346,21 +386,20 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
       ros::Rate r(controller_frequency_);
       ROS_DEBUG_NAMED ("top", "Applying (%.2f, %.2f, %.2f) for %.2f seconds", base_frame_twist_.linear.x,
                        base_frame_twist_.linear.y, base_frame_twist_.angular.z, d);
-/*
-      for (double t=0; t<duration_back_; t+=1/controller_frequency_) {
-          // TODO: handle rear lrf value here
-          pub_.publish(scaleGivenAccelerationLimits(base_frame_twist_, duration_back_-t));
-          r.sleep();
-      }
-      */
 
-      //const gm::Pose2D& currentPose = getCurrentLocalPose();
+
+      // step back
+      double step_back_length = 2.0;
+
+      moveSpacifiedLength(base_frame_twist_, initialPose, step_back_length);
+     /*
       while (double dist_diff = getCurrentDistDiff(initialPose, 1.0) > 0.01)
       {
           double remaining_time = dist_diff / base_frame_twist_.linear.x;
           pub_.publish(scaleGivenAccelerationLimits(base_frame_twist_, remaining_time));
           r.sleep();
       }
+      */
 
       double final_diff = getCurrentDiff(initialPose);
       ROS_DEBUG_NAMED ("top", "final_diff = %.2f",final_diff);
@@ -464,7 +503,8 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
           r.sleep();
       }
 
-      if(cnt == 5)
+      //if(cnt == trial_times_)
+      if(cnt == 1000)
       {
           ROS_INFO_NAMED ("top", "break after %d times recovery", cnt);
           break;

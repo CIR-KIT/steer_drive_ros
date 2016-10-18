@@ -74,6 +74,7 @@ private:
   double normalizedPoseCost (const geometry_msgs::Pose2D& pose) const;
   geometry_msgs::Twist transformTwist (const geometry_msgs::Pose2D& pose) const;
   void moveSpacifiedLength (const geometry_msgs::Twist twist, const double duaration) const;
+  void moveSpacifiedLength (const geometry_msgs::Twist twist, const geometry_msgs::Pose2D initialPose, double length);
   double getTranslation(double x0, double y0) const;
   geometry_msgs::Pose2D getCurrentTFPos() const;
   double getCurrentDiff(const geometry_msgs::Pose2D initialPose);
