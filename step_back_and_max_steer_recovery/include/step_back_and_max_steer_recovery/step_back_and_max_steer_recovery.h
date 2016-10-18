@@ -75,10 +75,16 @@ public:
 private:
   enum COSTMAP_SEARCH_MODE
   {
-    FOWARD,
-    FOWARD_LEFT,
-    FOWARD_RIGHT,
+    FORWARD,
+    FORWARD_LEFT,
+    FORWARD_RIGHT,
     BACKWARD
+  };
+
+  enum TURN_DIRECTION
+  {
+    LEFT,
+    RIGHT,
   };
 
   gm::Twist TWIST_STOP;
@@ -89,12 +95,12 @@ private:
   double normalizedPoseCost (const gm::Pose2D& pose) const;
   gm::Twist transformTwist (const gm::Pose2D& pose) const;
   void moveSpacifiedLength (const gm::Twist twist, const double duaration) const;
-  void moveSpacifiedLength (const gm::Twist twist, const gm::Pose2D initialPose, double length, COSTMAP_SEARCH_MODE mode);
-  double getTranslation(double x0, double y0) const;
-  gm::Pose2D getCurrentTFPos() const;
-  double getCurrentDiff(const gm::Pose2D initialPose);
-  double getCurrentDistDiff(const gm::Pose2D initialPose, const double dist_length);
+  void moveSpacifiedLength (const gm::Twist twist, double length, COSTMAP_SEARCH_MODE mode = FORWARD);
+  double getCurrentDiff(const gm::Pose2D initialPose, COSTMAP_SEARCH_MODE mode = FORWARD);
+  double getCurrentDistDiff(const gm::Pose2D initialPose, const double distination, COSTMAP_SEARCH_MODE mode = FORWARD);
   double getMinimalDistance(const COSTMAP_SEARCH_MODE mode);
+  int determineTurnDirection();
+
 
   ros::NodeHandle nh_;
   costmap_2d::Costmap2DROS* global_costmap_;
@@ -119,20 +125,19 @@ private:
   double controller_frequency_;
   double simulation_inc_;
 
-  std::string global_frame_;
-  std::string robot_base_frame_;
-  int trial_times_;
   bool only_single_steering_;
+  int trial_times_;
+  double obstacle_patience_;
   //-- back
   double linear_vel_back_;
-  double duration_back_;
+  double step_back_length_;
   //-- steer
   double linear_vel_steer_;
   double angular_vel_steer_;
-  double duration_steer_;
+  double turn_angle_;
   //-- forward
   double linear_vel_forward_;
-  double duration_forward_;
+  double step_forward_length_;
 
 };
 
