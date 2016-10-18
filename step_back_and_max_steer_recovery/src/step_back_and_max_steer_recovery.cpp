@@ -43,18 +43,19 @@
 PLUGINLIB_DECLARE_CLASS(step_back_and_max_steer_recovery, StepBackAndMaxSteerRecovery, step_back_and_max_steer_recovery::StepBackAndMaxSteerRecovery,      
                         nav_core::RecoveryBehavior)
 
-namespace gm=geometry_msgs;
-namespace cmap=costmap_2d;
-namespace blp=base_local_planner;
-using std::vector;
-using std::max;
-
 namespace step_back_and_max_steer_recovery
 {
 
 StepBackAndMaxSteerRecovery::StepBackAndMaxSteerRecovery () :
   global_costmap_(NULL), local_costmap_(NULL), tf_(NULL), initialized_(false)
-{}
+{
+    TWIST_STOP.linear.x = 0.0;
+    TWIST_STOP.linear.y = 0.0;
+    TWIST_STOP.linear.z = 0.0;
+    TWIST_STOP.angular.x = 0.0;
+    TWIST_STOP.angular.y = 0.0;
+    TWIST_STOP.angular.z = 0.0;
+}
 
 StepBackAndMaxSteerRecovery::~StepBackAndMaxSteerRecovery ()
 {
@@ -267,38 +268,26 @@ void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, co
     return;
 }
 
-void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, const gm::Pose2D initialPose, double length)
+void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, const gm::Pose2D initialPose, double distination, COSTMAP_SEARCH_MODE mode)
 {
     ros::Rate r(controller_frequency_);
 
-    gm::Twist twist_stop;
-    twist_stop.linear.x = 0.0;
-    twist_stop.linear.y = 0.0;
-    twist_stop.linear.z = 0.0;
-    twist_stop.angular.x = 0.0;
-    twist_stop.angular.y = 0.0;
-    twist_stop.angular.z = 0.0;
-
-    while (double dist_diff = getCurrentDistDiff(initialPose, length) > 0.01)
+    while (double dist_diff = getCurrentDistDiff(initialPose, distination) > 0.01)
     {
         double remaining_time = dist_diff / base_frame_twist_.linear.x;
-        pub_.publish(scaleGivenAccelerationLimits(base_frame_twist_, remaining_time));
-        const gm::Pose2D& current_tmp = getCurrentLocalPose();
 
-        double time_until_obstacle = nonincreasingCostInterval(current_tmp, twist);
-        double dist_to_obstacle = abs(twist.linear.x * time_until_obstacle);
-
-        if(dist_to_obstacle < 0.5)
+        //if(dist_to_obstacle < 0.5)
+        if(double min_dist = getMinimalDistance(mode) < 1.1)
         {
-            pub_.publish(scaleGivenAccelerationLimits(twist_stop, remaining_time));
-            ROS_WARN_NAMED ("top", "obstacle detected");
-            ROS_WARN_NAMED ("top", "time_until_obstacle = %f, dist_to_obstacle = %f", time_until_obstacle, dist_to_obstacle);
+            pub_.publish(scaleGivenAccelerationLimits(TWIST_STOP, remaining_time));
+            ROS_INFO_NAMED ("top", "obstacle detected");
+            ROS_WARN_NAMED ("top", "getMinimalDistance = %f", min_dist);
             break;
         }
 
         pub_.publish(scaleGivenAccelerationLimits(twist, remaining_time));
         ROS_INFO_NAMED ("top", "no obstacle");
-        ROS_INFO_NAMED ("top", "time_until_obstacle = %f, dist_to_obstacle = %f", time_until_obstacle, dist_to_obstacle);
+        ROS_INFO_NAMED ("top", "getMinimalDistance = %f", getMinimalDistance(mode));
 
         r.sleep();
     }
@@ -360,6 +349,54 @@ double StepBackAndMaxSteerRecovery::getCurrentDistDiff(const gm::Pose2D initialP
     return dist_diff;
 }
 
+double StepBackAndMaxSteerRecovery::getMinimalDistance(const COSTMAP_SEARCH_MODE mode)
+{
+    double max_angle, min_angle;
+    gm::Twist twist;
+
+    switch (mode) {
+    case FOWARD:
+        twist.linear.x = linear_vel_forward_;
+        max_angle = M_PI/2.0;
+        min_angle = -M_PI/2.0;
+        break;
+    case FOWARD_LEFT:
+        twist.linear.x = linear_vel_forward_;
+        max_angle = M_PI/2.0;
+        min_angle = 0.0;
+        break;
+    case FOWARD_RIGHT:
+        max_angle = 0.0;
+        min_angle = -M_PI/2.0;
+        break;
+    case BACKWARD:
+        twist.linear.x = linear_vel_back_;
+        max_angle = M_PI/3.0;
+        min_angle = -M_PI/3.0;
+        break;
+    default:
+        break;
+    }
+
+    const gm::Pose2D& current = getCurrentLocalPose();
+    double min_time = INFINITY;
+
+    for(double angle = min_angle; angle < max_angle; angle+=0.1)
+      {
+          twist.angular.z = angle;
+          double time_until_obstacle = nonincreasingCostInterval(current, twist);
+          ROS_DEBUG_NAMED ("top", "(%.2f, %.2f, %.2f) for %.2f seconds",
+                          twist.linear.x, twist.linear.y, twist.angular.z, time_until_obstacle);
+
+          if(time_until_obstacle < min_time)
+              min_time = time_until_obstacle;
+    }
+
+    double min_dist = abs(twist.linear.x * min_time);
+
+    return min_dist;
+}
+
 void StepBackAndMaxSteerRecovery::runBehavior ()
 {
   ROS_ASSERT (initialized_);
@@ -391,32 +428,15 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
       // step back
       double step_back_length = 2.0;
 
-      moveSpacifiedLength(base_frame_twist_, initialPose, step_back_length);
-     /*
-      while (double dist_diff = getCurrentDistDiff(initialPose, 1.0) > 0.01)
-      {
-          double remaining_time = dist_diff / base_frame_twist_.linear.x;
-          pub_.publish(scaleGivenAccelerationLimits(base_frame_twist_, remaining_time));
-          r.sleep();
-      }
-      */
+      moveSpacifiedLength(base_frame_twist_, initialPose, step_back_length, BACKWARD);
 
       double final_diff = getCurrentDiff(initialPose);
       ROS_DEBUG_NAMED ("top", "final_diff = %.2f",final_diff);
 
-      // temporary stopj
-      gm::Twist twist_stop;
-      /*
-      pub_.publish(twist_stop);
-      ROS_INFO_NAMED ("top", "stop");
-      for(int i = 0; i < 30; i++)
-          r.sleep();
-          */
-
       // stop
       d = 1.0;
       for (double t=0; t<d; t+=1/controller_frequency_) {
-          pub_.publish(scaleGivenAccelerationLimits(twist_stop, d-t));
+          pub_.publish(scaleGivenAccelerationLimits(TWIST_STOP, d-t));
           r.sleep();
       }
 
@@ -424,8 +444,8 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
       const gm::Pose2D& current2 = getCurrentLocalPose();
 
       gm::Twist twist;
-      //twist.linear.x = linear_vel_forward_;
-      twist.linear.x = 0.3;
+      twist.linear.x = linear_vel_forward_;
+      //twist.linear.x = 0.3;
 
       vector<double> times_until_obstacle_r;
       vector<double> times_until_obstacle_l;
@@ -499,7 +519,7 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
       // stop
       d = 1.0;
       for (double t=0; t<d; t+=1/controller_frequency_) {
-          pub_.publish(scaleGivenAccelerationLimits(twist_stop, d-t));
+          pub_.publish(scaleGivenAccelerationLimits(TWIST_STOP, d-t));
           r.sleep();
       }
 

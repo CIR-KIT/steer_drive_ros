@@ -44,6 +44,12 @@
 #include <costmap_2d/costmap_2d_ros.h>
 #include <geometry_msgs/Pose2D.h>
 
+namespace gm=geometry_msgs;
+namespace cmap=costmap_2d;
+namespace blp=base_local_planner;
+using std::vector;
+using std::max;
+
 namespace step_back_and_max_steer_recovery
 {
 
@@ -67,18 +73,28 @@ public:
   void runBehavior();
 
 private:
+  enum COSTMAP_SEARCH_MODE
+  {
+    FOWARD,
+    FOWARD_LEFT,
+    FOWARD_RIGHT,
+    BACKWARD
+  };
 
-  geometry_msgs::Pose2D getCurrentLocalPose () const;
-  geometry_msgs::Twist scaleGivenAccelerationLimits (const geometry_msgs::Twist& twist, const double time_remaining) const;
-  double nonincreasingCostInterval (const geometry_msgs::Pose2D& current, const geometry_msgs::Twist& twist) const;
-  double normalizedPoseCost (const geometry_msgs::Pose2D& pose) const;
-  geometry_msgs::Twist transformTwist (const geometry_msgs::Pose2D& pose) const;
-  void moveSpacifiedLength (const geometry_msgs::Twist twist, const double duaration) const;
-  void moveSpacifiedLength (const geometry_msgs::Twist twist, const geometry_msgs::Pose2D initialPose, double length);
+  gm::Twist TWIST_STOP;
+
+  gm::Pose2D getCurrentLocalPose () const;
+  gm::Twist scaleGivenAccelerationLimits (const gm::Twist& twist, const double time_remaining) const;
+  double nonincreasingCostInterval (const gm::Pose2D& current, const gm::Twist& twist) const;
+  double normalizedPoseCost (const gm::Pose2D& pose) const;
+  gm::Twist transformTwist (const gm::Pose2D& pose) const;
+  void moveSpacifiedLength (const gm::Twist twist, const double duaration) const;
+  void moveSpacifiedLength (const gm::Twist twist, const gm::Pose2D initialPose, double length, COSTMAP_SEARCH_MODE mode);
   double getTranslation(double x0, double y0) const;
-  geometry_msgs::Pose2D getCurrentTFPos() const;
-  double getCurrentDiff(const geometry_msgs::Pose2D initialPose);
-  double getCurrentDistDiff(const geometry_msgs::Pose2D initialPose, const double dist_length);
+  gm::Pose2D getCurrentTFPos() const;
+  double getCurrentDiff(const gm::Pose2D initialPose);
+  double getCurrentDistDiff(const gm::Pose2D initialPose, const double dist_length);
+  double getMinimalDistance(const COSTMAP_SEARCH_MODE mode);
 
   ros::NodeHandle nh_;
   costmap_2d::Costmap2DROS* global_costmap_;
@@ -93,7 +109,7 @@ private:
   // Mutable because footprintCost is not declared const
   mutable base_local_planner::CostmapModel* world_model_;
 
-  geometry_msgs::Twist base_frame_twist_;
+  gm::Twist base_frame_twist_;
   
   double duration_;
   double linear_speed_limit_;
