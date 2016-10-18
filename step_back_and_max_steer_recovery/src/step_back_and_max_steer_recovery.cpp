@@ -108,7 +108,7 @@ void StepBackAndMaxSteerRecovery::initialize (std::string name, tf::TransformLis
   private_nh.param("step_back_length", step_back_length_, 1.0);
   //-- steer
   private_nh.param("linear_vel_steer", linear_vel_steer_, 0.3);
-  private_nh.param("angular_vel_steer", angular_vel_steer_, 0.5);
+  private_nh.param("angular_speed_steer", angular_speed_steer_, 0.5);
   private_nh.param("turn_angle", turn_angle_, 2.0);
   //-- forward
   private_nh.param("linear_vel_forward", linear_vel_forward_, 0.3);
@@ -124,8 +124,8 @@ void StepBackAndMaxSteerRecovery::initialize (std::string name, tf::TransformLis
   ROS_INFO_NAMED ("top", "Initialized with obstacle_patience = %.2f", obstacle_patience_);
   ROS_INFO_NAMED ("top", "Initialized with linear_vel_back = %.2f, step_back_length = %.2f",
                   linear_vel_back_, step_back_length_);
-  ROS_INFO_NAMED ("top", "Initialized with linear_vel_steer = %.2f, angular_vel_steer = %.2f, turn_angle = %.2f",
-                  linear_vel_steer_, angular_vel_steer_, turn_angle_);
+  ROS_INFO_NAMED ("top", "Initialized with linear_vel_steer = %.2f, angular_speed_steer = %.2f, turn_angle = %.2f",
+                  linear_vel_steer_, angular_speed_steer_, turn_angle_);
   ROS_INFO_NAMED ("top", "Initialized with linear_vel_forward = %.2f, step_forward_length = %.2f",
                   linear_vel_forward_, step_forward_length_);
 
@@ -494,13 +494,13 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
       double z;
       if(turn_dir == LEFT)
       {
-          z = angular_vel_steer_;
+          z = angular_speed_steer_;
           costmap_search_mode = FORWARD_LEFT;
           ROS_INFO_NAMED ("top", "attempting to turn left at the 1st turn");
       }
       else
       {
-          z = -1 * angular_vel_steer_;
+          z = -1 * angular_speed_steer_;
           costmap_search_mode = FORWARD_RIGHT;
           ROS_INFO_NAMED ("top", "attemping to turn right at the 1st turn");
       }

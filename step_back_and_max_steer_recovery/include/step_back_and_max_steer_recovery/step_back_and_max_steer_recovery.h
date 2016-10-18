@@ -133,7 +133,7 @@ private:
   double step_back_length_;
   //-- steer
   double linear_vel_steer_;
-  double angular_vel_steer_;
+  double angular_speed_steer_;
   double turn_angle_;
   //-- forward
   double linear_vel_forward_;
