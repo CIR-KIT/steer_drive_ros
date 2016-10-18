@@ -36,7 +36,7 @@ step_back_and_max_steer_recovery:
     # back(初回後退時の速度[m/s]と移動距離[m])
     linear_vel_back     : -0.3
     step_back_length    : 1.0
-    # steer(旋回時の速度[rad/s]と目標回転角度[rad])
+    # steer(旋回時の直進速度[m/s]，回転速さ(環境に寄って±が変わる)[rad/s]と目標回転角度[rad])
     linear_vel_steer    : 0.3
     angular_speed_steer : 0.5
     turn_angle          : 1.5
