@@ -6,14 +6,20 @@ recovery_behaviors:
   - {name: aggressive_reset, type: clear_costmap_recovery/ClearCostmapRecovery}
 
 step_back_and_max_steer_recovery:
+    # 最初の一回だけ旋回したい場合にtrue
+    only_single_steering: true
+    # リカバリ行動の試行回数[回]
     trial_times         : 3
-    # back
+    # 障害物までの許容距離[m]．
+    #-- 移動中に，移動方向に対して最も近い障害物がこの距離以内に出現したら停止する．
+    obstacle_patience   : 0.3
+    # back(初回後退時の速度[m/s]と移動距離[m])
     linear_vel_back     : -0.3
-    duration_back       : 3.0
-    # steer
-    linear_vel_steer   : 0.3
-    angular_vel_steer  : 0.5
-    duration_steer     : 2.0
-    # forward
-    linear_vel_forward   : 0.3
-    duration_forward     : 3.0
+    step_back_length    : 1.0
+    # steer(旋回時の速度[rad/s]と目標回転角度[rad])
+    linear_vel_steer    : 0.3
+    angular_speed_steer : 0.5
+    turn_angle          : 1.5
+    # forward(旋回→直進→旋回の直進時の速度[m/s]と目標移動距離[m])
+    linear_vel_forward  : 0.3
+    step_forward_length : 1.0
