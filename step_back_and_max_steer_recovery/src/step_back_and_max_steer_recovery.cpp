@@ -466,6 +466,8 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
   while(true)
   {
       cnt++;
+      ROS_INFO_NAMED ("top", "==== %d th recovery trial ====", cnt);
+
       // Figure out how long we can safely run the behavior
       const gm::Pose2D& initialPose = getCurrentLocalPose();
 
@@ -570,7 +572,7 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
       }
       else
       {
-          ROS_INFO_NAMED ("top", "continue recovery because the robot got clearance");
+          ROS_INFO_NAMED ("top", "break recovery because the robot got clearance");
           ROS_DEBUG_NAMED ("top", "break at (%.2f, %.2f, %.2f) for max_time %.2f seconds",
                           twist.linear.x, twist.linear.y, twist.angular.z, max_time);
           break;
