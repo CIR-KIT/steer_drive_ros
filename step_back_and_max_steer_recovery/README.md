@@ -3,7 +3,6 @@
 - ざっくりしたものはissue参照→[Recovery の挙動について #10](https://github.com/CIR-KIT/third_robot_pkg/issues/10)
 - 実際には，これよりもうちょっと色々やっている．
   - 左に障害物があったら，「右旋回」→「直進」→「左旋回」を行うことで進路クリアを図っている
-  - とか
 - 移動量、回転量で制御．制御量はパラメータで設定可能．
 - 移動中リアルタイムにcostmapを参照し，衝突前に停止する．許容距離はパラメータで設定可能．
 - 「後退→旋回→直進→反対旋回」or「後退→旋回」をパラメータで選択可能.
@@ -59,6 +58,7 @@ step_back_and_max_steer_recovery:
 
 - パラメータサーバに次のように登録されていればOK
 ```bash
+rosparam list | grep step_back_and_max_steer_recovery
 /move_base/step_back_and_max_steer_recovery/angular_speed_steer
 /move_base/step_back_and_max_steer_recovery/linear_vel_back
 /move_base/step_back_and_max_steer_recovery/linear_vel_forward
@@ -95,7 +95,7 @@ step_back_and_max_steer_recovery:
 [ INFO] [1476805086.134868653, 15063.680000000]: complete step forward
 [ INFO] [1476805086.134918763, 15063.680000000]: attempting second turn
 [ INFO] [1476805088.986284833, 15066.530000000]: complete second turn
-[ INFO] [1476805089.973853268, 15067.510000000]: continue recovery because the robot got clearance
+[ INFO] [1476805089.973853268, 15067.510000000]: break recovery because the robot got clearance
 [ INFO] [1476805089.973912937, 15067.510000000]: *****************************************************
 [ INFO] [1476805089.973933753, 15067.510000000]: **********Finish StepBackAndSteerRecovery!!**********
 [ INFO] [1476805089.973950421, 15067.510000000]: *****************************************************
