@@ -40,6 +40,8 @@ step_back_and_max_steer_recovery:
     obstacle_check_frequency: 5.0
     # 障害物探索時の角度の分解能[rad] costmapアクセス数を低減したいときに調整する．
     sim_angle_resolution: 0.1
+    # 障害物探索時のsim更新周期[回/sec] costmapアクセス回数を低減したいときに調整する．
+    simulation_frequency    : 5
     # back(初回後退時の速度[m/s], 移動距離[m], タイムアウト[sec])
     linear_vel_back     : -0.3
     step_back_length    : 1.0
@@ -65,6 +67,7 @@ step_back_and_max_steer_recovery:
 [ INFO] [1476905975.890302193, 6973.810000000]: Initialized with recovery_trial_times = 3
 [ INFO] [1476905975.890322274, 6973.810000000]: Initialized with obstacle_patience = 0.50
 [ INFO] [1476905975.890340282, 6973.810000000]: Initialized with obstacle_check_frequency = 6.00
+[ INFO] [1476905975.890340282, 6973.810000000]: Initialized with simulation_frequency = 5.10
 [ INFO] [1476905975.890357877, 6973.810000000]: Initialized with sim_angle_resolution = 0.15
 [ INFO] [1476905975.890378780, 6973.810000000]: Initialized with linear_vel_back = -0.30, step_back_length = 8.00, step_back_steering = 3.00
 [ INFO] [1476905975.890576838, 6973.810000000]: Initialized with linear_vel_steer = 0.50, angular_speed_steer = 0.50, turn_angle = 2.00, steering_timeout = 3.10
@@ -84,6 +87,7 @@ rosparam list | grep step_back_and_max_steer_recovery
 /move_base/step_back_and_max_steer_recovery/obstacle_patience
 /move_base/step_back_and_max_steer_recovery/only_single_steering
 /move_base/step_back_and_max_steer_recovery/sim_angle_resolution
+/move_base/step_back_and_max_steer_recovery/simulation_frequency
 /move_base/step_back_and_max_steer_recovery/steering_timeout
 /move_base/step_back_and_max_steer_recovery/step_back_length
 /move_base/step_back_and_max_steer_recovery/step_back_timeout
