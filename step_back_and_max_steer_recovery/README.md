@@ -32,6 +32,8 @@ step_back_and_max_steer_recovery:
     # 障害物までの許容距離[m]．
     #-- 移動中に，移動方向に対して最も近い障害物がこの距離以内に出現したら停止する．
     obstacle_patience   : 0.3
+    #-- 移動中に，障害物を確認する頻度[回/sec]
+    obstacle_check_frequency: 5.0
     # back(初回後退時の速度[m/s]と移動距離[m])
     linear_vel_back     : -0.3
     step_back_length    : 1.0
@@ -47,13 +49,13 @@ step_back_and_max_steer_recovery:
 ### 使用時挙動
 - `move_base`立ち上げ時に以下のメッセージが出ていれば初期化成功
 ```bash
-[ INFO] [1476805022.459020448, 15000.030000000]: Recovery behavior will clear layer obstacles
-[ INFO] [1476805022.517777693, 15000.090000000]: Initialized with only_single_steering = false
-[ INFO] [1476805022.517814034, 15000.090000000]: Initialized with recovery_trial_times = 3
-[ INFO] [1476805022.517844810, 15000.090000000]: Initialized with obstacle_patience = 0.30
-[ INFO] [1476805022.517860301, 15000.090000000]: Initialized with linear_vel_back = -0.30, step_back_length = 1.00
-[ INFO] [1476805022.517876789, 15000.090000000]: Initialized with linear_vel_steer = 0.30, angular_vel_steer = 0.50, turn_angle = 1.50
-[ INFO] [1476805022.517908477, 15000.090000000]: Initialized with linear_vel_forward = 0.30, step_forward_length = 1.00
+[ INFO] [1476868343.792576518, 2448.560000000]: Initialized with only_single_steering = false
+[ INFO] [1476868343.792646641, 2448.560000000]: Initialized with recovery_trial_times = 3
+[ INFO] [1476868343.792669900, 2448.560000000]: Initialized with obstacle_patience = 0.50
+[ INFO] [1476868343.792698568, 2448.560000000]: Initialized with obstacle_check_frequency = 6.00
+[ INFO] [1476868343.792745858, 2448.560000000]: Initialized with linear_vel_back = -0.30, step_back_length = 8.00
+[ INFO] [1476868343.792777209, 2448.560000000]: Initialized with linear_vel_steer = 0.90, angular_speed_steer = 0.50, turn_angle = 1.00
+[ INFO] [1476868343.792811151, 2448.560000000]: Initialized with linear_vel_forward = 0.30, step_forward_length = 1.00
 ```
 
 - パラメータサーバに次のように登録されていればOK
@@ -63,41 +65,44 @@ rosparam list | grep step_back_and_max_steer_recovery
 /move_base/step_back_and_max_steer_recovery/linear_vel_back
 /move_base/step_back_and_max_steer_recovery/linear_vel_forward
 /move_base/step_back_and_max_steer_recovery/linear_vel_steer
+/move_base/step_back_and_max_steer_recovery/obstacle_check_frequency
 /move_base/step_back_and_max_steer_recovery/obstacle_patience
 /move_base/step_back_and_max_steer_recovery/only_single_steering
 /move_base/step_back_and_max_steer_recovery/step_back_length
 /move_base/step_back_and_max_steer_recovery/step_forward_length
 /move_base/step_back_and_max_steer_recovery/trial_times
 /move_base/step_back_and_max_steer_recovery/turn_angle
+
 ```
 
 - リカバリ行動に入ったら以下のようなメッセージが出る．
+  - 1秒に1回，移動横行と障害物までの最短距離を出力する．
+  - 障害物発見時はWARNINGで表示．
 ```bash
-[ INFO] [1476805029.597262999, 15007.170000000]: *****************************************************
-[ INFO] [1476805029.597325668, 15007.170000000]: **********Start StepBackAndSteerRecovery!!!**********
-[ INFO] [1476805029.597349570, 15007.170000000]: *****************************************************
-[ INFO] [1476805061.093148562, 15038.650000000]: attempting step back
-[ INFO] [1476805064.545240776, 15042.100000000]: complete step back
-[ INFO] [1476805065.515806324, 15043.070000000]: min_l = 11.25, min_r = 4.60
-[ INFO] [1476805065.515948508, 15043.070000000]: attempting to turn left at the 1st turn
-[ INFO] [1476805068.216827905, 15045.770000000]: complete the 1st turn
-[ INFO] [1476805068.216925820, 15045.770000000]: attemping step forward
-[ INFO] [1476805071.568092876, 15049.120000000]: complete step forward
-[ INFO] [1476805071.568256384, 15049.120000000]: attempting second turn
-[ INFO] [1476805074.719016710, 15052.270000000]: complete second turn
-[ INFO] [1476805075.669610158, 15053.220000000]: continue recovery because the robot couldn't get clearance
-[ INFO] [1476805075.671413290, 15053.220000000]: attempting step back
-[ INFO] [1476805079.121436749, 15056.670000000]: complete step back
-[ INFO] [1476805080.087343376, 15057.630000000]: min_l = 11.80, min_r = 11.30
-[ INFO] [1476805080.087466251, 15057.630000000]: attempting to turn left at the 1st turn
-[ INFO] [1476805082.783008088, 15060.330000000]: complete the 1st turn
-[ INFO] [1476805082.783089460, 15060.330000000]: attemping step forward
-[ INFO] [1476805086.134868653, 15063.680000000]: complete step forward
-[ INFO] [1476805086.134918763, 15063.680000000]: attempting second turn
-[ INFO] [1476805088.986284833, 15066.530000000]: complete second turn
-[ INFO] [1476805089.973853268, 15067.510000000]: break recovery because the robot got clearance
-[ INFO] [1476805089.973912937, 15067.510000000]: *****************************************************
-[ INFO] [1476805089.973933753, 15067.510000000]: **********Finish StepBackAndSteerRecovery!!**********
-[ INFO] [1476805089.973950421, 15067.510000000]: *****************************************************
+[ INFO] [1476868375.829523527, 2480.590000000]: *****************************************************
+[ INFO] [1476868375.829690887, 2480.590000000]: **********Start StepBackAndSteerRecovery!!!**********
+[ INFO] [1476868375.829753797, 2480.590000000]: *****************************************************
+[ INFO] [1476868375.829794323, 2480.590000000]: ==== 1 th recovery trial ====
+[ INFO] [1476868383.643012049, 2488.400000000]: min dist to obstacle = 1.59 [m] in BACKWARD
+[ INFO] [1476868384.840226745, 2489.590000000]: min dist to obstacle = 0.92 [m] in BACKWARD
+[ WARN] [1476868386.036249305, 2490.790000000]: obstacle detected at BACKWARD
+[ WARN] [1476868386.036298028, 2490.790000000]: min dist to obstacle = 0.48 [m] in BACKWARD
+[ INFO] [1476868386.036321913, 2490.790000000]: complete step back
+[ INFO] [1476868387.007138030, 2491.760000000]: min_l = 12.22 [m], min_r = 5.98 [m]
+[ INFO] [1476868387.007252925, 2491.760000000]: attempting to turn left at the 1st turn
+[ INFO] [1476868387.610307113, 2492.360000000]: min dist to obstacle = 11.09 [m] in FORWARD_LEFT
+[ INFO] [1476868388.005182918, 2492.760000000]: complete the 1st turn
+[ INFO] [1476868388.005297723, 2492.760000000]: attemping step forward
+[ INFO] [1476868388.611079357, 2493.360000000]: min dist to obstacle = 8.73 [m] in FORWARD
+[ INFO] [1476868389.212381216, 2493.960000000]: min dist to obstacle = 7.70 [m] in FORWARD
+[ INFO] [1476868390.413571989, 2495.160000000]: min dist to obstacle = 5.98 [m] in FORWARD
+[ INFO] [1476868391.010836290, 2495.760000000]: complete step forward
+[ INFO] [1476868391.010889155, 2495.760000000]: attempting second turn
+[ INFO] [1476868391.013244061, 2495.760000000]: min dist to obstacle = 25.86 [m] in FORWARD_RIGHT
+[ INFO] [1476868392.008923908, 2496.760000000]: complete second turn
+[ INFO] [1476868392.993798006, 2497.740000000]: break recovery because the robot got clearance
+[ INFO] [1476868392.993863847, 2497.740000000]: *****************************************************
+[ INFO] [1476868392.993893442, 2497.740000000]: **********Finish StepBackAndSteerRecovery!!**********
+[ INFO] [1476868392.993917387, 2497.740000000]: *****************************************************
 
 ```
