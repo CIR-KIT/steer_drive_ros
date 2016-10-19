@@ -87,6 +87,13 @@ private:
     RIGHT,
   };
 
+  enum TURN_NO
+  {
+    FIRST_TURN = 0,
+    SECOND_TURN = 1,
+  };
+  static const int CNT_TURN = 2;
+
   gm::Twist TWIST_STOP;
 
   gm::Pose2D getCurrentLocalPose () const;
@@ -129,6 +136,7 @@ private:
   int trial_times_;
   double obstacle_patience_;
   double obstacle_check_frequency_;
+  double sim_angle_resolution_;
   //-- back
   double linear_vel_back_;
   double step_back_length_;

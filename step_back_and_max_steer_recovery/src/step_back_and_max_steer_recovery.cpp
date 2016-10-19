@@ -104,6 +104,7 @@ void StepBackAndMaxSteerRecovery::initialize (std::string name, tf::TransformLis
   private_nh.param("trial_times", trial_times_, 5);
   private_nh.param("obstacle_patience", obstacle_patience_, 0.5);
   private_nh.param("obstacle_check_frequency", obstacle_check_frequency_, 5.0);
+  private_nh.param("sim_angle_resolution_", sim_angle_resolution_, 0.1);
 
   // back
   private_nh.param("linear_vel_back", linear_vel_back_, -0.3);
@@ -189,7 +190,7 @@ gm::Pose2D StepBackAndMaxSteerRecovery::getPoseToObstacle (const gm::Pose2D& cur
   double next_cost;
 
   ROS_DEBUG_NAMED ("top", " ");
-  for (t=simulation_inc_; t<=duration_ + 1000; t+=simulation_inc_) {
+  for (t=simulation_inc_; t<=duration_ + 500; t+=simulation_inc_) {
       ROS_DEBUG_NAMED ("top", "start loop");
       current_tmp = forwardSimulate(current, twist, t);
       ROS_DEBUG_NAMED ("top", "finish fowardSimulate");
@@ -251,9 +252,6 @@ gm::Pose2D StepBackAndMaxSteerRecovery::getCurrentLocalPose () const
 
 void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, const double distination, const COSTMAP_SEARCH_MODE mode) const
 {
-    const double frequency = 5.0;
-    ros::Rate r(frequency);
-
     double distination_cmd = distination;
     double min_dist_to_obstacle = getMinimalDistanceToObstacle(mode);
 
@@ -266,11 +264,11 @@ void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, co
         time_out = step_forward_timeout_;
         if (min_dist_to_obstacle < distination)
         {
-          distination_cmd = min_dist_to_obstacle;
+          distination_cmd = min_dist_to_obstacle - 2 * obstacle_patience_;
 
           ROS_WARN_NAMED ("top", "obstacle detected before moving %s", mode_name.c_str());
           ROS_WARN_NAMED ("top", "min dist to obstacle = %.2f [m] in %s", min_dist_to_obstacle, mode_name.c_str());
-          ROS_WARN_NAMED ("top", "moving length is switched from %.2f [m] to %.2f in %s", distination, min_dist_to_obstacle, mode_name.c_str());
+          ROS_WARN_NAMED ("top", "moving length is switched from %.2f [m] to %.2f in %s", distination, distination_cmd,mode_name.c_str());
         }
         break;
     case FORWARD_LEFT:
@@ -302,20 +300,25 @@ void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, co
         time_out = step_back_timeout_;
         if (min_dist_to_obstacle < distination)
         {
-          distination_cmd = min_dist_to_obstacle;
+          distination_cmd = min_dist_to_obstacle - 2 * obstacle_patience_;
 
           ROS_WARN_NAMED ("top", "obstacle detected before moving %s", mode_name.c_str());
           ROS_WARN_NAMED ("top", "min dist to obstacle = %.2f [m] in %s", min_dist_to_obstacle, mode_name.c_str());
-          ROS_WARN_NAMED ("top", "moving length is switched from %.2f [m] to %.2f in %s", distination, min_dist_to_obstacle, mode_name.c_str());
+          ROS_WARN_NAMED ("top", "moving length is switched from %.2f [m] to %.2f in %s", distination, distination_cmd, mode_name.c_str());
         }
         break;
     default:
         break;
     }
 
+    const double frequency = 5.0;
+    ros::Rate r(frequency);
+
     const gm::Pose2D initialPose = getCurrentLocalPose();
+
     int log_cnt = 0;
     int log_frequency = (int)obstacle_check_frequency_;
+
     ros::Time time_begin = ros::Time::now();
     while (double dist_diff = getCurrentDistDiff(initialPose, distination_cmd, mode) > 0.01)
     {
@@ -425,7 +428,7 @@ double StepBackAndMaxSteerRecovery::getMinimalDistanceToObstacle(const COSTMAP_S
     const gm::Pose2D& current = getCurrentLocalPose();
     double min_dist = INFINITY;
 
-    for(double angle = min_angle; angle < max_angle; angle+=0.1)
+    for(double angle = min_angle; angle < max_angle; angle+=sim_angle_resolution_)
       {
           twist.angular.z = angle;
           gm::Pose2D pose_to_obstacle = getPoseToObstacle(current, twist);
@@ -452,7 +455,7 @@ int StepBackAndMaxSteerRecovery::determineTurnDirection()
     vector<double> dist_to_obstacle_l;
     double max = M_PI/2.0;
     double min = - max;
-    for(double angle = min; angle < max; angle+=0.1)
+    for(double angle = min; angle < max; angle+=sim_angle_resolution_)
     {
         twist.angular.z = angle;
         gm::Pose2D pose_to_obstacle = getPoseToObstacle(current, twist);
@@ -546,21 +549,21 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
       }
 
       int turn_dir = determineTurnDirection();
-      int costmap_search_mode[2];
+      int costmap_search_mode[CNT_TURN];
 
       double z;
       if(turn_dir == LEFT)
       {
           z = angular_speed_steer_;
-          costmap_search_mode[0] = FORWARD_LEFT;
-          costmap_search_mode[1] = FORWARD_RIGHT;
+          costmap_search_mode[FIRST_TURN] = FORWARD_LEFT;
+          costmap_search_mode[SECOND_TURN] = FORWARD_RIGHT;
           ROS_INFO_NAMED ("top", "attempting to turn left at the 1st turn");
       }
       else
       {
           z = -1 * angular_speed_steer_;
-          costmap_search_mode[0] = FORWARD_RIGHT;
-          costmap_search_mode[1] = FORWARD_LEFT;
+          costmap_search_mode[FIRST_TURN] = FORWARD_RIGHT;
+          costmap_search_mode[SECOND_TURN] = FORWARD_LEFT;
           ROS_INFO_NAMED ("top", "attemping to turn right at the 1st turn");
       }
 
@@ -570,7 +573,7 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
       twist = TWIST_STOP;
       twist.linear.x = linear_vel_steer_;
       twist.angular.z = z;
-      moveSpacifiedLength(twist, turn_angle_, (COSTMAP_SEARCH_MODE)costmap_search_mode[0]);
+      moveSpacifiedLength(twist, turn_angle_, (COSTMAP_SEARCH_MODE)costmap_search_mode[FIRST_TURN]);
       ROS_INFO_NAMED ("top", "complete the 1st turn");
 
       if(!only_single_steering_) {
@@ -586,7 +589,7 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
           twist = TWIST_STOP;
           twist.linear.x = linear_vel_steer_;
           twist.angular.z = -z;
-          moveSpacifiedLength(twist, turn_angle_, (COSTMAP_SEARCH_MODE)costmap_search_mode[1]);
+          moveSpacifiedLength(twist, turn_angle_, (COSTMAP_SEARCH_MODE)costmap_search_mode[SECOND_TURN]);
           ROS_INFO_NAMED ("top", "complete second turn");
       }
 
@@ -609,7 +612,7 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
       double min_angle = -max_angle;
       double max_clearance = 0;
       twist.linear.x = 3.0;
-      for(double angle = min_angle; angle < max_angle; angle+=0.01)
+      for(double angle = min_angle; angle < max_angle; angle+=sim_angle_resolution_)
       {
           twist.angular.z = angle;
           gm::Pose2D pose_to_obstacle = getPoseToObstacle(current, twist);
