@@ -128,6 +128,7 @@ private:
   bool only_single_steering_;
   int trial_times_;
   double obstacle_patience_;
+  double obstacle_check_frequency_;
   //-- back
   double linear_vel_back_;
   double step_back_length_;

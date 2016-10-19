@@ -103,6 +103,7 @@ void StepBackAndMaxSteerRecovery::initialize (std::string name, tf::TransformLis
   private_nh.param("only_single_steering", only_single_steering_, true);
   private_nh.param("trial_times", trial_times_, 5);
   private_nh.param("obstacle_patience", obstacle_patience_, 0.5);
+  private_nh.param("obstacle_check_frequency", obstacle_check_frequency_, 5.0);
   // back
   private_nh.param("linear_vel_back", linear_vel_back_, -0.3);
   private_nh.param("step_back_length", step_back_length_, 1.0);
@@ -122,6 +123,7 @@ void StepBackAndMaxSteerRecovery::initialize (std::string name, tf::TransformLis
   ROS_INFO_NAMED ("top", "Initialized with only_single_steering = %s", (only_single_steering_ ? "true" : "false"));
   ROS_INFO_NAMED ("top", "Initialized with recovery_trial_times = %d", trial_times_);
   ROS_INFO_NAMED ("top", "Initialized with obstacle_patience = %.2f", obstacle_patience_);
+  ROS_INFO_NAMED ("top", "Initialized with obstacle_check_frequency = %.2f", obstacle_check_frequency_);
   ROS_INFO_NAMED ("top", "Initialized with linear_vel_back = %.2f, step_back_length = %.2f",
                   linear_vel_back_, step_back_length_);
   ROS_INFO_NAMED ("top", "Initialized with linear_vel_steer = %.2f, angular_speed_steer = %.2f, turn_angle = %.2f",
@@ -280,7 +282,7 @@ void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, do
           distination_cmd = min_dist_to_obstacle;
 
           ROS_WARN_NAMED ("top", "obstacle detected before moving %s", mode_name.c_str());
-          ROS_WARN_NAMED ("top", "getMinimalDistance = %.2f [m]", min_dist_to_obstacle);
+          ROS_WARN_NAMED ("top", "min dist to obstacle = %.2f [m] in %s", min_dist_to_obstacle, mode_name.c_str());
         }
         break;
     case FORWARD_LEFT:
@@ -290,7 +292,7 @@ void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, do
           distination_cmd = 0.0;
 
           ROS_WARN_NAMED ("top", "obstacle detected before moving %s", mode_name.c_str());
-          ROS_WARN_NAMED ("top", "getMinimalDistance = %.2f [m]", min_dist_to_obstacle);
+          ROS_WARN_NAMED ("top", "min dist to obstacle = %.2f [m] in %s", min_dist_to_obstacle, mode_name.c_str());
         }
         break;
     case FORWARD_RIGHT:
@@ -300,7 +302,7 @@ void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, do
           distination_cmd = 0.0;
 
           ROS_WARN_NAMED ("top", "obstacle detected before moving %s", mode_name.c_str());
-          ROS_WARN_NAMED ("top", "getMinimalDistance = %.2f [m]", min_dist_to_obstacle);
+          ROS_WARN_NAMED ("top", "min dist to obstacle = %.2f [m] in %s", min_dist_to_obstacle, mode_name.c_str());
         }
         break;
     case BACKWARD:
@@ -310,7 +312,7 @@ void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, do
           distination_cmd = min_dist_to_obstacle;
 
           ROS_WARN_NAMED ("top", "obstacle detected before moving %s", mode_name.c_str());
-          ROS_WARN_NAMED ("top", "getMinimalDistance = %.2f [m]", min_dist_to_obstacle);
+          ROS_WARN_NAMED ("top", "min dist to obstacle = %.2f [m] in %s", min_dist_to_obstacle, mode_name.c_str());
         }
         break;
     default:
@@ -318,6 +320,8 @@ void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, do
     }
 
     const gm::Pose2D initialPose = getCurrentLocalPose();
+    int log_cnt = 0;
+    int log_frequency = (int)(obstacle_check_frequency_ / 1.0);
     while (double dist_diff = getCurrentDistDiff(initialPose, distination_cmd, mode) > 0.01)
     {
         double remaining_time = dist_diff / base_frame_twist_.linear.x;
@@ -327,13 +331,16 @@ void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, do
         {
             pub_.publish(scaleGivenAccelerationLimits(TWIST_STOP, remaining_time));
             ROS_WARN_NAMED ("top", "obstacle detected at %s", mode_name.c_str());
-            ROS_WARN_NAMED ("top", "getMinimalDistance = %.2f [m]", min_dist);
+            ROS_WARN_NAMED ("top", "min dist to obstacle = %.2f [m] in %s", min_dist, mode_name.c_str());
             break;
         }
 
         pub_.publish(scaleGivenAccelerationLimits(twist, remaining_time));
-        ROS_DEBUG_NAMED ("top", "no obstacle");
-        ROS_DEBUG_NAMED ("top", "getMinimalDistance = %.2f [m]", min_dist);
+        if(log_cnt++ % log_frequency == 0)
+        {
+            ROS_DEBUG_NAMED ("top", "no obstacle around");
+            ROS_INFO_NAMED ("top", "min dist to obstacle = %.2f [m] in %s", min_dist, mode_name.c_str());
+        }
 
         r.sleep();
     }
