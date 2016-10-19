@@ -94,13 +94,12 @@ private:
   gm::Pose2D getPoseToObstacle (const gm::Pose2D& current, const gm::Twist& twist) const;
   double normalizedPoseCost (const gm::Pose2D& pose) const;
   gm::Twist transformTwist (const gm::Pose2D& pose) const;
-  void moveSpacifiedLength (const gm::Twist twist, const double duaration) const;
-  void moveSpacifiedLength (const gm::Twist twist, double length, COSTMAP_SEARCH_MODE mode = FORWARD);
-  double getCurrentDiff(const gm::Pose2D initialPose, COSTMAP_SEARCH_MODE mode = FORWARD);
-  double getCurrentDistDiff(const gm::Pose2D initialPose, const double distination, COSTMAP_SEARCH_MODE mode = FORWARD);
-  double getMinimalDistanceToObstacle(const COSTMAP_SEARCH_MODE mode);
+  void moveSpacifiedLength (const gm::Twist twist, const double length, const COSTMAP_SEARCH_MODE mode = FORWARD) const;
+  double getCurrentDiff(const gm::Pose2D initialPose, const COSTMAP_SEARCH_MODE mode = FORWARD) const;
+  double getCurrentDistDiff(const gm::Pose2D initialPose, const double distination, const COSTMAP_SEARCH_MODE mode = FORWARD) const;
+  double getMinimalDistanceToObstacle(const COSTMAP_SEARCH_MODE mode) const;
   int determineTurnDirection();
-  double getDistBetweenTwoPoints(const gm::Pose2D pose1, const gm::Pose2D pose2);
+  double getDistBetweenTwoPoints(const gm::Pose2D pose1, const gm::Pose2D pose2) const;
 
 
   ros::NodeHandle nh_;

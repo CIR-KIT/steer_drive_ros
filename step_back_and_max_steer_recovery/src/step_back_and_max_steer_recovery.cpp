@@ -249,29 +249,7 @@ gm::Pose2D StepBackAndMaxSteerRecovery::getCurrentLocalPose () const
   return pose;
 }
 
-void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, const double duaration) const
-{
-    ros::Rate r(controller_frequency_);
-
-    for (double t=0; t<duaration; t+=1/controller_frequency_) {
-        // TODO: obstacle detect and stop required
-        const gm::Pose2D& current_tmp = getCurrentLocalPose();
-        gm::Pose2D pose_to_obstacle = getPoseToObstacle(current_tmp, twist);
-        double dist_to_obstacle = (current_tmp.x - pose_to_obstacle.x) * (current_tmp.x - pose_to_obstacle.x) +
-                                  (current_tmp.y - pose_to_obstacle.y) * (current_tmp.y - pose_to_obstacle.y);
-        dist_to_obstacle = sqrt(dist_to_obstacle);
-        if(dist_to_obstacle < obstacle_patience_)
-            pub_.publish(scaleGivenAccelerationLimits(TWIST_STOP, duaration-t));
-        else
-            pub_.publish(scaleGivenAccelerationLimits(twist, duaration-t));
-
-        r.sleep();
-    }
-
-    return;
-}
-
-void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, double distination, COSTMAP_SEARCH_MODE mode)
+void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, const double distination, const COSTMAP_SEARCH_MODE mode) const
 {
     const double frequency = 5.0;
     ros::Rate r(frequency);
@@ -376,7 +354,7 @@ void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, do
     return;
 }
 
-double StepBackAndMaxSteerRecovery::getCurrentDiff(const gm::Pose2D initialPose, COSTMAP_SEARCH_MODE mode)
+double StepBackAndMaxSteerRecovery::getCurrentDiff(const gm::Pose2D initialPose, const COSTMAP_SEARCH_MODE mode) const
 {
 
     const gm::Pose2D& currentPose = getCurrentLocalPose();
@@ -406,7 +384,7 @@ double StepBackAndMaxSteerRecovery::getCurrentDiff(const gm::Pose2D initialPose,
     return current_diff;
 }
 
-double StepBackAndMaxSteerRecovery::getCurrentDistDiff(const gm::Pose2D initialPose, const double distination, COSTMAP_SEARCH_MODE mode)
+double StepBackAndMaxSteerRecovery::getCurrentDistDiff(const gm::Pose2D initialPose, const double distination, COSTMAP_SEARCH_MODE mode) const
 {
     const double dist_diff = distination - getCurrentDiff(initialPose, mode);
     ROS_DEBUG_NAMED ("top", "dist_diff = %.2f", dist_diff);
@@ -414,7 +392,7 @@ double StepBackAndMaxSteerRecovery::getCurrentDistDiff(const gm::Pose2D initialP
     return dist_diff;
 }
 
-double StepBackAndMaxSteerRecovery::getMinimalDistanceToObstacle(const COSTMAP_SEARCH_MODE mode)
+double StepBackAndMaxSteerRecovery::getMinimalDistanceToObstacle(const COSTMAP_SEARCH_MODE mode) const
 {
     double max_angle, min_angle;
     gm::Twist twist = TWIST_STOP;
@@ -451,9 +429,8 @@ double StepBackAndMaxSteerRecovery::getMinimalDistanceToObstacle(const COSTMAP_S
       {
           twist.angular.z = angle;
           gm::Pose2D pose_to_obstacle = getPoseToObstacle(current, twist);
-          double dist_to_obstacle = (current.x - pose_to_obstacle.x) * (current.x - pose_to_obstacle.x) +
-                                    (current.y - pose_to_obstacle.y) * (current.y - pose_to_obstacle.y);
-          dist_to_obstacle = sqrt(dist_to_obstacle);
+          double dist_to_obstacle = getDistBetweenTwoPoints(current, pose_to_obstacle);
+
           if(dist_to_obstacle < min_dist)
               min_dist = dist_to_obstacle;
     }
@@ -479,9 +456,8 @@ int StepBackAndMaxSteerRecovery::determineTurnDirection()
     {
         twist.angular.z = angle;
         gm::Pose2D pose_to_obstacle = getPoseToObstacle(current, twist);
-        double dist_to_obstacle = (current.x - pose_to_obstacle.x) * (current.x - pose_to_obstacle.x) +
-                (current.y - pose_to_obstacle.y) * (current.y - pose_to_obstacle.y);
-        dist_to_obstacle = sqrt(dist_to_obstacle);
+        double dist_to_obstacle = getDistBetweenTwoPoints(current, pose_to_obstacle);
+
         ROS_DEBUG_NAMED ("top", "(%.2f, %.2f, %.2f) for %.2f [m] to obstacle",
                          twist.linear.x, twist.linear.y, twist.angular.z, dist_to_obstacle);
 
@@ -524,7 +500,7 @@ int StepBackAndMaxSteerRecovery::determineTurnDirection()
     return ret_val;
 }
 
-double StepBackAndMaxSteerRecovery::getDistBetweenTwoPoints(const gm::Pose2D pose1, const gm::Pose2D pose2)
+double StepBackAndMaxSteerRecovery::getDistBetweenTwoPoints(const gm::Pose2D pose1, const gm::Pose2D pose2) const
 {
     double dist_to_obstacle = (pose1.x - pose2.x) * (pose1.x - pose2.x) +
             (pose1.y - pose2.y) * (pose1.y - pose2.y);
@@ -637,9 +613,8 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
       {
           twist.angular.z = angle;
           gm::Pose2D pose_to_obstacle = getPoseToObstacle(current, twist);
-          double dist_to_obstacle = (current.x - pose_to_obstacle.x) * (current.x - pose_to_obstacle.x) +
-                  (current.y - pose_to_obstacle.y) * (current.y - pose_to_obstacle.y);
-          dist_to_obstacle = sqrt(dist_to_obstacle);
+          double dist_to_obstacle = getDistBetweenTwoPoints(current, pose_to_obstacle);
+
           if(dist_to_obstacle > max_clearance)
               max_clearance = dist_to_obstacle;
       }
