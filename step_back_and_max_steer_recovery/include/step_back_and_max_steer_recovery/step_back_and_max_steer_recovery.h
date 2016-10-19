@@ -132,13 +132,16 @@ private:
   //-- back
   double linear_vel_back_;
   double step_back_length_;
+  double step_back_timeout_;
   //-- steer
   double linear_vel_steer_;
   double angular_speed_steer_;
   double turn_angle_;
+  double steering_timeout_;
   //-- forward
   double linear_vel_forward_;
   double step_forward_length_;
+  double step_forward_timeout_;
 
 };
 
