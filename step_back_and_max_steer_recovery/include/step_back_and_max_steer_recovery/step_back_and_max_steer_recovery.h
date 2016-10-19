@@ -100,6 +100,7 @@ private:
   double getCurrentDistDiff(const gm::Pose2D initialPose, const double distination, COSTMAP_SEARCH_MODE mode = FORWARD);
   double getMinimalDistanceToObstacle(const COSTMAP_SEARCH_MODE mode);
   int determineTurnDirection();
+  double getDistBetweenTwoPoints(const gm::Pose2D pose1, const gm::Pose2D pose2);
 
 
   ros::NodeHandle nh_;
