@@ -13,6 +13,8 @@ step_back_and_max_steer_recovery:
     # 障害物までの許容距離[m]．
     #-- 移動中に，移動方向に対して最も近い障害物がこの距離以内に出現したら停止する．
     obstacle_patience   : 0.3
+    #-- 移動中に，障害物を確認する頻度[回/sec]
+    obstacle_check_frequency: 5.0
     # back(初回後退時の速度[m/s]と移動距離[m])
     linear_vel_back     : -0.3
     step_back_length    : 1.0
