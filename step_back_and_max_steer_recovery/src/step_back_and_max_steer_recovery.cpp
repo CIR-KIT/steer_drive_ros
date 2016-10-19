@@ -265,7 +265,7 @@ void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, co
         time_out = step_forward_timeout_;
         if (min_dist_to_obstacle < distination)
         {
-          distination_cmd = min_dist_to_obstacle - 2 * obstacle_patience_;
+          distination_cmd = min_dist_to_obstacle - obstacle_patience_;
 
           ROS_WARN_NAMED ("top", "obstacle detected before moving %s", mode_name.c_str());
           ROS_WARN_NAMED ("top", "min dist to obstacle = %.2f [m] in %s", min_dist_to_obstacle, mode_name.c_str());
