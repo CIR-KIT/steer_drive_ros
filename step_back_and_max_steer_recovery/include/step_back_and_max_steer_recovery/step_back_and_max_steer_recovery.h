@@ -91,7 +91,7 @@ private:
 
   gm::Pose2D getCurrentLocalPose () const;
   gm::Twist scaleGivenAccelerationLimits (const gm::Twist& twist, const double time_remaining) const;
-  double nonincreasingCostInterval (const gm::Pose2D& current, const gm::Twist& twist) const;
+  gm::Pose2D getPoseToObstacle (const gm::Pose2D& current, const gm::Twist& twist) const;
   double normalizedPoseCost (const gm::Pose2D& pose) const;
   gm::Twist transformTwist (const gm::Pose2D& pose) const;
   void moveSpacifiedLength (const gm::Twist twist, const double duaration) const;
