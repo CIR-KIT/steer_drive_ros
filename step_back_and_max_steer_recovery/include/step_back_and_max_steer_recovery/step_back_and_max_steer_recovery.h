@@ -98,7 +98,7 @@ private:
   void moveSpacifiedLength (const gm::Twist twist, double length, COSTMAP_SEARCH_MODE mode = FORWARD);
   double getCurrentDiff(const gm::Pose2D initialPose, COSTMAP_SEARCH_MODE mode = FORWARD);
   double getCurrentDistDiff(const gm::Pose2D initialPose, const double distination, COSTMAP_SEARCH_MODE mode = FORWARD);
-  double getMinimalDistance(const COSTMAP_SEARCH_MODE mode);
+  double getMinimalDistanceToObstacle(const COSTMAP_SEARCH_MODE mode);
   int determineTurnDirection();
 
 

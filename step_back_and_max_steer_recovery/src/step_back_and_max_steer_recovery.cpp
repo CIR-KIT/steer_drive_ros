@@ -262,8 +262,12 @@ void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, co
 
 void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, double distination, COSTMAP_SEARCH_MODE mode)
 {
-    ros::Rate r(controller_frequency_);
+    const double frequency = 3.0;
+    ros::Rate r(frequency);
     std::string mode_name;
+
+    double distination_cmd = distination;
+    double min_dist_to_obstacle = getMinimalDistanceToObstacle(mode);
 
     switch (mode) {
     case FORWARD:
@@ -271,22 +275,43 @@ void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, do
         break;
     case FORWARD_LEFT:
         mode_name = "FORWARD_LEFT";
+        if (min_dist_to_obstacle < obstacle_patience_)
+        {
+          distination_cmd = 0.0;
+
+          ROS_WARN_NAMED ("top", "obstacle detected before moving %s", mode_name.c_str());
+          ROS_WARN_NAMED ("top", "getMinimalDistance = %.2f", min_dist_to_obstacle);
+        }
         break;
     case FORWARD_RIGHT:
         mode_name = "FORWARD_RIGHT";
+        if (min_dist_to_obstacle < obstacle_patience_)
+        {
+          distination_cmd = 0.0;
+
+          ROS_WARN_NAMED ("top", "obstacle detected before moving %s", mode_name.c_str());
+          ROS_WARN_NAMED ("top", "getMinimalDistance = %.2f", min_dist_to_obstacle);
+        }
         break;
     case BACKWARD:
         mode_name = "BACKWARD";
+        if (min_dist_to_obstacle < distination)
+        {
+          distination_cmd = min_dist_to_obstacle;
+
+          ROS_WARN_NAMED ("top", "obstacle detected before moving %s", mode_name.c_str());
+          ROS_WARN_NAMED ("top", "getMinimalDistance = %.2f", min_dist_to_obstacle);
+        }
         break;
     default:
         break;
     }
 
     const gm::Pose2D initialPose = getCurrentLocalPose();
-    while (double dist_diff = getCurrentDistDiff(initialPose, distination, mode) > 0.01)
+    while (double dist_diff = getCurrentDistDiff(initialPose, distination_cmd, mode) > 0.01)
     {
         double remaining_time = dist_diff / base_frame_twist_.linear.x;
-        double min_dist = getMinimalDistance(mode);
+        double min_dist = getMinimalDistanceToObstacle(mode);
 
         if(min_dist < obstacle_patience_)
         {
@@ -297,8 +322,8 @@ void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, do
         }
 
         pub_.publish(scaleGivenAccelerationLimits(twist, remaining_time));
-        ROS_DEBUG_NAMED ("top", "no obstacle");
-        ROS_DEBUG_NAMED ("top", "getMinimalDistance = %.2f", min_dist);
+        ROS_INFO_NAMED ("top", "no obstacle");
+        ROS_INFO_NAMED ("top", "getMinimalDistance = %.2f", min_dist);
 
         r.sleep();
     }
@@ -344,7 +369,7 @@ double StepBackAndMaxSteerRecovery::getCurrentDistDiff(const gm::Pose2D initialP
     return dist_diff;
 }
 
-double StepBackAndMaxSteerRecovery::getMinimalDistance(const COSTMAP_SEARCH_MODE mode)
+double StepBackAndMaxSteerRecovery::getMinimalDistanceToObstacle(const COSTMAP_SEARCH_MODE mode)
 {
     double max_angle, min_angle;
     gm::Twist twist = TWIST_STOP;
@@ -357,13 +382,13 @@ double StepBackAndMaxSteerRecovery::getMinimalDistance(const COSTMAP_SEARCH_MODE
         break;
     case FORWARD_LEFT:
         twist.linear.x = linear_vel_forward_;
-        max_angle = M_PI/3.0;
-        min_angle = 0.3;
+        max_angle = M_PI/2.0;
+        min_angle = 0.0;
         break;
     case FORWARD_RIGHT:
         twist.linear.x = linear_vel_forward_;
-        max_angle = -0.3;
-        min_angle = -M_PI/3.0;
+        max_angle = 0.0;
+        min_angle = -M_PI/2.0;
         break;
     case BACKWARD:
         twist.linear.x = linear_vel_back_;
@@ -441,7 +466,7 @@ int StepBackAndMaxSteerRecovery::determineTurnDirection()
 
     double min_l = *min_element(times_until_obstacle_l.begin(), times_until_obstacle_l.end());
     double min_r = *min_element(times_until_obstacle_r.begin(), times_until_obstacle_r.end());
-    ROS_INFO_NAMED ("top", "min_l = %.2f, min_r = %.2f", min_l, min_r);
+    ROS_INFO_NAMED ("top", "min_l = %.2f, min_r = %.2f", min_l * linear_vel_forward_, min_r * linear_vel_forward_);
 
     int ret_val;
 
