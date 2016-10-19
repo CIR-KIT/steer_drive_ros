@@ -98,7 +98,8 @@ void StepBackAndMaxSteerRecovery::initialize (std::string name, tf::TransformLis
   private_nh.param("linear_acceleration_limit", linear_acceleration_limit_, 4.0);
   private_nh.param("angular_acceleration_limit", angular_acceleration_limit_, 3.2);
   private_nh.param("controller_frequency", controller_frequency_, 20.0);
-  private_nh.param("simulation_inc", simulation_inc_, 1/controller_frequency_);
+  private_nh.param("simulation_frequency", simulation_frequency_, 5.0);
+  private_nh.param("simulation_inc", simulation_inc_, 1/simulation_frequency_);
 
   private_nh.param("only_single_steering", only_single_steering_, true);
   private_nh.param("trial_times", trial_times_, 5);
@@ -129,6 +130,7 @@ void StepBackAndMaxSteerRecovery::initialize (std::string name, tf::TransformLis
   ROS_INFO_NAMED ("top", "Initialized with recovery_trial_times = %d", trial_times_);
   ROS_INFO_NAMED ("top", "Initialized with obstacle_patience = %.2f", obstacle_patience_);
   ROS_INFO_NAMED ("top", "Initialized with obstacle_check_frequency = %.2f", obstacle_check_frequency_);
+  ROS_INFO_NAMED ("top", "Initialized with simulation_frequency = %.2f", simulation_frequency_);
   ROS_INFO_NAMED ("top", "Initialized with sim_angle_resolution = %.2f", sim_angle_resolution_);
   ROS_INFO_NAMED ("top", "Initialized with linear_vel_back = %.2f, step_back_length = %.2f, step_back_steering = %.2f",
                   linear_vel_back_, step_back_length_, step_back_timeout_);
@@ -239,7 +241,7 @@ gm::Twist StepBackAndMaxSteerRecovery::scaleGivenAccelerationLimits (const gm::T
   return scaleTwist(twist, max(1.0, max(acc_scaling, vel_scaling)));
 }
 
-// Get pose in local costmap frame
+// Get pose in local costmap framoe
 gm::Pose2D StepBackAndMaxSteerRecovery::getCurrentLocalPose () const
 {
   tf::Stamped<tf::Pose> p;
@@ -370,9 +372,7 @@ double StepBackAndMaxSteerRecovery::getCurrentDiff(const gm::Pose2D initialPose,
     switch (mode) {
     case FORWARD:
     case BACKWARD:
-        current_diff = (currentPose.x - initialPose.x)*(currentPose.x - initialPose.x) +
-                (currentPose.y - initialPose.y)*(currentPose.y - initialPose.y);
-        current_diff = sqrt(current_diff);
+        current_diff = getDistBetweenTwoPoints(currentPose, initialPose);
         ROS_DEBUG_NAMED ("top", "current_diff in translation = %.2f", current_diff);
         break;
     case FORWARD_LEFT:

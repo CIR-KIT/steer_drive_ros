@@ -130,6 +130,7 @@ private:
   double linear_acceleration_limit_;
   double angular_acceleration_limit_;
   double controller_frequency_;
+  double simulation_frequency_;
   double simulation_inc_;
 
   bool only_single_steering_;
