@@ -15,13 +15,18 @@ step_back_and_max_steer_recovery:
     obstacle_patience   : 0.3
     #-- 移動中に，障害物を確認する頻度[回/sec]
     obstacle_check_frequency: 5.0
-    # back(初回後退時の速度[m/s]と移動距離[m])
+    # 障害物探索時の角度の分解能[rad] costmapアクセス数を低減したいときに調整する．
+    sim_angle_resolution: 0.1
+    # back(初回後退時の速度[m/s], 移動距離[m], タイムアウト[sec])
     linear_vel_back     : -0.3
     step_back_length    : 1.0
-    # steer(旋回時の速度[rad/s]と目標回転角度[rad])
+    step_back_timeout   : 15.0
+    # steer(旋回時の速度[rad/s]と目標回転角度[rad], タイムアウト[sec])
     linear_vel_steer    : 0.3
     angular_speed_steer : 0.5
     turn_angle          : 1.5
-    # forward(旋回→直進→旋回の直進時の速度[m/s]と目標移動距離[m])
+    steering_timeout    : 15.0
+    # forward(旋回→直進→旋回の直進時の速度[m/s]と目標移動距離[m], タイムアウト[sec])
     linear_vel_forward  : 0.3
     step_forward_length : 1.0
+    step_forward_timeout: 15.0

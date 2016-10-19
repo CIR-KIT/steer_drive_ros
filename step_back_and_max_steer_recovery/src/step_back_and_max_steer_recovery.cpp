@@ -104,7 +104,7 @@ void StepBackAndMaxSteerRecovery::initialize (std::string name, tf::TransformLis
   private_nh.param("trial_times", trial_times_, 5);
   private_nh.param("obstacle_patience", obstacle_patience_, 0.5);
   private_nh.param("obstacle_check_frequency", obstacle_check_frequency_, 5.0);
-  private_nh.param("sim_angle_resolution_", sim_angle_resolution_, 0.1);
+  private_nh.param("sim_angle_resolution", sim_angle_resolution_, 0.1);
 
   // back
   private_nh.param("linear_vel_back", linear_vel_back_, -0.3);
@@ -129,6 +129,7 @@ void StepBackAndMaxSteerRecovery::initialize (std::string name, tf::TransformLis
   ROS_INFO_NAMED ("top", "Initialized with recovery_trial_times = %d", trial_times_);
   ROS_INFO_NAMED ("top", "Initialized with obstacle_patience = %.2f", obstacle_patience_);
   ROS_INFO_NAMED ("top", "Initialized with obstacle_check_frequency = %.2f", obstacle_check_frequency_);
+  ROS_INFO_NAMED ("top", "Initialized with sim_angle_resolution = %.2f", sim_angle_resolution_);
   ROS_INFO_NAMED ("top", "Initialized with linear_vel_back = %.2f, step_back_length = %.2f, step_back_steering = %.2f",
                   linear_vel_back_, step_back_length_, step_back_timeout_);
   ROS_INFO_NAMED ("top", "Initialized with linear_vel_steer = %.2f, angular_speed_steer = %.2f,"
