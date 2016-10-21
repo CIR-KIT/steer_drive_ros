@@ -115,6 +115,8 @@ namespace steer_drive_controller{
     , wheel_radius_(0.0)
     , wheel_separation_multiplier_(1.0)
     , wheel_radius_multiplier_(1.0)
+    , linear_vel_multiplier_(1.0)
+    , angle_vel_multiplier_(1.0)
     , cmd_vel_timeout_(0.5)
     , allow_multiple_cmd_vel_publishers_(true)
     , base_frame_id_("base_link")
@@ -197,6 +199,14 @@ namespace steer_drive_controller{
     controller_nh.param(ns_ + "wheel_radius_multiplier", wheel_radius_multiplier_, wheel_radius_multiplier_);
     ROS_INFO_STREAM_NAMED(name_, "Wheel radius will be multiplied by "
                           << wheel_radius_multiplier_ << ".");
+
+    controller_nh.param(ns_ + "linear_vel_multiplier", linear_vel_multiplier_, linear_vel_multiplier_);
+    ROS_INFO_STREAM_NAMED(name_, "linear velocity will be multiplied by "
+                          << linear_vel_multiplier_ << ".");
+
+    controller_nh.param(ns_ + "angle_vel_multiplier", angle_vel_multiplier_, angle_vel_multiplier_);
+    ROS_INFO_STREAM_NAMED(name_, "angle velocity will be multiplied by "
+                          << angle_vel_multiplier_ << ".");
 
     int velocity_rolling_window_size = 10;
     controller_nh.param(ns_ + "velocity_rolling_window_size", velocity_rolling_window_size, velocity_rolling_window_size);
@@ -379,8 +389,8 @@ namespace steer_drive_controller{
     */
 
     // Set Command
-    wheel_joint_.setCommand(curr_cmd.lin);
-    steer_joint_.setCommand(curr_cmd.ang);
+    wheel_joint_.setCommand(curr_cmd.lin*linear_vel_multiplier_);
+    steer_joint_.setCommand(curr_cmd.ang*angle_vel_multiplier_);
 
   }
 
