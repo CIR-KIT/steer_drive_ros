@@ -389,7 +389,8 @@ namespace steer_drive_controller{
     */
 
     // Set Command
-    wheel_joint_.setCommand(curr_cmd.lin*linear_vel_multiplier_);
+    const double wheel_vel = curr_cmd.lin/wheel_radius_*linear_vel_multiplier_; // omega = linear_vel / radius
+    wheel_joint_.setCommand(wheel_vel);
     steer_joint_.setCommand(curr_cmd.ang*angle_vel_multiplier_);
 
   }

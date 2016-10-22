@@ -354,7 +354,7 @@ namespace steer_bot_hardware_gazebo
 
   double SteerBotHardwareGazebo::ComputeEffCommandFromVelError(const int _index, ros::Duration _period)
   {
-    const double vel_error = wheel_jnt_vel_cmd_ - virtual_rear_wheel_jnt_vel_[INDEX_LEFT];
+    const double vel_error = wheel_jnt_vel_cmd_ - virtual_rear_wheel_jnt_vel_[_index];
     const double command = pids_[_index].computeCommand(vel_error, _period);
 
     const double effort_limit = 10.0;
