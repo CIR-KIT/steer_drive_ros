@@ -170,10 +170,6 @@ namespace steer_drive_controller{
     double wheel_separation_multiplier_;
     double wheel_radius_multiplier_;
 
-    /// linear and angle velocity calibration multipliers:
-    double linear_vel_multiplier_;
-    double angle_vel_multiplier_;
-
     /// Timeout to consider cmd_vel commands old:
     double cmd_vel_timeout_;
 
