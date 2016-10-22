@@ -148,6 +148,7 @@ private:
   //---- joint interface command
   std::vector<double> virtual_steer_jnt_pos_cmd_;
 
+  bool enable_ackermann_link_ ;
   int log_cnt_;
 
   template <class T>
