@@ -5,4 +5,7 @@ steer_bot_hardware_gazebo:
     virtual_front_wheels : ['base_to_right_front_wheel', 'base_to_left_front_wheel']
     virtual_front_steers : ['base_to_right_front_steer', 'base_to_left_front_steer']
 
+    # ackermann link mechanism
     enable_ackermann_link: true
+    wheel_separation_w : 0.5
+    wheel_separation_h : 0.79

@@ -39,6 +39,11 @@ namespace steer_bot_hardware_gazebo
     this->GetJointNames(nh_);
     this->RegisterHardwareInterfaces();
 
+    nh_.getParam(ns_ + "wheel_separation_w", wheel_separation_w_);
+    nh_.getParam(ns_ + "wheel_separation_h", wheel_separation_h_);
+    ROS_INFO_STREAM("wheel_separation_w = " << wheel_separation_w_);
+    ROS_INFO_STREAM("wheel_separation_h = " << wheel_separation_h_);
+
     nh_.param(ns_ + "enable_ackermann_link", true);
     ROS_INFO_STREAM("enable_ackermann_link = " << (enable_ackermann_link_ ? "true" : "false"));
 
@@ -179,8 +184,8 @@ namespace steer_bot_hardware_gazebo
         double pos_cmd = 0.0;
         if(enable_ackermann_link_)
         {
-          double h = 0.79;
-          double w = 0.5;
+          const double h = wheel_separation_h_;
+          const double w = wheel_separation_w_;
           pos_cmd = atan2(2*h*tan(steer_jnt_pos_cmd_), 2*h + w/2.0*tan(steer_jnt_pos_cmd_));
           ROS_DEBUG_STREAM("ackermann steer angle: " << pos_cmd << " at RIGHT");
         }
@@ -196,8 +201,8 @@ namespace steer_bot_hardware_gazebo
         double pos_cmd = 0.0;
         if(enable_ackermann_link_)
         {
-          double h = 0.79;
-          double w = 0.5;
+          const double h = wheel_separation_h_;
+          const double w = wheel_separation_w_;
           pos_cmd = atan2(2*h*tan(steer_jnt_pos_cmd_), 2*h - w/2.0*tan(steer_jnt_pos_cmd_));
           ROS_DEBUG_STREAM("ackermann steer angle: " << pos_cmd << " at LEFT");
         }
