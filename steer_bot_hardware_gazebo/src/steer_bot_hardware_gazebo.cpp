@@ -39,8 +39,8 @@ namespace steer_bot_hardware_gazebo
     this->GetJointNames(nh_);
     this->RegisterHardwareInterfaces();
 
-    nh_.getParam(ns_ + "wheel_separation_w", wheel_separation_w_);
-    nh_.getParam(ns_ + "wheel_separation_h", wheel_separation_h_);
+    nh_.param(ns_ + "wheel_separation_w", wheel_separation_w_);
+    nh_.param(ns_ + "wheel_separation_h", wheel_separation_h_);
     ROS_INFO_STREAM("wheel_separation_w = " << wheel_separation_w_);
     ROS_INFO_STREAM("wheel_separation_h = " << wheel_separation_h_);
 
