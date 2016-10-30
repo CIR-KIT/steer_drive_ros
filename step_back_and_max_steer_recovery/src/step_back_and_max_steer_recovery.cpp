@@ -332,7 +332,8 @@ void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, co
         if(time_out > 0.0 &&
                 time_begin + ros::Duration(time_out) < ros::Time::now())
         {
-            pub_.publish(scaleGivenAccelerationLimits(TWIST_STOP, remaining_time));
+            //pub_.publish(scaleGivenAccelerationLimits(TWIST_STOP, remaining_time));
+            pub_.publish(TWIST_STOP);
             ROS_WARN_NAMED ("top", "time out at %s", mode_name.c_str());
             ROS_WARN_NAMED ("top", "%.2f [sec] elapsed.", time_out);
             break;
@@ -341,13 +342,15 @@ void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, co
         // detect an obstacle
         if(min_dist < obstacle_patience_)
         {
-            pub_.publish(scaleGivenAccelerationLimits(TWIST_STOP, remaining_time));
+            //pub_.publish(scaleGivenAccelerationLimits(TWIST_STOP, remaining_time));
+            pub_.publish(TWIST_STOP);
             ROS_WARN_NAMED ("top", "obstacle detected at %s", mode_name.c_str());
             ROS_WARN_NAMED ("top", "min dist to obstacle = %.2f [m] in %s", min_dist, mode_name.c_str());
             break;
         }
 
-        pub_.publish(scaleGivenAccelerationLimits(twist, remaining_time));
+        //pub_.publish(scaleGivenAccelerationLimits(twist, remaining_time));
+        pub_.publish(twist);
         if(log_cnt++ % log_frequency == 0)
         {
             ROS_DEBUG_NAMED ("top", "no obstacle around");
