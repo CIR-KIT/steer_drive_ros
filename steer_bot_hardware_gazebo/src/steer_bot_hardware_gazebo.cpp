@@ -39,6 +39,14 @@ namespace steer_bot_hardware_gazebo
     this->GetJointNames(nh_);
     this->RegisterHardwareInterfaces();
 
+    nh_.param(ns_ + "wheel_separation_w", wheel_separation_w_);
+    nh_.param(ns_ + "wheel_separation_h", wheel_separation_h_);
+    ROS_INFO_STREAM("wheel_separation_w = " << wheel_separation_w_);
+    ROS_INFO_STREAM("wheel_separation_h = " << wheel_separation_h_);
+
+    nh_.param(ns_ + "enable_ackermann_link", true);
+    ROS_INFO_STREAM("enable_ackermann_link = " << (enable_ackermann_link_ ? "true" : "false"));
+
 #ifdef JOINT_LIMIT
     // Position joint limits interface
     std::vector<std::string> cmd_handle_names = steer_jnt_pos_cmd_interface_.getNames();
@@ -171,9 +179,39 @@ namespace steer_bot_hardware_gazebo
           ROS_DEBUG_STREAM("command[INDEX_LEFT] = " << eff_cmd);
         }
       }
-      else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_RIGHT] || gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_LEFT])
+      else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_RIGHT])
       {
-        sim_joints_[i]->SetAngle(0, steer_jnt_pos_cmd_);
+        double pos_cmd = 0.0;
+        if(enable_ackermann_link_)
+        {
+          const double h = wheel_separation_h_;
+          const double w = wheel_separation_w_;
+          pos_cmd = atan2(2*h*tan(steer_jnt_pos_cmd_), 2*h + w/2.0*tan(steer_jnt_pos_cmd_));
+          ROS_DEBUG_STREAM("ackermann steer angle: " << pos_cmd << " at RIGHT");
+        }
+        else
+        {
+          pos_cmd = steer_jnt_pos_cmd_;
+        }
+
+        sim_joints_[i]->SetAngle(0, pos_cmd);
+      }
+      else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_LEFT])
+      {
+        double pos_cmd = 0.0;
+        if(enable_ackermann_link_)
+        {
+          const double h = wheel_separation_h_;
+          const double w = wheel_separation_w_;
+          pos_cmd = atan2(2*h*tan(steer_jnt_pos_cmd_), 2*h - w/2.0*tan(steer_jnt_pos_cmd_));
+          ROS_DEBUG_STREAM("ackermann steer angle: " << pos_cmd << " at LEFT");
+        }
+        else
+        {
+          pos_cmd = steer_jnt_pos_cmd_;
+        }
+
+        sim_joints_[i]->SetAngle(0, pos_cmd);
       }
       else
       {
@@ -354,8 +392,18 @@ namespace steer_bot_hardware_gazebo
 
   double SteerBotHardwareGazebo::ComputeEffCommandFromVelError(const int _index, ros::Duration _period)
   {
-    const double vel_error = wheel_jnt_vel_cmd_ - virtual_rear_wheel_jnt_vel_[INDEX_LEFT];
+    double vel_error = wheel_jnt_vel_cmd_ - virtual_rear_wheel_jnt_vel_[_index];
+    ROS_DEBUG_STREAM("vel_error = " << vel_error);
+    if(fabs(vel_error) < 0.1)
+    {
+      vel_error = 0.0;
+      ROS_DEBUG_STREAM("too small. vel_error <- 0");
+    }
+    else
+      ROS_DEBUG_STREAM("not small. ");
+
     const double command = pids_[_index].computeCommand(vel_error, _period);
+    ROS_DEBUG_STREAM("command =" << command);
 
     const double effort_limit = 10.0;
     const double effort = clamp(command,
