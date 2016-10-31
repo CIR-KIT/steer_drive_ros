@@ -76,7 +76,8 @@ void StepBackAndMaxSteerRecovery::initialize (std::string name, tf::TransformLis
   */
   world_model_ = new base_local_planner::CostmapModel(*local_costmap_->getCostmap());
 
-  pub_ = nh_.advertise<gm::Twist>("cmd_vel", 10);
+  cmd_vel_pub_ = nh_.advertise<gm::Twist>("cmd_vel", 10);
+  cmd_vel_pub_ = nh_.advertise<std_msgs::Bool>("recover_run", 10);
   ros::NodeHandle private_nh("~/" + name);
 
   /*
@@ -332,8 +333,8 @@ void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, co
         if(time_out > 0.0 &&
                 time_begin + ros::Duration(time_out) < ros::Time::now())
         {
-            //pub_.publish(scaleGivenAccelerationLimits(TWIST_STOP, remaining_time));
-            pub_.publish(TWIST_STOP);
+            //cmd_vel_pub_.publish(scaleGivenAccelerationLimits(TWIST_STOP, remaining_time));
+            cmd_vel_pub_.publish(TWIST_STOP);
             ROS_WARN_NAMED ("top", "time out at %s", mode_name.c_str());
             ROS_WARN_NAMED ("top", "%.2f [sec] elapsed.", time_out);
             break;
@@ -342,15 +343,15 @@ void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, co
         // detect an obstacle
         if(min_dist < obstacle_patience_)
         {
-            //pub_.publish(scaleGivenAccelerationLimits(TWIST_STOP, remaining_time));
-            pub_.publish(TWIST_STOP);
+            //cmd_vel_pub_.publish(scaleGivenAccelerationLimits(TWIST_STOP, remaining_time));
+            cmd_vel_pub_.publish(TWIST_STOP);
             ROS_WARN_NAMED ("top", "obstacle detected at %s", mode_name.c_str());
             ROS_WARN_NAMED ("top", "min dist to obstacle = %.2f [m] in %s", min_dist, mode_name.c_str());
             break;
         }
 
-        //pub_.publish(scaleGivenAccelerationLimits(twist, remaining_time));
-        pub_.publish(twist);
+        //cmd_vel_pub_.publish(scaleGivenAccelerationLimits(twist, remaining_time));
+        cmd_vel_pub_.publish(twist);
         if(log_cnt++ % log_frequency == 0)
         {
             ROS_DEBUG_NAMED ("top", "no obstacle around");
@@ -522,6 +523,12 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
   ROS_INFO_NAMED ("top", "**********Start StepBackAndSteerRecovery!!!**********");
   ROS_INFO_NAMED ("top", "*****************************************************");
 
+  std_msgs::Bool run_state;
+
+  // when starting recovery, topic /run_state_ shifts to true
+  run_state.data = true;
+  recover_run_pub_.publish(run_state);
+
   int cnt = 0;
   const double stop_duaration = 1.0;
   while(true)
@@ -548,7 +555,7 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
 
       // stop
       for (double t=0; t<stop_duaration; t+=1/controller_frequency_) {
-          pub_.publish(TWIST_STOP);
+          cmd_vel_pub_.publish(TWIST_STOP);
           r.sleep();
       }
 
@@ -599,7 +606,7 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
 
       // stop
       for (double t=0; t<stop_duaration; t+=1/controller_frequency_) {
-          pub_.publish(TWIST_STOP);
+          cmd_vel_pub_.publish(TWIST_STOP);
           r.sleep();
       }
 
@@ -641,6 +648,10 @@ void StepBackAndMaxSteerRecovery::runBehavior ()
           break;
       }
   }
+
+  // when finishing recovery, topic /run_state_ shifts to false
+  run_state.data = false;
+  recover_run_pub_.publish(run_state);
 
   ROS_INFO_NAMED ("top", "*****************************************************");
   ROS_INFO_NAMED ("top", "**********Finish StepBackAndSteerRecovery!!**********");

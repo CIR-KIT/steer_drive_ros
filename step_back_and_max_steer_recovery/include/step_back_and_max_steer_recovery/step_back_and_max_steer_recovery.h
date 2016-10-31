@@ -43,6 +43,7 @@
 #include <base_local_planner/costmap_model.h>
 #include <costmap_2d/costmap_2d_ros.h>
 #include <geometry_msgs/Pose2D.h>
+#include <std_msgs/Bool.h>
 
 namespace gm=geometry_msgs;
 namespace cmap=costmap_2d;
@@ -115,7 +116,8 @@ private:
   costmap_2d::Costmap2D costmap_; // Copy of local_costmap_, used by world model
   std::string name_;
   tf::TransformListener* tf_;
-  ros::Publisher pub_;
+  ros::Publisher cmd_vel_pub_;
+  ros::Publisher recover_run_pub_;
   bool initialized_;
 
   // Memory owned by this object
