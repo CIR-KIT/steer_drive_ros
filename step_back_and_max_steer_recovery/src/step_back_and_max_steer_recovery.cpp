@@ -77,7 +77,7 @@ void StepBackAndMaxSteerRecovery::initialize (std::string name, tf::TransformLis
   world_model_ = new base_local_planner::CostmapModel(*local_costmap_->getCostmap());
 
   cmd_vel_pub_ = nh_.advertise<gm::Twist>("cmd_vel", 10);
-  cmd_vel_pub_ = nh_.advertise<std_msgs::Bool>("recover_run", 10);
+  recover_run_pub_ = nh_.advertise<std_msgs::Bool>("recover_run", 10);
   ros::NodeHandle private_nh("~/" + name);
 
   /*
