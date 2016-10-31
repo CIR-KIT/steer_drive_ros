@@ -80,6 +80,9 @@ namespace steer_drive_controller
     const double right_wheel_cur_pos = right_pos * wheel_radius_;
 
     /// Estimate velocity of wheels using old and current position:
+    //const double left_wheel_est_vel  = left_wheel_cur_pos  - left_wheel_old_pos_;
+    //const double right_wheel_est_vel = right_wheel_cur_pos - right_wheel_old_pos_;
+
     const double left_wheel_est_vel  = left_wheel_cur_pos  - left_wheel_old_pos_;
     const double right_wheel_est_vel = right_wheel_cur_pos - right_wheel_old_pos_;
 
@@ -88,9 +91,9 @@ namespace steer_drive_controller
     right_wheel_old_pos_ = right_wheel_cur_pos;
 
     /// Compute linear and angular diff:
-    const double linear  = (right_wheel_est_vel + left_wheel_est_vel) * 0.5 ;
-    //const double angular = (right_wheel_est_vel - left_wheel_est_vel) / wheel_separation_;
-    const double angular = tan(steer_pos) * linear / wheel_separation_h_;
+    const double linear  = (right_wheel_est_vel + left_wheel_est_vel) * 0.5;
+    const double angular = (right_wheel_est_vel - left_wheel_est_vel) / wheel_separation_w_;
+    //const double angular = tan(steer_pos) * linear / wheel_separation_h_;
 
     /// Integrate odometry:
     integrate_fun_(linear, angular);
