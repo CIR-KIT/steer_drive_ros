@@ -11,6 +11,12 @@
   - 修正後: 障害物までの距離 - obstacle_patience (パラメータ)
 - 各動作毎にタイムアウトを設定可能．
 
+## Topic
+### Publish
+ - `/recover_run`
+  - Type: std_msgs::Bool
+  - リカバリ開始時にtrue, リカバリ終了時にfalseを`publish`．
+
 ## 挙動
 - 動画サンプル→https://www.youtube.com/watch?v=j6GID9XuiiU
 
