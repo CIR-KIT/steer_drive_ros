@@ -186,7 +186,7 @@ namespace steer_bot_hardware_gazebo
         {
           const double h = wheel_separation_h_;
           const double w = wheel_separation_w_;
-          pos_cmd = atan2(2*h*tan(steer_jnt_pos_cmd_), 2*h + w/2.0*tan(steer_jnt_pos_cmd_));
+          pos_cmd = 2*atan2(2*h*tan(steer_jnt_pos_cmd_), 2*h + w/2.0*tan(steer_jnt_pos_cmd_));
           ROS_DEBUG_STREAM("ackermann steer angle: " << pos_cmd << " at RIGHT");
         }
         else
@@ -203,7 +203,7 @@ namespace steer_bot_hardware_gazebo
         {
           const double h = wheel_separation_h_;
           const double w = wheel_separation_w_;
-          pos_cmd = atan2(2*h*tan(steer_jnt_pos_cmd_), 2*h - w/2.0*tan(steer_jnt_pos_cmd_));
+          pos_cmd = 2*atan2(2*h*tan(steer_jnt_pos_cmd_), 2*h - w/2.0*tan(steer_jnt_pos_cmd_));
           ROS_DEBUG_STREAM("ackermann steer angle: " << pos_cmd << " at LEFT");
         }
         else
