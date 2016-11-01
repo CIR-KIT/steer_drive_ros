@@ -155,7 +155,7 @@ namespace steer_bot_hardware_gazebo
 
       if(gazebo_jnt_name == virtual_rear_wheel_jnt_names_[INDEX_RIGHT])
       {
-        const double eff_cmd = ComputeEffCommandFromVelError(INDEX_RIGHT, period);
+        const double eff_cmd = 2*ComputeEffCommandFromVelError(INDEX_RIGHT, period);
         sim_joints_[i]->SetForce(0u, eff_cmd);
 
         if(log_cnt_ % 500 == 0)
@@ -168,7 +168,7 @@ namespace steer_bot_hardware_gazebo
       }
       else if(gazebo_jnt_name == virtual_rear_wheel_jnt_names_[INDEX_LEFT])
       {
-        const double eff_cmd = ComputeEffCommandFromVelError(INDEX_LEFT, period);
+        const double eff_cmd = 2*ComputeEffCommandFromVelError(INDEX_LEFT, period);
         sim_joints_[i]->SetForce(0u, eff_cmd);
 
         if(log_cnt_ % 500 == 0)
