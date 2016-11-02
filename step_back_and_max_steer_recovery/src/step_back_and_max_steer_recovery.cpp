@@ -358,6 +358,7 @@ void StepBackAndMaxSteerRecovery::moveSpacifiedLength (const gm::Twist twist, co
             ROS_INFO_NAMED ("top", "min dist to obstacle = %.2f [m] in %s", min_dist, mode_name.c_str());
         }
 
+        ros::spinOnce();
         r.sleep();
     }
 
