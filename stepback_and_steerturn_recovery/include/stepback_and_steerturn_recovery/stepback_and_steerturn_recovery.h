@@ -36,8 +36,8 @@
  * \author Masaru Morita
  */
 
-#ifndef STEP_BACK_AND_MAX_STEER_RECOVERY_H
-#define STEP_BACK_AND_MAX_STEER_RECOVERY_H
+#ifndef STEPBACK_AND_STEERTURN_RECOVERY_H
+#define STEPBACK_AND_STEERTURN_RECOVERY_H
 
 #include <nav_core/recovery_behavior.h>
 #include <base_local_planner/costmap_model.h>
@@ -51,19 +51,19 @@ namespace blp=base_local_planner;
 using std::vector;
 using std::max;
 
-namespace step_back_and_max_steer_recovery
+namespace stepback_and_steerturn_recovery
 {
 
 /// Recovery behavior that takes a given twist and tries to execute it for up to
 /// d seconds, or until reaching an obstacle.  
-class StepBackAndMaxSteerRecovery : public nav_core::RecoveryBehavior
+class StepBackAndSteerTurnRecovery : public nav_core::RecoveryBehavior
 {
 public:
   
   /// Doesn't do anything: initialize is where the actual work happens
-  StepBackAndMaxSteerRecovery();
+  StepBackAndSteerTurnRecovery();
 
-  ~StepBackAndMaxSteerRecovery();
+  ~StepBackAndSteerTurnRecovery();
 
   /// Initialize the parameters of the behavior
   void initialize (std::string n, tf::TransformListener* tf,
@@ -156,6 +156,6 @@ private:
 
 };
 
-} // namespace step_back_and_max_steer_recovery
+} // namespace stepback_and_steerturn_recovery
 
 #endif // include guard
