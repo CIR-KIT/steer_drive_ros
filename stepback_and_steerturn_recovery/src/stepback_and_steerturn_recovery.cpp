@@ -35,7 +35,7 @@
  * 
  */
 
-#include <step_back_and_max_steer_recovery/step_back_and_max_steer_recovery.h>
+#include <stepback_and_steerturn_recovery/stepback_and_steerturn_recovery.h>
 #include <pluginlib/class_list_macros.h>
 #include <tf/transform_datatypes.h>
 
