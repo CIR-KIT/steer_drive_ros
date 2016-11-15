@@ -1,7 +1,0 @@
-<library path="lib/libstep_back_and_max_steer_recovery">
-    <class name="step_back_and_max_steer_recovery/StepBackAndMaxSteerRecovery" type="step_back_and_max_steer_recovery::StepBackAndMaxSteerRecovery" base_class_type="nav_core::RecoveryBehavior">
-    <description>
-      Steps back and proceed with the max steer angle.
-    </description>
-  </class>
-</library>

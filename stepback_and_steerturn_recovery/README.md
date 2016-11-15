@@ -1,4 +1,4 @@
-#step_back_and_max_steer_recovery
+#stepback_and_steerturn_recovery
 ## 仕様
 - ざっくりしたものはissue参照→[Recovery の挙動について #10](https://github.com/CIR-KIT/third_robot_pkg/issues/10)
 - 実際には，これよりもうちょっと色々やっている．
@@ -31,10 +31,10 @@ recovery_behaviour_enabled: true
 
 recovery_behaviors:
   - {name: conservative_reset, type: clear_costmap_recovery/ClearCostmapRecovery}
-  - {name: step_back_and_max_steer_recovery, type: step_back_and_max_steer_recovery/StepBackAndMaxSteerRecovery}
+  - {name: stepback_and_steerturn_recovery, type: stepback_and_steerturn_recovery/StepBackAndSteerTurnRecovery}
   - {name: aggressive_reset, type: clear_costmap_recovery/ClearCostmapRecovery}
 
-step_back_and_max_steer_recovery:
+stepback_and_steerturn_recovery:
     # 最初の一回だけ旋回したい場合にtrue
     only_single_steering: true
     # リカバリ行動の試行回数[回]
@@ -84,23 +84,23 @@ step_back_and_max_steer_recovery:
 - パラメータサーバに次のように登録されていればOK
 
 ```bash
-rosparam list | grep step_back_and_max_steer_recovery
-/move_base/step_back_and_max_steer_recovery/angular_speed_steer
-/move_base/step_back_and_max_steer_recovery/linear_vel_back
-/move_base/step_back_and_max_steer_recovery/linear_vel_forward
-/move_base/step_back_and_max_steer_recovery/linear_vel_steer
-/move_base/step_back_and_max_steer_recovery/obstacle_check_frequency
-/move_base/step_back_and_max_steer_recovery/obstacle_patience
-/move_base/step_back_and_max_steer_recovery/only_single_steering
-/move_base/step_back_and_max_steer_recovery/sim_angle_resolution
-/move_base/step_back_and_max_steer_recovery/simulation_frequency
-/move_base/step_back_and_max_steer_recovery/steering_timeout
-/move_base/step_back_and_max_steer_recovery/step_back_length
-/move_base/step_back_and_max_steer_recovery/step_back_timeout
-/move_base/step_back_and_max_steer_recovery/step_forward_length
-/move_base/step_back_and_max_steer_recovery/step_forward_timeout
-/move_base/step_back_and_max_steer_recovery/trial_times
-/move_base/step_back_and_max_steer_recovery/turn_angle
+rosparam list | grep stepback_and_steerturn_recovery
+/move_base/stepback_and_steerturn_recovery/angular_speed_steer
+/move_base/stepback_and_steerturn_recovery/linear_vel_back
+/move_base/stepback_and_steerturn_recovery/linear_vel_forward
+/move_base/stepback_and_steerturn_recovery/linear_vel_steer
+/move_base/stepback_and_steerturn_recovery/obstacle_check_frequency
+/move_base/stepback_and_steerturn_recovery/obstacle_patience
+/move_base/stepback_and_steerturn_recovery/only_single_steering
+/move_base/stepback_and_steerturn_recovery/sim_angle_resolution
+/move_base/stepback_and_steerturn_recovery/simulation_frequency
+/move_base/stepback_and_steerturn_recovery/steering_timeout
+/move_base/stepback_and_steerturn_recovery/step_back_length
+/move_base/stepback_and_steerturn_recovery/step_back_timeout
+/move_base/stepback_and_steerturn_recovery/step_forward_length
+/move_base/stepback_and_steerturn_recovery/step_forward_timeout
+/move_base/stepback_and_steerturn_recovery/trial_times
+/move_base/stepback_and_steerturn_recovery/turn_angle
 ```
 
 - リカバリ行動に入ったら以下のようなメッセージが出る．

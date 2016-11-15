@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(step_back_and_max_steer_recovery)
+project(stepback_and_steerturn_recovery)
 
 find_package(catkin REQUIRED
         COMPONENTS
@@ -26,13 +26,13 @@ catkin_package(
         pluginlib
 )
 
-add_library(${PROJECT_NAME} src/step_back_and_max_steer_recovery.cpp)
+add_library(${PROJECT_NAME} src/stepback_and_steerturn_recovery.cpp)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 install(TARGETS ${PROJECT_NAME}
        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
        )
 
-install(FILES move_slow_plugin.xml
+install(FILES stepback_and_steerturn_recovery_plugin.xml
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
