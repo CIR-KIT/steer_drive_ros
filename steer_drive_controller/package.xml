@@ -6,10 +6,9 @@
 
   <license>BSD</license>
 
-  <url type="website">https://github.com/MoriKen254/ros_controllers/wiki</url>
-  <url type="bugtracker">https://github.com//MoriKen254/ros_controllers/issues</url>
-  <url type="repository">https://github.com/MoriKen254/ros_controllers</url>
-
+  <url type="bugtracker">https://github.com/CIR-KIT/steer_drive_ros/issues</url>
+  <url type="repository">https://github.com/CIR-KIT/steer_drive_ros.git</url>
+  <author email="cirkit.infomation@gmail.com">CIR-KIT</author>
   <author email="p595201m@mail.kyutech.jp">Masaru Morita</author>
 
   <buildtool_depend>catkin</buildtool_depend>
