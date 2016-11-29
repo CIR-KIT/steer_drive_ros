@@ -12,8 +12,8 @@
     <maintainer email="p595201m@mail.kyutech.jp">Masaru Morita</maintainer>
 
     <license>BSD</license>
-    <url type="repository">https://github.com/CIR-KIT-Unit03/cirkit_unit03.git</url>
-    <url type="bugtracker">https://github.com/CIR-KIT-Unit03/cirkit_unit03/issues</url>
+    <url type="repository">https://github.com/CIR-KIT/steer_drive_ros.git</url>
+    <url type="bugtracker">https://github.com/CIR-KIT/steer_drive_ros/issues</url>
 
     <buildtool_depend>catkin</buildtool_depend>
     <depend>roscpp</depend>
