@@ -324,6 +324,9 @@ namespace steer_drive_controller{
       double right_pos = rear_wheel_joints_[INDEX_RIGHT].getPosition();
       double steer_pos = steer_joint_.getPosition();
 
+      if (std::isnan(left_pos) || std::isnan(right_pos) || std::isnan(steer_pos))
+        return;
+
       // Estimate linear and angular velocity using joint information
       steer_pos = steer_pos * steer_pos_multiplier_;
       odometry_.update(left_pos, right_pos, steer_pos, time);
