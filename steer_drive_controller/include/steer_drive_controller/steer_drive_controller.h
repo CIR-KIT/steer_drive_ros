@@ -167,10 +167,8 @@ namespace steer_drive_controller{
     double wheel_radius_;
 
     /// Wheel separation and radius calibration multipliers:
-    double wheel_separation_w_multiplier_;
-    double wheel_separation_h_multiplier_;
+    double wheel_separation_multiplier_;
     double wheel_radius_multiplier_;
-    double steer_pos_multiplier_;
 
     /// Timeout to consider cmd_vel commands old:
     double cmd_vel_timeout_;
