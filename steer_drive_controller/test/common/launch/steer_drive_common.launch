@@ -1,0 +1,30 @@
+<launch>
+  <!-- Load steerbot model -->
+  <param name="robot_description"
+         command="$(find xacro)/xacro.py '$(find steer_drive_controller)/test/common/urdf/steerbot.xacro'" />
+
+  <!-- Load controller config -->
+  <rosparam command="load" file="$(find steer_drive_controller)/test/common/config/steerbot_controllers.yaml" />
+
+  <!-- Start steerbot -->
+  <node name="steerbot"
+        pkg="steer_drive_controller"
+        type="steerbot"/>
+
+  <!-- Spawn controller -->
+  <node name="controller_spawner"
+        pkg="controller_manager" type="spawner" output="screen"
+        args="steerbot_controller" />
+
+  <!-- rqt_plot monitoring -->
+  <!--
+  <node name="steerbot_pos_monitor"
+        pkg="rqt_plot"
+        type="rqt_plot"
+        args="/steerbot_controller/odom/pose/pose/position/x" />
+  <node name="steerbot_vel_monitor"
+        pkg="rqt_plot"
+        type="rqt_plot"
+        args="/steerbot_controller/odom/twist/twist/linear/x" />
+  -->
+</launch>
