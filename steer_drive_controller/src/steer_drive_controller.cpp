@@ -113,8 +113,10 @@ namespace steer_drive_controller{
     , wheel_separation_w_(0.0)
     , wheel_separation_h_(0.0)
     , wheel_radius_(0.0)
-    , wheel_separation_multiplier_(1.0)
+    , wheel_separation_w_multiplier_(1.0)
+    , wheel_separation_h_multiplier_(1.0)
     , wheel_radius_multiplier_(1.0)
+    , steer_pos_multiplier_(1.0)
     , cmd_vel_timeout_(0.5)
     , allow_multiple_cmd_vel_publishers_(true)
     , base_frame_id_("base_link")
@@ -190,13 +192,21 @@ namespace steer_drive_controller{
 
     controller_nh.param(ns_ + "open_loop", open_loop_, open_loop_);
 
-    controller_nh.param(ns_ + "wheel_separation_multiplier", wheel_separation_multiplier_, wheel_separation_multiplier_);
-    ROS_INFO_STREAM_NAMED(name_, "Wheel separation will be multiplied by "
-                          << wheel_separation_multiplier_ << ".");
+    controller_nh.param(ns_ + "wheel_separation_w_multiplier", wheel_separation_w_multiplier_, wheel_separation_w_multiplier_);
+    ROS_INFO_STREAM_NAMED(name_, "Wheel separation width will be multiplied by "
+                          << wheel_separation_w_multiplier_ << ".");
+
+    controller_nh.param(ns_ + "wheel_separation_h_multiplier", wheel_separation_h_multiplier_, wheel_separation_h_multiplier_);
+    ROS_INFO_STREAM_NAMED(name_, "Wheel separation height will be multiplied by "
+                          << wheel_separation_h_multiplier_ << ".");
 
     controller_nh.param(ns_ + "wheel_radius_multiplier", wheel_radius_multiplier_, wheel_radius_multiplier_);
     ROS_INFO_STREAM_NAMED(name_, "Wheel radius will be multiplied by "
                           << wheel_radius_multiplier_ << ".");
+
+    controller_nh.param(ns_ + "steer_pos_multiplier", steer_pos_multiplier_, steer_pos_multiplier_);
+    ROS_INFO_STREAM_NAMED(name_, "Steer pos will be multiplied by "
+                          << steer_pos_multiplier_ << ".");
 
     int velocity_rolling_window_size = 10;
     controller_nh.param(ns_ + "velocity_rolling_window_size", velocity_rolling_window_size, velocity_rolling_window_size);
@@ -262,8 +272,8 @@ namespace steer_drive_controller{
 
     // Regardless of how we got the separation and radius, use them
     // to set the odometry parameters
-    const double ws_w = wheel_separation_multiplier_ * wheel_separation_w_;
-    const double ws_h = wheel_separation_multiplier_ * wheel_separation_h_;
+    const double ws_w = wheel_separation_w_multiplier_ * wheel_separation_w_;
+    const double ws_h = wheel_separation_h_multiplier_ * wheel_separation_h_;
     const double wr = wheel_radius_multiplier_     * wheel_radius_;
     odometry_.setWheelParams(ws_w, ws_h, wr);
     ROS_INFO_STREAM_NAMED(name_,
@@ -314,10 +324,8 @@ namespace steer_drive_controller{
       double right_pos = rear_wheel_joints_[INDEX_RIGHT].getPosition();
       double steer_pos = steer_joint_.getPosition();
 
-      if (std::isnan(left_pos) || std::isnan(right_pos) || std::isnan(steer_pos))
-          return;
-
       // Estimate linear and angular velocity using joint information
+      steer_pos = steer_pos * steer_pos_multiplier_;
       odometry_.update(left_pos, right_pos, steer_pos, time);
     }
 
