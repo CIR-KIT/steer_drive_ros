@@ -49,7 +49,12 @@ install(FILES steer_drive_controller_plugins.xml
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 if (CATKIN_ENABLE_TESTING)
-  find_package(catkin COMPONENTS rostest std_srvs controller_manager tf)
+  find_package(catkin REQUIRED COMPONENTS
+    rostest
+    std_srvs
+    controller_manager
+    tf
+  )
   include_directories(include ${catkin_INCLUDE_DIRS})
 
   add_executable(steerbot test/common/src/steerbot.cpp)
