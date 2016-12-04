@@ -57,17 +57,17 @@ if (CATKIN_ENABLE_TESTING)
   )
   include_directories(include ${catkin_INCLUDE_DIRS})
 
-  add_executable(steerbot test/common/src/steerbot.cpp)
-  target_link_libraries(steerbot ${catkin_LIBRARIES})
+  add_executable(${PROJECT_NAME}_steerbot test/common/src/steerbot.cpp)
+  target_link_libraries(${PROJECT_NAME}_steerbot ${catkin_LIBRARIES})
 
-  add_dependencies(tests steerbot)
+  add_dependencies(tests ${PROJECT_NAME}_steerbot)
 
-  add_rostest_gtest(steer_drive_test
+  add_rostest_gtest(${PROJECT_NAME}_test
     test/steer_drive_controller.test
     test/steer_drive_test.cpp)
-  target_link_libraries(steer_drive_test ${catkin_LIBRARIES})
-  add_rostest_gtest(steer_drive_nan_test
+  target_link_libraries(${PROJECT_NAME}_test ${catkin_LIBRARIES})
+  add_rostest_gtest(${PROJECT_NAME}_nan_test
     test/steer_drive_controller_nan.test
     test/steer_drive_nan_test.cpp)
-  target_link_libraries(steer_drive_nan_test ${catkin_LIBRARIES})
+  target_link_libraries(${PROJECT_NAME}_nan_test ${catkin_LIBRARIES})
 endif()
