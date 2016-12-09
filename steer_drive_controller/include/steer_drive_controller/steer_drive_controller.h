@@ -129,15 +129,13 @@ namespace steer_drive_controller{
 #ifdef MULTIPLE_JOINTS
     std::vector<hardware_interface::JointStateHandle> left_wheel_joint_states_;
     std::vector<hardware_interface::JointStateHandle> right_wheel_joint_states_;
-#endif
     std::vector<hardware_interface::JointHandle> rear_wheel_joints_;
     std::vector<hardware_interface::JointHandle> front_wheel_joints_;
-#ifdef MULTIPLE_JOINTS
     std::vector<hardware_interface::JointHandle> left_steer_joints_;
     std::vector<hardware_interface::JointHandle> right_steer_joints_;
 #endif
-    hardware_interface::JointHandle wheel_joint_;
-    hardware_interface::JointHandle steer_joint_;
+    hardware_interface::JointHandle rear_wheel_joint_;
+    hardware_interface::JointHandle front_steer_joint_;
 
     /// Velocity command related:
     struct Commands
@@ -157,9 +155,10 @@ namespace steer_drive_controller{
     boost::shared_ptr<realtime_tools::RealtimePublisher<tf::tfMessage> > tf_odom_pub_;
     Odometry odometry_;
 
+#ifdef SINGLE_JOINT
     /// Wheel separation, wrt the midpoint of the wheel width:
     double wheel_separation_w_;
-
+#endif
     /// Wheel separation, wrt the midpoint of the wheel width:
     double wheel_separation_h_;
 
@@ -167,7 +166,9 @@ namespace steer_drive_controller{
     double wheel_radius_;
 
     /// Wheel separation and radius calibration multipliers:
+#ifdef SINGLE_JOINT
     double wheel_separation_w_multiplier_;
+#endif
     double wheel_separation_h_multiplier_;
     double wheel_radius_multiplier_;
     double steer_pos_multiplier_;
@@ -217,6 +218,7 @@ namespace steer_drive_controller{
      */
     void cmdVelCallback(const geometry_msgs::Twist& command);
 
+#ifdef SINGLE_JOINT
     /**
      * \brief Get the wheel names from a wheel param
      * \param [in]  controller_nh Controller node handler
@@ -240,7 +242,7 @@ namespace steer_drive_controller{
     bool getSteerNames(ros::NodeHandle& controller_nh,
                        const std::string& steer_param,
                        std::vector<std::string>& steer_names);
-
+#endif
     /**
      * \brief Sets odometry parameters from the URDF, i.e. the wheel radius and separation
      * \param root_nh Root node handle
@@ -248,10 +250,14 @@ namespace steer_drive_controller{
      * \param right_wheel_name Name of the right wheel joint
      */
     bool setOdomParamsFromUrdf(ros::NodeHandle& root_nh,
+#ifdef SINGLE_JOINT
                                const std::vector<std::string>& rear_wheel_names,
                                const std::vector<std::string>& front_wheel_names,
                                const std::vector<std::string>& front_steer_names,
-                               bool lookup_wheel_separation_w,
+#else
+                               const std::string rear_wheel_name,
+                               const std::string front_steer_name,
+#endif
                                bool lookup_wheel_separation_h,
                                bool lookup_wheel_radius);
 

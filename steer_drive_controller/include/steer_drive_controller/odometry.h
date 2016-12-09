@@ -79,12 +79,12 @@ namespace steer_drive_controller
 
     /**
      * \brief Updates the odometry class with latest wheels position
-     * \param left_pos  Left  wheel position [rad]
-     * \param right_pos Right wheel position [rad]
+     * \param rear_wheel_pos  Rear wheel position [rad]
+     * \param front_steer_pos Front Steer position [rad]
      * \param time      Current time
      * \return true if the odometry is actually updated
      */
-    bool update(double left_pos, double right_pos, double steer_pos, const ros::Time &time);
+    bool update(double rear_wheel_pos, double front_steer_pos, const ros::Time &time);
 
     /**
      * \brief Updates the odometry class with latest velocity command
@@ -144,7 +144,7 @@ namespace steer_drive_controller
      * \param wheel_separation Seperation between left and right wheels [m]
      * \param wheel_radius     Wheel radius [m]
      */
-    void setWheelParams(double wheel_separation_w, double wheel_reparation_h, double wheel_radius);
+    void setWheelParams(double wheel_reparation_h, double wheel_radius);
 
     /**
      * \brief Velocity rolling window size setter
@@ -190,13 +190,11 @@ namespace steer_drive_controller
     double angular_; // [rad/s]
 
     /// Wheel kinematic parameters [m]:
-    double wheel_separation_w_;
     double wheel_separation_h_;
     double wheel_radius_;
 
     /// Previous wheel position/state [rad]:
-    double left_wheel_old_pos_;
-    double right_wheel_old_pos_;
+    double rear_wheel_old_pos_;
 
     /// Rolling mean accumulators for the linar and angular velocities:
     size_t velocity_rolling_window_size_;
