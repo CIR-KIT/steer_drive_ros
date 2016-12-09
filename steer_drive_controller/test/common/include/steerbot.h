@@ -57,7 +57,7 @@ public:
   : running_(true)
   , start_srv_(nh_.advertiseService("start", &Steerbot::startCallback, this))
   , stop_srv_(nh_.advertiseService("stop", &Steerbot::stopCallback, this))
-  , ns_("steerbot_controller/")
+  , ns_("steerbot_hw_sim/")
   {
     // Intialize raw data
     this->cleanUp();
@@ -77,29 +77,29 @@ public:
   {
     std::ostringstream os;
     // directly get from controller
-    os << wheel_jnt_vel_cmd_ << ", ";
-    os << steer_jnt_pos_cmd_ << ", ";
+    os << rear_wheel_jnt_vel_cmd_ << ", ";
+    os << front_steer_jnt_pos_cmd_ << ", ";
 
     // convert to each joint velocity
     //-- differential drive
     for (unsigned int i = 0; i < virtual_rear_wheel_jnt_vel_cmd_.size(); i++)
     {
-      virtual_rear_wheel_jnt_vel_cmd_[i] = wheel_jnt_vel_cmd_;
+      virtual_rear_wheel_jnt_vel_cmd_[i] = rear_wheel_jnt_vel_cmd_;
       os << virtual_rear_wheel_jnt_vel_cmd_[i] << ", ";
     }
 
     //-- ackerman link
     const double h = wheel_separation_h_;
     const double w = wheel_separation_w_;
-    virtual_steer_jnt_pos_cmd_[INDEX_RIGHT] = atan2(2*h*tan(steer_jnt_pos_cmd_), 2*h + w/2.0*tan(steer_jnt_pos_cmd_));
-    virtual_steer_jnt_pos_cmd_[INDEX_LEFT] = atan2(2*h*tan(steer_jnt_pos_cmd_), 2*h - w/2.0*tan(steer_jnt_pos_cmd_));
+    virtual_front_steer_jnt_pos_cmd_[INDEX_RIGHT] = atan2(2*h*tan(front_steer_jnt_pos_cmd_), 2*h + w/2.0*tan(front_steer_jnt_pos_cmd_));
+    virtual_front_steer_jnt_pos_cmd_[INDEX_LEFT] = atan2(2*h*tan(front_steer_jnt_pos_cmd_), 2*h - w/2.0*tan(front_steer_jnt_pos_cmd_));
 
-    for (unsigned int i = 0; i < virtual_steer_jnt_pos_cmd_.size(); i++)
+    for (unsigned int i = 0; i < virtual_front_steer_jnt_pos_cmd_.size(); i++)
     {
-      os << virtual_steer_jnt_pos_cmd_[i] << ", ";
+      os << virtual_front_steer_jnt_pos_cmd_[i] << ", ";
     }
 
-    if (wheel_jnt_vel_cmd_ != 0.0 || steer_jnt_pos_cmd_ != 0.0)
+    if (rear_wheel_jnt_vel_cmd_ != 0.0 || front_steer_jnt_pos_cmd_ != 0.0)
       ROS_INFO_STREAM("Commands for joints: " << os.str());
 
   }
@@ -110,6 +110,8 @@ public:
     if (running_)
     {
       // wheels
+      rear_wheel_jnt_pos_ += rear_wheel_jnt_vel_*getPeriod().toSec();
+      rear_wheel_jnt_vel_ = rear_wheel_jnt_vel_cmd_;
       for (unsigned int i = 0; i < virtual_rear_wheel_jnt_vel_cmd_.size(); i++)
       {
         // Note that pos_[i] will be NaN for one more cycle after we start(),
@@ -120,14 +122,15 @@ public:
       }
 
       // steers
-      for (unsigned int i = 0; i < virtual_steer_jnt_pos_cmd_.size(); i++)
+      front_steer_jnt_vel_ = front_steer_jnt_pos_cmd_;
+      for (unsigned int i = 0; i < virtual_front_steer_jnt_pos_cmd_.size(); i++)
       {
-        virtual_steer_jnt_pos_[i] = virtual_steer_jnt_pos_cmd_[i];
+        virtual_front_steer_jnt_pos_[i] = virtual_front_steer_jnt_pos_cmd_[i];
       }
 
       // directly get from controller
-      os << wheel_jnt_vel_cmd_ << ", ";
-      os << steer_jnt_pos_cmd_ << ", ";
+      os << rear_wheel_jnt_vel_cmd_ << ", ";
+      os << front_steer_jnt_pos_cmd_ << ", ";
 
       // convert to each joint velocity
       //-- differential drive
@@ -137,38 +140,38 @@ public:
       }
 
       //-- ackerman link
-      for (unsigned int i = 0; i < virtual_steer_jnt_pos_.size(); i++)
+      for (unsigned int i = 0; i < virtual_front_steer_jnt_pos_.size(); i++)
       {
-          os << virtual_steer_jnt_pos_[i] << ", ";
+          os << virtual_front_steer_jnt_pos_[i] << ", ";
       }
     }
     else
     {
       // wheels
-      wheel_jnt_pos_= std::numeric_limits<double>::quiet_NaN();
-      wheel_jnt_vel_= std::numeric_limits<double>::quiet_NaN();
+      rear_wheel_jnt_pos_= std::numeric_limits<double>::quiet_NaN();
+      rear_wheel_jnt_vel_= std::numeric_limits<double>::quiet_NaN();
       std::fill_n(virtual_rear_wheel_jnt_pos_.begin(), virtual_rear_wheel_jnt_pos_.size(), std::numeric_limits<double>::quiet_NaN());
       std::fill_n(virtual_rear_wheel_jnt_vel_.begin(), virtual_rear_wheel_jnt_vel_.size(), std::numeric_limits<double>::quiet_NaN());
       // steers
-      steer_jnt_pos_= std::numeric_limits<double>::quiet_NaN();
-      steer_jnt_vel_= std::numeric_limits<double>::quiet_NaN();
-      std::fill_n(virtual_steer_jnt_pos_.begin(), virtual_steer_jnt_pos_.size(), std::numeric_limits<double>::quiet_NaN());
-      std::fill_n(virtual_steer_jnt_vel_.begin(), virtual_steer_jnt_vel_.size(), std::numeric_limits<double>::quiet_NaN());
+      front_steer_jnt_pos_= std::numeric_limits<double>::quiet_NaN();
+      front_steer_jnt_vel_= std::numeric_limits<double>::quiet_NaN();
+      std::fill_n(virtual_front_steer_jnt_pos_.begin(), virtual_front_steer_jnt_pos_.size(), std::numeric_limits<double>::quiet_NaN());
+      std::fill_n(virtual_front_steer_jnt_vel_.begin(), virtual_front_steer_jnt_vel_.size(), std::numeric_limits<double>::quiet_NaN());
 
       // wheels
-      os << wheel_jnt_pos_ << ", ";
-      os << wheel_jnt_vel_ << ", ";
+      os << rear_wheel_jnt_pos_ << ", ";
+      os << rear_wheel_jnt_vel_ << ", ";
       for (unsigned int i = 0; i < virtual_rear_wheel_jnt_pos_.size(); i++)
       {
           os << virtual_rear_wheel_jnt_pos_[i] << ", ";
       }
 
       // steers
-      os << steer_jnt_pos_ << ", ";
-      os << steer_jnt_vel_ << ", ";
-      for (unsigned int i = 0; i < virtual_steer_jnt_pos_.size(); i++)
+      os << front_steer_jnt_pos_ << ", ";
+      os << front_steer_jnt_vel_ << ", ";
+      for (unsigned int i = 0; i < virtual_front_steer_jnt_pos_.size(); i++)
       {
-          os << virtual_steer_jnt_pos_[i] << ", ";
+          os << virtual_front_steer_jnt_pos_[i] << ", ";
       }
     }
     ROS_INFO_STREAM("running_ = " << running_ << ". commands are " << os.str());
@@ -194,13 +197,13 @@ private:
   {
     // wheel
     //-- wheel joint names
-    wheel_jnt_name_.empty();
+    rear_wheel_jnt_name_.empty();
     virtual_rear_wheel_jnt_names_.clear();
     //-- actual rear wheel joint
-    wheel_jnt_pos_ = 0;
-    wheel_jnt_vel_ = 0;
-    wheel_jnt_eff_ = 0;
-    wheel_jnt_vel_cmd_ = 0;
+    rear_wheel_jnt_pos_ = 0;
+    rear_wheel_jnt_vel_ = 0;
+    rear_wheel_jnt_eff_ = 0;
+    rear_wheel_jnt_vel_cmd_ = 0;
     //-- virtual rear wheel joint
     virtual_rear_wheel_jnt_pos_.clear();
     virtual_rear_wheel_jnt_vel_.clear();
@@ -214,18 +217,18 @@ private:
 
     // steer
     //-- steer joint names
-    steer_jnt_name_.empty();
-    virtual_steer_jnt_names_.clear();
+    front_steer_jnt_name_.empty();
+    virtual_front_steer_jnt_names_.clear();
     //-- front steer joint
-    steer_jnt_pos_ = 0;
-    steer_jnt_vel_ = 0;
-    steer_jnt_eff_ = 0;
-    steer_jnt_pos_cmd_ = 0;
+    front_steer_jnt_pos_ = 0;
+    front_steer_jnt_vel_ = 0;
+    front_steer_jnt_eff_ = 0;
+    front_steer_jnt_pos_cmd_ = 0;
     //-- virtual wheel joint
-    virtual_steer_jnt_pos_.clear();
-    virtual_steer_jnt_vel_.clear();
-    virtual_steer_jnt_eff_.clear();
-    virtual_steer_jnt_pos_cmd_.clear();
+    virtual_front_steer_jnt_pos_.clear();
+    virtual_front_steer_jnt_vel_.clear();
+    virtual_front_steer_jnt_eff_.clear();
+    virtual_front_steer_jnt_pos_cmd_.clear();
   }
 
   void getJointNames(ros::NodeHandle &_nh)
@@ -237,9 +240,9 @@ private:
   void getWheelJointNames(ros::NodeHandle &_nh)
   {
     // wheel joint to get linear command
-    _nh.getParam(ns_ + "rear_wheel", wheel_jnt_name_);
+    _nh.getParam(ns_ + "rear_wheel", rear_wheel_jnt_name_);
 
-    // virtual wheel joint for gazebo control
+    // virtual wheel joint for gazebo con_rol
     _nh.getParam(ns_ + "rear_wheels", virtual_rear_wheel_jnt_names_);
     int dof = virtual_rear_wheel_jnt_names_.size();
     virtual_rear_wheel_jnt_pos_.resize(dof);
@@ -258,16 +261,16 @@ private:
   void getSteerJointNames(ros::NodeHandle &_nh)
   {
     // steer joint to get angular command
-    _nh.getParam(ns_ + "front_steer", steer_jnt_name_);
+    _nh.getParam(ns_ + "front_steer", front_steer_jnt_name_);
 
     // virtual steer joint for gazebo control
-    _nh.getParam(ns_ + "front_steers", virtual_steer_jnt_names_);
+    _nh.getParam(ns_ + "front_steers", virtual_front_steer_jnt_names_);
 
-    const int dof = virtual_steer_jnt_names_.size();
-    virtual_steer_jnt_pos_.resize(dof);
-    virtual_steer_jnt_vel_.resize(dof);
-    virtual_steer_jnt_eff_.resize(dof);
-    virtual_steer_jnt_pos_cmd_.resize(dof);
+    const int dof = virtual_front_steer_jnt_names_.size();
+    virtual_front_steer_jnt_pos_.resize(dof);
+    virtual_front_steer_jnt_vel_.resize(dof);
+    virtual_front_steer_jnt_eff_.resize(dof);
+    virtual_front_steer_jnt_pos_cmd_.resize(dof);
   }
 
   void registerHardwareInterfaces()
@@ -277,29 +280,29 @@ private:
 
     // register mapped interface to ros_control
     registerInterface(&jnt_state_interface_);
-    registerInterface(&wheel_jnt_vel_cmd_interface_);
-    registerInterface(&steer_jnt_pos_cmd_interface_);
+    registerInterface(&rear_wheel_jnt_vel_cmd_interface_);
+    registerInterface(&front_steer_jnt_pos_cmd_interface_);
   }
 
   void registerWheelInterface()
   {
     // actual wheel joints
     this->registerInterfaceHandles(
-          jnt_state_interface_, wheel_jnt_vel_cmd_interface_,
-          wheel_jnt_name_, wheel_jnt_pos_, wheel_jnt_vel_, wheel_jnt_eff_, wheel_jnt_vel_cmd_);
+          jnt_state_interface_, rear_wheel_jnt_vel_cmd_interface_,
+          rear_wheel_jnt_name_, rear_wheel_jnt_pos_, rear_wheel_jnt_vel_, rear_wheel_jnt_eff_, rear_wheel_jnt_vel_cmd_);
 
     // virtual rear wheel joints
     for (int i = 0; i < virtual_rear_wheel_jnt_names_.size(); i++)
     {
       this->registerInterfaceHandles(
-            jnt_state_interface_, wheel_jnt_vel_cmd_interface_,
+            jnt_state_interface_, rear_wheel_jnt_vel_cmd_interface_,
             virtual_rear_wheel_jnt_names_[i], virtual_rear_wheel_jnt_pos_[i], virtual_rear_wheel_jnt_vel_[i], virtual_rear_wheel_jnt_eff_[i], virtual_rear_wheel_jnt_vel_cmd_[i]);
     }
     // virtual front wheel joints
     for (int i = 0; i < virtual_front_wheel_jnt_names_.size(); i++)
     {
       this->registerInterfaceHandles(
-            jnt_state_interface_, wheel_jnt_vel_cmd_interface_,
+            jnt_state_interface_, rear_wheel_jnt_vel_cmd_interface_,
             virtual_front_wheel_jnt_names_[i], virtual_front_wheel_jnt_pos_[i], virtual_front_wheel_jnt_vel_[i], virtual_front_wheel_jnt_eff_[i], virtual_front_wheel_jnt_vel_cmd_[i]);
     }
   }
@@ -308,15 +311,15 @@ private:
   {
     // actual steer joints
     this->registerInterfaceHandles(
-          jnt_state_interface_, steer_jnt_pos_cmd_interface_,
-          steer_jnt_name_, steer_jnt_pos_, steer_jnt_vel_, steer_jnt_eff_, steer_jnt_pos_cmd_);
+          jnt_state_interface_, front_steer_jnt_pos_cmd_interface_,
+          front_steer_jnt_name_, front_steer_jnt_pos_, front_steer_jnt_vel_, front_steer_jnt_eff_, front_steer_jnt_pos_cmd_);
 
     // virtual steer joints
-    for (int i = 0; i < virtual_steer_jnt_names_.size(); i++)
+    for (int i = 0; i < virtual_front_steer_jnt_names_.size(); i++)
     {
       this->registerInterfaceHandles(
-            jnt_state_interface_, steer_jnt_pos_cmd_interface_,
-            virtual_steer_jnt_names_[i], virtual_steer_jnt_pos_[i], virtual_steer_jnt_vel_[i], virtual_steer_jnt_eff_[i], virtual_steer_jnt_pos_cmd_[i]);
+            jnt_state_interface_, front_steer_jnt_pos_cmd_interface_,
+            virtual_front_steer_jnt_names_[i], virtual_front_steer_jnt_pos_[i], virtual_front_steer_jnt_vel_[i], virtual_front_steer_jnt_eff_[i], virtual_front_steer_jnt_pos_cmd_[i]);
     }
   }
 
@@ -363,15 +366,15 @@ private:
   hardware_interface::JointStateInterface jnt_state_interface_;// rear wheel
   //-- actual joint(single actuator)
   //---- joint name
-  std::string wheel_jnt_name_;
+  std::string rear_wheel_jnt_name_;
   //---- joint interface parameters
-  double wheel_jnt_pos_;
-  double wheel_jnt_vel_;
-  double wheel_jnt_eff_;
+  double rear_wheel_jnt_pos_;
+  double rear_wheel_jnt_vel_;
+  double rear_wheel_jnt_eff_;
   //---- joint interface command
-  double wheel_jnt_vel_cmd_;
+  double rear_wheel_jnt_vel_cmd_;
   //---- Hardware interface: joint
-  hardware_interface::VelocityJointInterface wheel_jnt_vel_cmd_interface_;
+  hardware_interface::VelocityJointInterface rear_wheel_jnt_vel_cmd_interface_;
   //hardware_interface::JointStateInterface wheel_jnt_state_interface_;
   //
   //-- virtual joints(two rear wheels)
@@ -396,26 +399,26 @@ private:
   // front steer
   //-- actual joint(single actuator)
   //---- joint name
-  std::string steer_jnt_name_;
+  std::string front_steer_jnt_name_;
   //---- joint interface parameters
-  double steer_jnt_pos_;
-  double steer_jnt_vel_;
-  double steer_jnt_eff_;
+  double front_steer_jnt_pos_;
+  double front_steer_jnt_vel_;
+  double front_steer_jnt_eff_;
   //---- joint interface command
-  double steer_jnt_pos_cmd_;
+  double front_steer_jnt_pos_cmd_;
   //---- Hardware interface: joint
-  hardware_interface::PositionJointInterface steer_jnt_pos_cmd_interface_;
+  hardware_interface::PositionJointInterface front_steer_jnt_pos_cmd_interface_;
   //hardware_interface::JointStateInterface steer_jnt_state_interface_;
   //
   //-- virtual joints(two steers)
   //---- joint name
-  std::vector<std::string> virtual_steer_jnt_names_;
+  std::vector<std::string> virtual_front_steer_jnt_names_;
   //---- joint interface parameters
-  std::vector<double> virtual_steer_jnt_pos_;
-  std::vector<double> virtual_steer_jnt_vel_;
-  std::vector<double> virtual_steer_jnt_eff_;
+  std::vector<double> virtual_front_steer_jnt_pos_;
+  std::vector<double> virtual_front_steer_jnt_vel_;
+  std::vector<double> virtual_front_steer_jnt_eff_;
   //---- joint interface command
-  std::vector<double> virtual_steer_jnt_pos_cmd_;
+  std::vector<double> virtual_front_steer_jnt_pos_cmd_;
 
   // Wheel separation, wrt the midpoint of the wheel width:
   double wheel_separation_w_;

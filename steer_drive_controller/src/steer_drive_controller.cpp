@@ -91,7 +91,8 @@ static bool isCylinder(const boost::shared_ptr<const urdf::Link>& link)
  * \brief Get the wheel radius
  * \param [in]  wheel_link   Wheel link
  * \param [out] wheel_radius Wheel radius [m]
- * \return true if the wheel radius was found; false otherwise
+ * \return true if the wheel radius was found; false other
+wise
  */
 static bool getWheelRadius(const boost::shared_ptr<const urdf::Link>& wheel_link, double& wheel_radius)
 {
@@ -110,10 +111,8 @@ namespace steer_drive_controller{
   SteerDriveController::SteerDriveController()
     : open_loop_(false)
     , command_struct_()
-    , wheel_separation_w_(0.0)
     , wheel_separation_h_(0.0)
     , wheel_radius_(0.0)
-    , wheel_separation_w_multiplier_(1.0)
     , wheel_separation_h_multiplier_(1.0)
     , wheel_radius_multiplier_(1.0)
     , steer_pos_multiplier_(1.0)
@@ -123,12 +122,7 @@ namespace steer_drive_controller{
     , odom_frame_id_("odom")
     , enable_odom_tf_(true)
     , wheel_joints_size_(0)
-  #ifdef GUI_DEBUG
-    , ns_("steer_drive_controller/")
-    , isCmdVelImput_(false)
-  #else
     , ns_("")
-  #endif
   {
   }
 
@@ -149,38 +143,13 @@ namespace steer_drive_controller{
     std::size_t id = complete_ns.find_last_of("/");
     name_ = complete_ns.substr(id + 1);
 
-    // Get joint names from the parameter server
-    //-- wheels
-    std::vector<std::string> rear_wheel_names, front_wheel_names, front_steer_names;
-    if (!getWheelNames(controller_nh, ns_ + "rear_wheels", rear_wheel_names) or
-        !getWheelNames(controller_nh, ns_ + "front_wheels", front_wheel_names) or
-        !getWheelNames(controller_nh, ns_ + "front_steers", front_steer_names))
-    {
-      return false;
-    }
+    //-- single rear wheel joint
+    std::string rear_wheel_name = "rear_wheel_joint";
+    controller_nh.param(ns_ + "rear_wheel", rear_wheel_name, rear_wheel_name);
 
-    if (rear_wheel_names.size() != front_wheel_names.size())
-    {
-      ROS_ERROR_STREAM_NAMED(name_,
-          "#rear wheels (" << rear_wheel_names.size() << ") != " <<
-          "#front wheels (" << front_wheel_names.size() << ").");
-      return false;
-    }
-    else
-    {
-      wheel_joints_size_ = rear_wheel_names.size();
-
-      rear_wheel_joints_.resize(wheel_joints_size_);
-      front_wheel_joints_.resize(wheel_joints_size_);
-    }
-
-    //-- single rear drive
-    std::string wheel_name = "wheel_joint";
-    controller_nh.param(ns_ + "rear_wheel", wheel_name, wheel_name);
-
-    //-- single front steer drive
-    std::string steer_name = "steer_joint";
-    controller_nh.param(ns_ + "front_steer", steer_name, steer_name);
+    //-- single front steer joint
+    std::string front_steer_name = "front_steer_joint";
+    controller_nh.param(ns_ + "front_steer", front_steer_name, front_steer_name);
 
 
     // Odometry related:
@@ -191,10 +160,6 @@ namespace steer_drive_controller{
     publish_period_ = ros::Duration(1.0 / publish_rate);
 
     controller_nh.param(ns_ + "open_loop", open_loop_, open_loop_);
-
-    controller_nh.param(ns_ + "wheel_separation_w_multiplier", wheel_separation_w_multiplier_, wheel_separation_w_multiplier_);
-    ROS_INFO_STREAM_NAMED(name_, "Wheel separation width will be multiplied by "
-                          << wheel_separation_w_multiplier_ << ".");
 
     controller_nh.param(ns_ + "wheel_separation_h_multiplier", wheel_separation_h_multiplier_, wheel_separation_h_multiplier_);
     ROS_INFO_STREAM_NAMED(name_, "Wheel separation height will be multiplied by "
@@ -255,15 +220,12 @@ namespace steer_drive_controller{
     controller_nh.param(ns_ + "angular/z/min_jerk"               , limiter_ang_.min_jerk               , -limiter_ang_.max_jerk              );
 
     // If either parameter is not available, we need to look up the value in the URDF
-    bool lookup_wheel_separation_w = !controller_nh.getParam(ns_ + "wheel_separation_w", wheel_separation_w_);
     bool lookup_wheel_separation_h = !controller_nh.getParam(ns_ + "wheel_separation_h", wheel_separation_h_);
     bool lookup_wheel_radius = !controller_nh.getParam(ns_ + "wheel_radius", wheel_radius_);
 
     if (!setOdomParamsFromUrdf(root_nh,
-                               rear_wheel_names,
-                               front_wheel_names,
-                               front_steer_names,
-                               lookup_wheel_separation_w,
+                               rear_wheel_name,
+                               front_steer_name,
                                lookup_wheel_separation_h,
                                lookup_wheel_radius))
     {
@@ -272,37 +234,24 @@ namespace steer_drive_controller{
 
     // Regardless of how we got the separation and radius, use them
     // to set the odometry parameters
-    const double ws_w = wheel_separation_w_multiplier_ * wheel_separation_w_;
     const double ws_h = wheel_separation_h_multiplier_ * wheel_separation_h_;
-    const double wr = wheel_radius_multiplier_     * wheel_radius_;
-    odometry_.setWheelParams(ws_w, ws_h, wr);
+    const double wr = wheel_radius_multiplier_ * wheel_radius_;
+    odometry_.setWheelParams(ws_h, wr);
     ROS_INFO_STREAM_NAMED(name_,
-                          "Odometry params : wheel separation width " << ws_w
-                          << ", wheel separation height " << ws_h
+                          "Odometry params : wheel separation height " << ws_h
                           << ", wheel radius " << wr);
 
     setOdomPubFields(root_nh, controller_nh);
 
-    // Get the joint object to use in the realtime loop
-    //-- wheels
-    for (int i = 0; i < wheel_joints_size_; ++i)
-    {
-      ROS_INFO_STREAM_NAMED(name_,
-                            "Adding left wheel with joint name: " << rear_wheel_names[i]
-                            << " and right wheel with joint name: " << front_wheel_names[i]);
-
-      rear_wheel_joints_[i] = vel_joint_if->getHandle(rear_wheel_names[i]);  // throws on failure
-      front_wheel_joints_[i] = vel_joint_if->getHandle(front_wheel_names[i]);  // throws on failure
-    }
     //-- rear wheel
     //---- handles need to be previously registerd in steer_drive_test.cpp
     ROS_INFO_STREAM_NAMED(name_,
-                          "Adding the wheel with joint name: " << wheel_name);
-    wheel_joint_ = vel_joint_if->getHandle(wheel_name); // throws on failure
+                          "Adding the rear wheel with joint name: " << rear_wheel_name);
+    rear_wheel_joint_ = vel_joint_if->getHandle(rear_wheel_name); // throws on failure
     //-- front steer
     ROS_INFO_STREAM_NAMED(name_,
-                          "Adding the steer with joint name: " << steer_name);
-    steer_joint_ = pos_joint_if->getHandle(steer_name); // throws on failure
+                          "Adding the front steer with joint name: " << front_steer_name);
+    front_steer_joint_ = pos_joint_if->getHandle(front_steer_name); // throws on failure
     ROS_INFO_STREAM_NAMED(name_,
                           "Adding the subscriber: cmd_vel");
     sub_command_ = controller_nh.subscribe("cmd_vel", 1, &SteerDriveController::cmdVelCallback, this);
@@ -320,16 +269,15 @@ namespace steer_drive_controller{
     }
     else
     {
-      double left_pos  = rear_wheel_joints_[INDEX_LEFT].getPosition();
-      double right_pos = rear_wheel_joints_[INDEX_RIGHT].getPosition();
-      double steer_pos = steer_joint_.getPosition();
+      double wheel_pos  = rear_wheel_joint_.getPosition();
+      double steer_pos = front_steer_joint_.getPosition();
 
-      if (std::isnan(left_pos) || std::isnan(right_pos) || std::isnan(steer_pos))
+      if (std::isnan(wheel_pos) || std::isnan(steer_pos))
         return;
 
       // Estimate linear and angular velocity using joint information
       steer_pos = steer_pos * steer_pos_multiplier_;
-      odometry_.update(left_pos, right_pos, steer_pos, time);
+      odometry_.update(wheel_pos, steer_pos, time);
     }
 
     // Publish odometry message
@@ -385,17 +333,10 @@ namespace steer_drive_controller{
     last1_cmd_ = last0_cmd_;
     last0_cmd_ = curr_cmd;
 
-    // Apply multipliers:
-    /*
-    const double ws_w = wheel_separation_multiplier_ * wheel_separation_w_;
-    const double ws_h = wheel_separation_multiplier_ * wheel_separation_h_;
-    const double wr = wheel_radius_multiplier_     * wheel_radius_;
-    */
-
     // Set Command
     const double wheel_vel = curr_cmd.lin/wheel_radius_; // omega = linear_vel / radius
-    wheel_joint_.setCommand(wheel_vel);
-    steer_joint_.setCommand(curr_cmd.ang);
+    rear_wheel_joint_.setCommand(wheel_vel);
+    front_steer_joint_.setCommand(curr_cmd.ang);
 
   }
 
@@ -419,17 +360,13 @@ namespace steer_drive_controller{
     const double steer_pos = 0.0;
     const double wheel_vel = 0.0;
 
-    wheel_joint_.setCommand(steer_pos);
-    steer_joint_.setCommand(wheel_vel);
+    rear_wheel_joint_.setCommand(steer_pos);
+    front_steer_joint_.setCommand(wheel_vel);
   }
 
   void SteerDriveController::cmdVelCallback(const geometry_msgs::Twist& command)
   {
-#ifdef GUI_DEBUG
-    if(true)
-#else
     if (isRunning())
-#endif
     {
       // check that we don't have multiple publishers on the command topic
       if (!allow_multiple_cmd_vel_publishers_ && sub_command_.getNumPublishers() > 1)
@@ -440,20 +377,6 @@ namespace steer_drive_controller{
         return;
       }
 
-#ifdef GUI_DEBUG
-      if(command.angular.z != 0)
-      {
-          isCmdVelImput_ = true;
-      }
-      else if(command.linear.x > 0.3)
-      {
-          isCmdVelImput_ = true;
-      }
-      else
-      {
-          isCmdVelImput_ = false;
-      }
-#endif
       command_struct_.ang   = command.angular.z;
       command_struct_.lin   = command.linear.x;
       command_struct_.stamp = ros::Time::now();
@@ -470,122 +393,14 @@ namespace steer_drive_controller{
     }
   }
 
-  bool SteerDriveController::getWheelNames(ros::NodeHandle& controller_nh,
-                              const std::string& wheel_param,
-                              std::vector<std::string>& wheel_names)
-  {
-      XmlRpc::XmlRpcValue wheel_list;
-      if (!controller_nh.getParam(wheel_param, wheel_list))
-      {
-        ROS_ERROR_STREAM_NAMED(name_,
-            "Couldn't retrieve wheel param '" << wheel_param << "'.");
-        return false;
-      }
-
-      if (wheel_list.getType() == XmlRpc::XmlRpcValue::TypeArray)
-      {
-        if (wheel_list.size() == 0)
-        {
-          ROS_ERROR_STREAM_NAMED(name_,
-              "Wheel param '" << wheel_param << "' is an empty list");
-          return false;
-        }
-
-        for (int i = 0; i < wheel_list.size(); ++i)
-        {
-          if (wheel_list[i].getType() != XmlRpc::XmlRpcValue::TypeString)
-          {
-            ROS_ERROR_STREAM_NAMED(name_,
-                "Wheel param '" << wheel_param << "' #" << i <<
-                " isn't a string.");
-            return false;
-          }
-        }
-
-        wheel_names.resize(wheel_list.size());
-        for (int i = 0; i < wheel_list.size(); ++i)
-        {
-          wheel_names[i] = static_cast<std::string>(wheel_list[i]);
-        }
-      }
-      else if (wheel_list.getType() == XmlRpc::XmlRpcValue::TypeString)
-      {
-        wheel_names.push_back(wheel_list);
-      }
-      else
-      {
-        ROS_ERROR_STREAM_NAMED(name_,
-            "Wheel param '" << wheel_param <<
-            "' is neither a list of strings nor a string.");
-        return false;
-      }
-
-      return true;
-  }
-
-  bool SteerDriveController::getSteerNames(ros::NodeHandle& controller_nh,
-                              const std::string& steer_param,
-                              std::vector<std::string>& steer_names)
-  {
-      XmlRpc::XmlRpcValue steer_list;
-      if (!controller_nh.getParam(steer_param, steer_list))
-      {
-        ROS_ERROR_STREAM_NAMED(name_,
-            "Couldn't retrieve steer param '" << steer_param << "'.");
-        return false;
-      }
-
-      if (steer_list.getType() == XmlRpc::XmlRpcValue::TypeArray)
-      {
-        if (steer_list.size() == 0)
-        {
-          ROS_ERROR_STREAM_NAMED(name_,
-              "Steer param '" << steer_param << "' is an empty list");
-          return false;
-        }
-
-        for (int i = 0; i < steer_list.size(); ++i)
-        {
-          if (steer_list[i].getType() != XmlRpc::XmlRpcValue::TypeString)
-          {
-            ROS_ERROR_STREAM_NAMED(name_,
-                "Steer param '" << steer_param << "' #" << i <<
-                " isn't a string.");
-            return false;
-          }
-        }
-
-        steer_names.resize(steer_list.size());
-        for (int i = 0; i < steer_list.size(); ++i)
-        {
-          steer_names[i] = static_cast<std::string>(steer_list[i]);
-        }
-      }
-      else if (steer_list.getType() == XmlRpc::XmlRpcValue::TypeString)
-      {
-        steer_names.push_back(steer_list);
-      }
-      else
-      {
-        ROS_ERROR_STREAM_NAMED(name_,
-            "Steer param '" << steer_param <<
-            "' is neither a list of strings nor a string.");
-        return false;
-      }
-
-      return true;
-  }
-
 
   bool SteerDriveController::setOdomParamsFromUrdf(ros::NodeHandle& root_nh,
-                             const std::vector<std::string>& rear_wheel_names,
-                             const std::vector<std::string>& front_wheel_names,
-                             const std::vector<std::string>& front_steer_names,
-                             bool lookup_wheel_separation_w,
+                             const std::string rear_wheel_name,
+                             const std::string front_steer_name,
                              bool lookup_wheel_separation_h,
                              bool lookup_wheel_radius)
   {
-    if (!(lookup_wheel_separation_w || lookup_wheel_separation_h || lookup_wheel_radius))
+    if (!(lookup_wheel_separation_h || lookup_wheel_radius))
     {
       // Short-circuit in case we don't need to look up anything, so we don't have to parse the URDF
       return true;
@@ -603,87 +418,52 @@ namespace steer_drive_controller{
 
     boost::shared_ptr<urdf::ModelInterface> model(urdf::parseURDF(robot_model_str));
 
-    boost::shared_ptr<const urdf::Joint> rear_left_wheel_joint(model->getJoint(rear_wheel_names[INDEX_LEFT]));
-    boost::shared_ptr<const urdf::Joint> rear_right_wheel_joint(model->getJoint(rear_wheel_names[INDEX_RIGHT]));
-
-    boost::shared_ptr<const urdf::Joint> front_left_steer_joint(model->getJoint(front_steer_names[INDEX_LEFT]));
-    boost::shared_ptr<const urdf::Joint> front_left_wheel_joint(model->getJoint(front_wheel_names[INDEX_LEFT]));
-    //boost::shared_ptr<const urdf::Joint> front_right_wheel_joint(model->getJoint(front_wheel_names[INDEX_RIGHT]));
-
-    if (lookup_wheel_separation_w)
-    {
-      // Get wheel separation
-      if (!rear_left_wheel_joint)
-      {
-        ROS_ERROR_STREAM_NAMED(name_, rear_wheel_names[INDEX_LEFT]
-                               << " couldn't be retrieved from model description");
-        return false;
-      }
-
-      if (!rear_right_wheel_joint)
-      {
-        ROS_ERROR_STREAM_NAMED(name_, rear_wheel_names[INDEX_RIGHT]
-                               << " couldn't be retrieved from model description");
-        return false;
-      }
-
-      ROS_INFO_STREAM("rear left wheel to origin: " << rear_left_wheel_joint->parent_to_joint_origin_transform.position.x << ","
-                      << rear_left_wheel_joint->parent_to_joint_origin_transform.position.y << ", "
-                      << rear_left_wheel_joint->parent_to_joint_origin_transform.position.z);
-      ROS_INFO_STREAM("rear right wheel to origin: " << rear_right_wheel_joint->parent_to_joint_origin_transform.position.x << ","
-                      << rear_right_wheel_joint->parent_to_joint_origin_transform.position.y << ", "
-                      << rear_right_wheel_joint->parent_to_joint_origin_transform.position.z);
-
-      wheel_separation_w_ = euclideanOfVectors(rear_left_wheel_joint->parent_to_joint_origin_transform.position,
-                                               rear_right_wheel_joint->parent_to_joint_origin_transform.position);
-
-    }
+    boost::shared_ptr<const urdf::Joint> rear_wheel_joint(model->getJoint(rear_wheel_name));
+    boost::shared_ptr<const urdf::Joint> front_steer_joint(model->getJoint(front_steer_name));
 
     if (lookup_wheel_separation_h)
     {
       // Get wheel separation
-      if (!rear_left_wheel_joint)
+      if (!rear_wheel_joint)
       {
-        ROS_ERROR_STREAM_NAMED(name_, rear_wheel_names[INDEX_LEFT]
+        ROS_ERROR_STREAM_NAMED(name_, rear_wheel_name
                                << " couldn't be retrieved from model description");
         return false;
       }
 
-      if (!front_left_wheel_joint)
+      if (!front_steer_joint)
       {
-        ROS_ERROR_STREAM_NAMED(name_, front_wheel_names[INDEX_LEFT]
+        ROS_ERROR_STREAM_NAMED(name_, front_steer_name
                                << " couldn't be retrieved from model description");
         return false;
       }
 
-      ROS_INFO_STREAM("rear left wheel to origin: " << rear_left_wheel_joint->parent_to_joint_origin_transform.position.x << ","
-                      << rear_left_wheel_joint->parent_to_joint_origin_transform.position.y << ", "
-                      << rear_left_wheel_joint->parent_to_joint_origin_transform.position.z);
+      ROS_INFO_STREAM("rear wheel to origin: "
+                      << rear_wheel_joint->parent_to_joint_origin_transform.position.x << ","
+                      << rear_wheel_joint->parent_to_joint_origin_transform.position.y << ", "
+                      << rear_wheel_joint->parent_to_joint_origin_transform.position.z);
 
-      urdf::Vector3 front_left_wheel_to_origin;
-      front_left_wheel_to_origin.x = front_left_steer_joint->parent_to_joint_origin_transform.position.x +
-              front_left_wheel_joint->parent_to_joint_origin_transform.position.x;
-      front_left_wheel_to_origin.y = front_left_steer_joint->parent_to_joint_origin_transform.position.y +
-              front_left_wheel_joint->parent_to_joint_origin_transform.position.y;
-      front_left_wheel_to_origin.z = front_left_steer_joint->parent_to_joint_origin_transform.position.z +
-              front_left_wheel_joint->parent_to_joint_origin_transform.position.z;
-      ROS_INFO_STREAM("front left wheel to origin: " << front_left_wheel_to_origin.x << ","
-                      << front_left_wheel_to_origin.y << ", "
-                      << front_left_wheel_to_origin.z);
+      ROS_INFO_STREAM("front steer to origin: "
+                      << front_steer_joint->parent_to_joint_origin_transform.position.x << ","
+                      << front_steer_joint->parent_to_joint_origin_transform.position.y << ", "
+                      << front_steer_joint->parent_to_joint_origin_transform.position.z);
 
-      wheel_separation_h_ = euclideanOfVectors(rear_left_wheel_joint->parent_to_joint_origin_transform.position,
-                                               front_left_wheel_to_origin);
+      wheel_separation_h_ = fabs(
+                  rear_wheel_joint->parent_to_joint_origin_transform.position.x
+                  - front_steer_joint->parent_to_joint_origin_transform.position.x);
 
+      ROS_INFO_STREAM("Calculated wheel_separation_h: " << wheel_separation_h_);
     }
 
     if (lookup_wheel_radius)
     {
       // Get wheel radius
-      if (!getWheelRadius(model->getLink(front_left_wheel_joint->child_link_name), wheel_radius_))
+      if (!getWheelRadius(model->getLink(rear_wheel_joint->child_link_name), wheel_radius_))
       {
-        ROS_ERROR_STREAM_NAMED(name_, "Couldn't retrieve " << rear_wheel_names[INDEX_LEFT] << " wheel radius");
+        ROS_ERROR_STREAM_NAMED(name_, "Couldn't retrieve " << rear_wheel_name << " wheel radius");
         return false;
       }
+      ROS_INFO_STREAM("Retrieved wheel_radius: " << wheel_radius_);
     }
 
     return true;

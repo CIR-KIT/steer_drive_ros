@@ -126,18 +126,8 @@ namespace steer_drive_controller{
     bool open_loop_;
 
     /// Hardware handles:
-#ifdef MULTIPLE_JOINTS
-    std::vector<hardware_interface::JointStateHandle> left_wheel_joint_states_;
-    std::vector<hardware_interface::JointStateHandle> right_wheel_joint_states_;
-#endif
-    std::vector<hardware_interface::JointHandle> rear_wheel_joints_;
-    std::vector<hardware_interface::JointHandle> front_wheel_joints_;
-#ifdef MULTIPLE_JOINTS
-    std::vector<hardware_interface::JointHandle> left_steer_joints_;
-    std::vector<hardware_interface::JointHandle> right_steer_joints_;
-#endif
-    hardware_interface::JointHandle wheel_joint_;
-    hardware_interface::JointHandle steer_joint_;
+    hardware_interface::JointHandle rear_wheel_joint_;
+    hardware_interface::JointHandle front_steer_joint_;
 
     /// Velocity command related:
     struct Commands
@@ -158,16 +148,12 @@ namespace steer_drive_controller{
     Odometry odometry_;
 
     /// Wheel separation, wrt the midpoint of the wheel width:
-    double wheel_separation_w_;
-
-    /// Wheel separation, wrt the midpoint of the wheel width:
     double wheel_separation_h_;
 
     /// Wheel radius (assuming it's the same for the left and right wheels):
     double wheel_radius_;
 
     /// Wheel separation and radius calibration multipliers:
-    double wheel_separation_w_multiplier_;
     double wheel_separation_h_multiplier_;
     double wheel_radius_multiplier_;
     double steer_pos_multiplier_;
@@ -201,9 +187,6 @@ namespace steer_drive_controller{
 
     // FOR_DEBUG
     std::string ns_;
-#ifdef GUI_DEBUG
-    bool isCmdVelImput_;
-#endif
 
   private:
     /**
@@ -218,40 +201,14 @@ namespace steer_drive_controller{
     void cmdVelCallback(const geometry_msgs::Twist& command);
 
     /**
-     * \brief Get the wheel names from a wheel param
-     * \param [in]  controller_nh Controller node handler
-     * \param [in]  wheel_param   Param name
-     * \param [out] wheel_names   Vector with the whel names
-     * \return true if the wheel_param is available and the wheel_names are
-     *        retrieved successfully from the param server; false otherwise
-     */
-    bool getWheelNames(ros::NodeHandle& controller_nh,
-                       const std::string& wheel_param,
-                       std::vector<std::string>& wheel_names);
-
-    /**
-     * \brief Get the steer names from a steer param
-     * \param [in]  controller_nh Controller node handler
-     * \param [in]  steer_param   Param name
-     * \param [out] steer_names   Vector with the steer names
-     * \return true if the steer_param is available and the steer_names are
-     *        retrieved successfully from the param server; false otherwise
-     */
-    bool getSteerNames(ros::NodeHandle& controller_nh,
-                       const std::string& steer_param,
-                       std::vector<std::string>& steer_names);
-
-    /**
      * \brief Sets odometry parameters from the URDF, i.e. the wheel radius and separation
      * \param root_nh Root node handle
      * \param left_wheel_name Name of the left wheel joint
      * \param right_wheel_name Name of the right wheel joint
      */
     bool setOdomParamsFromUrdf(ros::NodeHandle& root_nh,
-                               const std::vector<std::string>& rear_wheel_names,
-                               const std::vector<std::string>& front_wheel_names,
-                               const std::vector<std::string>& front_steer_names,
-                               bool lookup_wheel_separation_w,
+                               const std::string rear_wheel_name,
+                               const std::string front_steer_name,
                                bool lookup_wheel_separation_h,
                                bool lookup_wheel_radius);
 
