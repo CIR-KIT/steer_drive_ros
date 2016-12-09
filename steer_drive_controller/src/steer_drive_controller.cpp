@@ -443,24 +443,16 @@ namespace steer_drive_controller{
                       << rear_wheel_joint->parent_to_joint_origin_transform.position.y << ", "
                       << rear_wheel_joint->parent_to_joint_origin_transform.position.z);
 
-      urdf::Vector3 front_steer_to_origin;
-      front_steer_to_origin.x =
-              front_steer_joint->parent_to_joint_origin_transform.position.x +
-              front_steer_joint->parent_to_joint_origin_transform.position.x;
-      front_steer_to_origin.y =
-              front_steer_joint->parent_to_joint_origin_transform.position.y +
-              front_steer_joint->parent_to_joint_origin_transform.position.y;
-      front_steer_to_origin.z =
-              front_steer_joint->parent_to_joint_origin_transform.position.z +
-              front_steer_joint->parent_to_joint_origin_transform.position.z;
       ROS_INFO_STREAM("front steer to origin: "
-                      << front_steer_to_origin.x << ","
-                      << front_steer_to_origin.y << ", "
-                      << front_steer_to_origin.z);
+                      << front_steer_joint->parent_to_joint_origin_transform.position.x << ","
+                      << front_steer_joint->parent_to_joint_origin_transform.position.y << ", "
+                      << front_steer_joint->parent_to_joint_origin_transform.position.z);
 
-      wheel_separation_h_ = euclideanOfVectors(rear_wheel_joint->parent_to_joint_origin_transform.position,
-                                               front_steer_to_origin);
+      wheel_separation_h_ = fabs(
+                  rear_wheel_joint->parent_to_joint_origin_transform.position.x
+                  - front_steer_joint->parent_to_joint_origin_transform.position.x);
 
+      ROS_INFO_STREAM("Calculated wheel_separation_h: " << wheel_separation_h_);
     }
 
     if (lookup_wheel_radius)
@@ -471,6 +463,7 @@ namespace steer_drive_controller{
         ROS_ERROR_STREAM_NAMED(name_, "Couldn't retrieve " << rear_wheel_name << " wheel radius");
         return false;
       }
+      ROS_INFO_STREAM("Retrieved wheel_radius: " << wheel_radius_);
     }
 
     return true;
