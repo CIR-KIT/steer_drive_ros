@@ -6,6 +6,9 @@
   <!-- Load controller config -->
   <rosparam command="load" file="$(find steer_drive_controller)/test/common/config/steerbot_controllers.yaml" />
 
+  <!-- Load steerbot config -->
+  <rosparam command="load" file="$(find steer_drive_controller)/test/common/config/steerbot_hw_sim.yaml" />
+
   <!-- Start steerbot -->
   <node name="steer_drive_controller_steerbot"
         pkg="steer_drive_controller"
