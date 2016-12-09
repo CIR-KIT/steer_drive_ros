@@ -8,5 +8,5 @@ steerbot_controller:
   twist_covariance_diagonal: [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 1000.0]
   cmd_vel_timeout: 20.0 # we test this separately, give plenty for the other tests
 
-  wheel_separation_h : 0.79
-  wheel_radius : 0.28
+  wheel_separation_h : 0.20
+  wheel_radius : 0.11
