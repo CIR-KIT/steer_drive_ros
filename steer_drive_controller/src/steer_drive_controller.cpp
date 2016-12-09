@@ -443,23 +443,23 @@ namespace steer_drive_controller{
                       << rear_wheel_joint->parent_to_joint_origin_transform.position.y << ", "
                       << rear_wheel_joint->parent_to_joint_origin_transform.position.z);
 
-      urdf::Vector3 front_wheel_to_origin;
-      front_wheel_to_origin.x =
+      urdf::Vector3 front_steer_to_origin;
+      front_steer_to_origin.x =
               front_steer_joint->parent_to_joint_origin_transform.position.x +
               front_steer_joint->parent_to_joint_origin_transform.position.x;
-      front_wheel_to_origin.y =
+      front_steer_to_origin.y =
               front_steer_joint->parent_to_joint_origin_transform.position.y +
               front_steer_joint->parent_to_joint_origin_transform.position.y;
-      front_wheel_to_origin.z =
+      front_steer_to_origin.z =
               front_steer_joint->parent_to_joint_origin_transform.position.z +
               front_steer_joint->parent_to_joint_origin_transform.position.z;
-      ROS_INFO_STREAM("front left wheel to origin: "
-                      << front_wheel_to_origin.x << ","
-                      << front_wheel_to_origin.y << ", "
-                      << front_wheel_to_origin.z);
+      ROS_INFO_STREAM("front steer to origin: "
+                      << front_steer_to_origin.x << ","
+                      << front_steer_to_origin.y << ", "
+                      << front_steer_to_origin.z);
 
       wheel_separation_h_ = euclideanOfVectors(rear_wheel_joint->parent_to_joint_origin_transform.position,
-                                               front_wheel_to_origin);
+                                               front_steer_to_origin);
 
     }
 
