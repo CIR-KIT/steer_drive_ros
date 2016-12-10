@@ -147,6 +147,8 @@ private:
   std::vector<double> virtual_front_steer_jnt_eff_;
   //---- joint interface command
   std::vector<double> virtual_front_steer_jnt_pos_cmd_;
+  //---- Hardware interface: joint
+  hardware_interface::VelocityJointInterface front_wheel_jnt_vel_cmd_interface_;
 
   // ackermann link mechanism
   bool enable_ackermann_link_ ;

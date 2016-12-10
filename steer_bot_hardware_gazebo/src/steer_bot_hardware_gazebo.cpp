@@ -368,15 +368,13 @@ namespace steer_bot_hardware_gazebo
             jnt_state_interface_, rear_wheel_jnt_vel_cmd_interface_,
             virtual_rear_wheel_jnt_names_[i], virtual_rear_wheel_jnt_pos_[i], virtual_rear_wheel_jnt_vel_[i], virtual_rear_wheel_jnt_eff_[i], virtual_rear_wheel_jnt_vel_cmd_[i]);
     }
-#ifdef SINGLE_JOINT
     // virtual front wheel joints
     for (int i = 0; i < virtual_front_wheel_jnt_names_.size(); i++)
     {
       this->RegisterInterfaceHandles(
-            jnt_state_interface_, wheel_jnt_vel_cmd_interface_,
+            jnt_state_interface_, front_wheel_jnt_vel_cmd_interface_,
             virtual_front_wheel_jnt_names_[i], virtual_front_wheel_jnt_pos_[i], virtual_front_wheel_jnt_vel_[i], virtual_front_wheel_jnt_eff_[i], virtual_front_wheel_jnt_vel_cmd_[i]);
     }
-#endif
   }
 
   void SteerBotHardwareGazebo::RegisterSteerInterface()
