@@ -39,26 +39,25 @@ namespace steer_bot_hardware_gazebo
     this->GetJointNames(nh_);
     this->RegisterHardwareInterfaces();
 
-    nh_.param(ns_ + "wheel_separation_w", wheel_separation_w_);
-    nh_.param(ns_ + "wheel_separation_h", wheel_separation_h_);
+    nh_.getParam(ns_ + "wheel_separation_w", wheel_separation_w_);
+    nh_.getParam(ns_ + "wheel_separation_h", wheel_separation_h_);
     ROS_INFO_STREAM("wheel_separation_w = " << wheel_separation_w_);
     ROS_INFO_STREAM("wheel_separation_h = " << wheel_separation_h_);
 
-    nh_.param(ns_ + "enable_ackermann_link", true);
+    nh_.getParam(ns_ + "enable_ackermann_link", enable_ackermann_link_);
     ROS_INFO_STREAM("enable_ackermann_link = " << (enable_ackermann_link_ ? "true" : "false"));
 
-#ifdef JOINT_LIMIT
     // Position joint limits interface
-    std::vector<std::string> cmd_handle_names = steer_jnt_pos_cmd_interface_.getNames();
-    for (size_t i = 0; i < n_dof_; ++i)
+    std::vector<std::string> cmd_handle_names = front_steer_jnt_pos_cmd_interface_.getNames();
+    for (size_t i = 0; i < cmd_handle_names.size(); ++i)
     {
       const std::string name = cmd_handle_names[i];
 
       // unless current handle is not pos interface for steer, skip
-      if(name != virtual_steer_jnt_names_[INDEX_RIGHT] && name != virtual_steer_jnt_names_[INDEX_LEFT])
+      if(name != virtual_front_steer_jnt_names_[INDEX_RIGHT] && name != virtual_front_steer_jnt_names_[INDEX_LEFT])
           continue;
 
-      JointHandle cmd_handle = steer_jnt_pos_cmd_interface_.getHandle(name);
+      JointHandle cmd_handle = front_steer_jnt_pos_cmd_interface_.getHandle(name);
 
       using namespace joint_limits_interface;
       boost::shared_ptr<const urdf::Joint> urdf_joint = urdf_model->getJoint(name);
@@ -76,7 +75,6 @@ namespace steer_bot_hardware_gazebo
         ROS_DEBUG_STREAM("Joint limits will be enforced for joint '" << name << "'.");
       }
     }
-#endif
 
     // PID controllers for wheel
     const int virtual_jnt_cnt_ = virtual_rear_wheel_jnt_names_.size();
@@ -144,9 +142,8 @@ namespace steer_bot_hardware_gazebo
   void SteerBotHardwareGazebo::writeSim(ros::Time time, ros::Duration period)
   {
     // Enforce joint limits
-#ifdef JOINT_LIMIT
     jnt_limits_interface_.enforceLimits(period);
-#endif
+
     log_cnt_++;
     for(int i = 0; i <  sim_joints_.size(); i++)
     {
