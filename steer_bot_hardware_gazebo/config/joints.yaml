@@ -1,6 +1,6 @@
 steer_bot_hardware_gazebo:
-    rear_wheel  : 'base_to_wheel'
-    front_steer : 'base_to_steer'
+    rear_wheel  : 'rear_wheel_joint'
+    front_steer : 'front_steer_joint'
     virtual_rear_wheels  : ['base_to_right_rear_wheel', 'base_to_left_rear_wheel']
     virtual_front_wheels : ['base_to_right_front_wheel', 'base_to_left_front_wheel']
     virtual_front_steers : ['base_to_right_front_steer', 'base_to_left_front_steer']
