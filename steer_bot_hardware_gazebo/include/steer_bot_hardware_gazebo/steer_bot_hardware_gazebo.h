@@ -94,15 +94,15 @@ private:
   // rear wheel
   //-- actual joint(single actuator)
   //---- joint name
-  std::string wheel_jnt_name_;
+  std::string rear_wheel_jnt_name_;
   //---- joint interface parameters
-  double wheel_jnt_pos_;
-  double wheel_jnt_vel_;
-  double wheel_jnt_eff_;
+  double rear_wheel_jnt_pos_;
+  double rear_wheel_jnt_vel_;
+  double rear_wheel_jnt_eff_;
   //---- joint interface command
-  double wheel_jnt_vel_cmd_;
+  double rear_wheel_jnt_vel_cmd_;
   //---- Hardware interface: joint
-  hardware_interface::VelocityJointInterface wheel_jnt_vel_cmd_interface_;
+  hardware_interface::VelocityJointInterface rear_wheel_jnt_vel_cmd_interface_;
   //hardware_interface::JointStateInterface wheel_jnt_state_interface_;
   //
   //-- virtual joints(two rear wheels)
@@ -127,26 +127,26 @@ private:
   // front steer
   //-- actual joint(single actuator)
   //---- joint name
-  std::string steer_jnt_name_;
+  std::string front_steer_jnt_name_;
   //---- joint interface parameters
-  double steer_jnt_pos_;
-  double steer_jnt_vel_;
-  double steer_jnt_eff_;
+  double front_steer_jnt_pos_;
+  double front_steer_jnt_vel_;
+  double front_steer_jnt_eff_;
   //---- joint interface command
-  double steer_jnt_pos_cmd_;
+  double front_steer_jnt_pos_cmd_;
   //---- Hardware interface: joint
-  hardware_interface::PositionJointInterface steer_jnt_pos_cmd_interface_;
+  hardware_interface::PositionJointInterface front_steer_jnt_pos_cmd_interface_;
   //hardware_interface::JointStateInterface steer_jnt_state_interface_;
   //
   //-- virtual joints(two steers)
   //---- joint name
-  std::vector<std::string> virtual_steer_jnt_names_;
+  std::vector<std::string> virtual_front_steer_jnt_names_;
   //---- joint interface parameters
-  std::vector<double> virtual_steer_jnt_pos_;
-  std::vector<double> virtual_steer_jnt_vel_;
-  std::vector<double> virtual_steer_jnt_eff_;
+  std::vector<double> virtual_front_steer_jnt_pos_;
+  std::vector<double> virtual_front_steer_jnt_vel_;
+  std::vector<double> virtual_front_steer_jnt_eff_;
   //---- joint interface command
-  std::vector<double> virtual_steer_jnt_pos_cmd_;
+  std::vector<double> virtual_front_steer_jnt_pos_cmd_;
 
   // ackermann link mechanism
   bool enable_ackermann_link_ ;
