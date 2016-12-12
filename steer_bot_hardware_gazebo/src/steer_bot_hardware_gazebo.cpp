@@ -39,26 +39,25 @@ namespace steer_bot_hardware_gazebo
     this->GetJointNames(nh_);
     this->RegisterHardwareInterfaces();
 
-    nh_.param(ns_ + "wheel_separation_w", wheel_separation_w_);
-    nh_.param(ns_ + "wheel_separation_h", wheel_separation_h_);
+    nh_.getParam(ns_ + "wheel_separation_w", wheel_separation_w_);
+    nh_.getParam(ns_ + "wheel_separation_h", wheel_separation_h_);
     ROS_INFO_STREAM("wheel_separation_w = " << wheel_separation_w_);
     ROS_INFO_STREAM("wheel_separation_h = " << wheel_separation_h_);
 
-    nh_.param(ns_ + "enable_ackermann_link", true);
+    nh_.getParam(ns_ + "enable_ackermann_link", enable_ackermann_link_);
     ROS_INFO_STREAM("enable_ackermann_link = " << (enable_ackermann_link_ ? "true" : "false"));
 
-#ifdef JOINT_LIMIT
     // Position joint limits interface
-    std::vector<std::string> cmd_handle_names = steer_jnt_pos_cmd_interface_.getNames();
-    for (size_t i = 0; i < n_dof_; ++i)
+    std::vector<std::string> cmd_handle_names = front_steer_jnt_pos_cmd_interface_.getNames();
+    for (size_t i = 0; i < cmd_handle_names.size(); ++i)
     {
       const std::string name = cmd_handle_names[i];
 
       // unless current handle is not pos interface for steer, skip
-      if(name != virtual_steer_jnt_names_[INDEX_RIGHT] && name != virtual_steer_jnt_names_[INDEX_LEFT])
+      if(name != virtual_front_steer_jnt_names_[INDEX_RIGHT] && name != virtual_front_steer_jnt_names_[INDEX_LEFT])
           continue;
 
-      JointHandle cmd_handle = steer_jnt_pos_cmd_interface_.getHandle(name);
+      JointHandle cmd_handle = front_steer_jnt_pos_cmd_interface_.getHandle(name);
 
       using namespace joint_limits_interface;
       boost::shared_ptr<const urdf::Joint> urdf_joint = urdf_model->getJoint(name);
@@ -76,7 +75,6 @@ namespace steer_bot_hardware_gazebo
         ROS_DEBUG_STREAM("Joint limits will be enforced for joint '" << name << "'.");
       }
     }
-#endif
 
     // PID controllers for wheel
     const int virtual_jnt_cnt_ = virtual_rear_wheel_jnt_names_.size();
@@ -122,13 +120,13 @@ namespace steer_bot_hardware_gazebo
       {
         GetCurrentState(virtual_front_wheel_jnt_pos_, virtual_front_wheel_jnt_vel_, virtual_front_wheel_jnt_eff_, INDEX_LEFT, i);
       }
-      else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_RIGHT])
+      else if(gazebo_jnt_name == virtual_front_steer_jnt_names_[INDEX_RIGHT])
       {
-        GetCurrentState(virtual_steer_jnt_pos_, virtual_steer_jnt_vel_, virtual_steer_jnt_eff_, INDEX_RIGHT, i);
+        GetCurrentState(virtual_front_steer_jnt_pos_, virtual_front_steer_jnt_vel_, virtual_front_steer_jnt_eff_, INDEX_RIGHT, i);
       }
-      else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_LEFT])
+      else if(gazebo_jnt_name == virtual_front_steer_jnt_names_[INDEX_LEFT])
       {
-        GetCurrentState(virtual_steer_jnt_pos_, virtual_steer_jnt_vel_, virtual_steer_jnt_eff_, INDEX_LEFT, i);
+        GetCurrentState(virtual_front_steer_jnt_pos_, virtual_front_steer_jnt_vel_, virtual_front_steer_jnt_eff_, INDEX_LEFT, i);
       }
       else
       {
@@ -136,23 +134,23 @@ namespace steer_bot_hardware_gazebo
       }
     }
 
-    steer_jnt_pos_ = (virtual_steer_jnt_pos_[INDEX_RIGHT] + virtual_steer_jnt_pos_[INDEX_LEFT]) / virtual_steer_jnt_pos_.size();
-    steer_jnt_vel_ = (virtual_steer_jnt_vel_[INDEX_RIGHT] + virtual_steer_jnt_vel_[INDEX_LEFT]) / virtual_steer_jnt_vel_.size();
-    steer_jnt_eff_ = (virtual_steer_jnt_eff_[INDEX_RIGHT] + virtual_steer_jnt_eff_[INDEX_LEFT]) / virtual_steer_jnt_eff_.size();
+    front_steer_jnt_pos_ = (virtual_front_steer_jnt_pos_[INDEX_RIGHT] + virtual_front_steer_jnt_pos_[INDEX_LEFT]) / virtual_front_steer_jnt_pos_.size();
+    front_steer_jnt_vel_ = (virtual_front_steer_jnt_vel_[INDEX_RIGHT] + virtual_front_steer_jnt_vel_[INDEX_LEFT]) / virtual_front_steer_jnt_vel_.size();
+    front_steer_jnt_eff_ = (virtual_front_steer_jnt_eff_[INDEX_RIGHT] + virtual_front_steer_jnt_eff_[INDEX_LEFT]) / virtual_front_steer_jnt_eff_.size();
   }
 
   void SteerBotHardwareGazebo::writeSim(ros::Time time, ros::Duration period)
   {
     // Enforce joint limits
-#ifdef JOINT_LIMIT
     jnt_limits_interface_.enforceLimits(period);
-#endif
+
     log_cnt_++;
     for(int i = 0; i <  sim_joints_.size(); i++)
     {
       std::string gazebo_jnt_name;
       gazebo_jnt_name = sim_joints_[i]->GetName();
 
+      // wheels
       if(gazebo_jnt_name == virtual_rear_wheel_jnt_names_[INDEX_RIGHT])
       {
         const double eff_cmd = 2*ComputeEffCommandFromVelError(INDEX_RIGHT, period);
@@ -160,9 +158,9 @@ namespace steer_bot_hardware_gazebo
 
         if(log_cnt_ % 500 == 0)
         {
-          ROS_DEBUG_STREAM("wheel_jnt_vel_cmd_ = " << wheel_jnt_vel_cmd_);
+          ROS_DEBUG_STREAM("rear_wheel_jnt_vel_cmd_ = " << rear_wheel_jnt_vel_cmd_);
           ROS_DEBUG_STREAM("virtual_rear_wheel_jnt_vel_[INDEX_RIGHT] = " << virtual_rear_wheel_jnt_vel_[INDEX_RIGHT]);
-          ROS_DEBUG_STREAM("error[INDEX_RIGHT] " <<  wheel_jnt_vel_cmd_ - virtual_rear_wheel_jnt_vel_[INDEX_RIGHT]);
+          ROS_DEBUG_STREAM("error[INDEX_RIGHT] " <<  rear_wheel_jnt_vel_cmd_ - virtual_rear_wheel_jnt_vel_[INDEX_RIGHT]);
           ROS_DEBUG_STREAM("command[INDEX_RIGHT] = " << eff_cmd);
         }
       }
@@ -173,25 +171,31 @@ namespace steer_bot_hardware_gazebo
 
         if(log_cnt_ % 500 == 0)
         {
-          ROS_DEBUG_STREAM("wheel_jnt_vel_cmd_ = " << wheel_jnt_vel_cmd_);
+          ROS_DEBUG_STREAM("rear_wheel_jnt_vel_cmd_ = " << rear_wheel_jnt_vel_cmd_);
           ROS_DEBUG_STREAM("virtual_rear_wheel_jnt_vel_[INDEX_LEFT] = " << virtual_rear_wheel_jnt_vel_[INDEX_LEFT]);
-          ROS_DEBUG_STREAM("error[INDEX_LEFT] " <<  wheel_jnt_vel_cmd_ - virtual_rear_wheel_jnt_vel_[INDEX_LEFT]);
+          ROS_DEBUG_STREAM("error[INDEX_LEFT] " <<  rear_wheel_jnt_vel_cmd_ - virtual_rear_wheel_jnt_vel_[INDEX_LEFT]);
           ROS_DEBUG_STREAM("command[INDEX_LEFT] = " << eff_cmd);
         }
       }
-      else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_RIGHT])
+      // steers
+      else if(gazebo_jnt_name == front_steer_jnt_name_)
+      {
+        front_steer_jnt_pos_ = front_steer_jnt_pos_cmd_;
+        ROS_INFO_STREAM("front_steer_jnt_pos_ '" << front_steer_jnt_pos_ << " ' at writeSim()");
+      }
+      else if(gazebo_jnt_name == virtual_front_steer_jnt_names_[INDEX_RIGHT])
       {
         double pos_cmd = 0.0;
         if(enable_ackermann_link_)
         {
           const double h = wheel_separation_h_;
           const double w = wheel_separation_w_;
-          pos_cmd = 2.5*atan2(2*h*tan(steer_jnt_pos_cmd_), 2*h + w/2.0*tan(steer_jnt_pos_cmd_));
+          pos_cmd = 2.5*atan2(2*h*tan(front_steer_jnt_pos_cmd_), 2*h + w/2.0*tan(front_steer_jnt_pos_cmd_));
           ROS_DEBUG_STREAM("ackermann steer angle: " << pos_cmd << " at RIGHT");
         }
         else
         {
-          pos_cmd = 2*steer_jnt_pos_cmd_;
+          pos_cmd = 2*front_steer_jnt_pos_cmd_;
         }
         if (pos_cmd > 1.1) {
           pos_cmd = 1.1;
@@ -200,19 +204,19 @@ namespace steer_bot_hardware_gazebo
         }
         sim_joints_[i]->SetAngle(0, pos_cmd);
       }
-      else if(gazebo_jnt_name == virtual_steer_jnt_names_[INDEX_LEFT])
+      else if(gazebo_jnt_name == virtual_front_steer_jnt_names_[INDEX_LEFT])
       {
         double pos_cmd = 0.0;
         if(enable_ackermann_link_)
         {
           const double h = wheel_separation_h_;
           const double w = wheel_separation_w_;
-          pos_cmd = 2.5*atan2(2*h*tan(steer_jnt_pos_cmd_), 2*h - w/2.0*tan(steer_jnt_pos_cmd_));
+          pos_cmd = 2.5*atan2(2*h*tan(front_steer_jnt_pos_cmd_), 2*h - w/2.0*tan(front_steer_jnt_pos_cmd_));
           ROS_DEBUG_STREAM("ackermann steer angle: " << pos_cmd << " at LEFT");
         }
         else
         {
-          pos_cmd = 2*steer_jnt_pos_cmd_;
+          pos_cmd = 2*front_steer_jnt_pos_cmd_;
         }
         if (pos_cmd > 1.1) {
           pos_cmd = 1.1;
@@ -226,19 +230,34 @@ namespace steer_bot_hardware_gazebo
         // do nothing
       }
     }
+
+    // steer joint for steer_drive_controller
+    front_steer_jnt_pos_ = front_steer_jnt_pos_cmd_;
+    if(log_cnt_ % 500 == 0)
+    {
+      ROS_DEBUG_STREAM("front_steer_jnt_pos_ '" << front_steer_jnt_pos_ << " ' at writeSim()");
+    }
+    // wheel joint for steer_drive_controller
+    rear_wheel_jnt_pos_ = 0.5 * (virtual_rear_wheel_jnt_pos_[INDEX_RIGHT] + virtual_rear_wheel_jnt_pos_[INDEX_LEFT]);
+    rear_wheel_jnt_vel_ = 0.5 * (virtual_rear_wheel_jnt_vel_[INDEX_RIGHT] + virtual_rear_wheel_jnt_vel_[INDEX_LEFT]);
+    if(log_cnt_ % 500 == 0)
+    {
+      ROS_DEBUG_STREAM("rear_wheel_jnt_pos_ '" << rear_wheel_jnt_pos_ << " ' at writeSim()");
+      ROS_DEBUG_STREAM("rear_wheel_jnt_vel_ '" << rear_wheel_jnt_vel_ << " ' at writeSim()");
+    }
   }
 
   void SteerBotHardwareGazebo::CleanUp()
   {
     // wheel
     //-- wheel joint names
-    wheel_jnt_name_.empty();
+    rear_wheel_jnt_name_.empty();
     virtual_rear_wheel_jnt_names_.clear();
     //-- actual rear wheel joint
-    wheel_jnt_pos_ = 0;
-    wheel_jnt_vel_ = 0;
-    wheel_jnt_eff_ = 0;
-    wheel_jnt_vel_cmd_ = 0;
+    rear_wheel_jnt_pos_ = 0;
+    rear_wheel_jnt_vel_ = 0;
+    rear_wheel_jnt_eff_ = 0;
+    rear_wheel_jnt_vel_cmd_ = 0;
     //-- virtual rear wheel joint
     virtual_rear_wheel_jnt_pos_.clear();
     virtual_rear_wheel_jnt_vel_.clear();
@@ -252,18 +271,18 @@ namespace steer_bot_hardware_gazebo
 
     // steer
     //-- steer joint names
-    steer_jnt_name_.empty();
-    virtual_steer_jnt_names_.clear();
+    front_steer_jnt_name_.empty();
+    virtual_front_steer_jnt_names_.clear();
     //-- front steer joint
-    steer_jnt_pos_ = 0;
-    steer_jnt_vel_ = 0;
-    steer_jnt_eff_ = 0;
-    steer_jnt_pos_cmd_ = 0;
+    front_steer_jnt_pos_ = 0;
+    front_steer_jnt_vel_ = 0;
+    front_steer_jnt_eff_ = 0;
+    front_steer_jnt_pos_cmd_ = 0;
     //-- virtual wheel joint
-    virtual_steer_jnt_pos_.clear();
-    virtual_steer_jnt_vel_.clear();
-    virtual_steer_jnt_eff_.clear();
-    virtual_steer_jnt_pos_cmd_.clear();
+    virtual_front_steer_jnt_pos_.clear();
+    virtual_front_steer_jnt_vel_.clear();
+    virtual_front_steer_jnt_eff_.clear();
+    virtual_front_steer_jnt_pos_cmd_.clear();
   }
 
   void SteerBotHardwareGazebo::GetJointNames(ros::NodeHandle &_nh)
@@ -275,7 +294,7 @@ namespace steer_bot_hardware_gazebo
   void SteerBotHardwareGazebo::GetWheelJointNames(ros::NodeHandle &_nh)
   {
     // wheel joint to get linear command
-    _nh.getParam(ns_ + "rear_wheel", wheel_jnt_name_);
+    _nh.getParam(ns_ + "rear_wheel", rear_wheel_jnt_name_);
 
     // virtual wheel joint for gazebo control
     _nh.getParam(ns_ + "virtual_rear_wheels", virtual_rear_wheel_jnt_names_);
@@ -297,16 +316,16 @@ namespace steer_bot_hardware_gazebo
   void SteerBotHardwareGazebo::GetSteerJointNames(ros::NodeHandle &_nh)
   {
     // steer joint to get angular command
-    _nh.getParam(ns_ + "front_steer", steer_jnt_name_);
+    _nh.getParam(ns_ + "front_steer", front_steer_jnt_name_);
 
     // virtual steer joint for gazebo control
-    _nh.getParam(ns_ + "virtual_front_steers", virtual_steer_jnt_names_);
+    _nh.getParam(ns_ + "virtual_front_steers", virtual_front_steer_jnt_names_);
 
-    const int dof = virtual_steer_jnt_names_.size();
-    virtual_steer_jnt_pos_.resize(dof);
-    virtual_steer_jnt_vel_.resize(dof);
-    virtual_steer_jnt_eff_.resize(dof);
-    virtual_steer_jnt_pos_cmd_.resize(dof);
+    const int dof = virtual_front_steer_jnt_names_.size();
+    virtual_front_steer_jnt_pos_.resize(dof);
+    virtual_front_steer_jnt_vel_.resize(dof);
+    virtual_front_steer_jnt_eff_.resize(dof);
+    virtual_front_steer_jnt_pos_cmd_.resize(dof);
   }
 
   void SteerBotHardwareGazebo::RegisterHardwareInterfaces()
@@ -316,8 +335,8 @@ namespace steer_bot_hardware_gazebo
 
     // register mapped interface to ros_control
     registerInterface(&jnt_state_interface_);
-    registerInterface(&wheel_jnt_vel_cmd_interface_);
-    registerInterface(&steer_jnt_pos_cmd_interface_);
+    registerInterface(&rear_wheel_jnt_vel_cmd_interface_);
+    registerInterface(&front_steer_jnt_pos_cmd_interface_);
   }
 
   void SteerBotHardwareGazebo::RegisterInterfaceHandles(
@@ -336,21 +355,21 @@ namespace steer_bot_hardware_gazebo
   {
     // actual wheel joints
     this->RegisterInterfaceHandles(
-          jnt_state_interface_, wheel_jnt_vel_cmd_interface_,
-          wheel_jnt_name_, wheel_jnt_pos_, wheel_jnt_vel_, wheel_jnt_eff_, wheel_jnt_vel_cmd_);
+          jnt_state_interface_, rear_wheel_jnt_vel_cmd_interface_,
+          rear_wheel_jnt_name_, rear_wheel_jnt_pos_, rear_wheel_jnt_vel_, rear_wheel_jnt_eff_, rear_wheel_jnt_vel_cmd_);
 
     // virtual rear wheel joints
     for (int i = 0; i < virtual_rear_wheel_jnt_names_.size(); i++)
     {
       this->RegisterInterfaceHandles(
-            jnt_state_interface_, wheel_jnt_vel_cmd_interface_,
+            jnt_state_interface_, rear_wheel_jnt_vel_cmd_interface_,
             virtual_rear_wheel_jnt_names_[i], virtual_rear_wheel_jnt_pos_[i], virtual_rear_wheel_jnt_vel_[i], virtual_rear_wheel_jnt_eff_[i], virtual_rear_wheel_jnt_vel_cmd_[i]);
     }
     // virtual front wheel joints
     for (int i = 0; i < virtual_front_wheel_jnt_names_.size(); i++)
     {
       this->RegisterInterfaceHandles(
-            jnt_state_interface_, wheel_jnt_vel_cmd_interface_,
+            jnt_state_interface_, front_wheel_jnt_vel_cmd_interface_,
             virtual_front_wheel_jnt_names_[i], virtual_front_wheel_jnt_pos_[i], virtual_front_wheel_jnt_vel_[i], virtual_front_wheel_jnt_eff_[i], virtual_front_wheel_jnt_vel_cmd_[i]);
     }
   }
@@ -359,15 +378,15 @@ namespace steer_bot_hardware_gazebo
   {
     // actual steer joints
     this->RegisterInterfaceHandles(
-          jnt_state_interface_, steer_jnt_pos_cmd_interface_,
-          steer_jnt_name_, steer_jnt_pos_, steer_jnt_vel_, steer_jnt_eff_, steer_jnt_pos_cmd_);
+          jnt_state_interface_, front_steer_jnt_pos_cmd_interface_,
+          front_steer_jnt_name_, front_steer_jnt_pos_, front_steer_jnt_vel_, front_steer_jnt_eff_, front_steer_jnt_pos_cmd_);
 
     // virtual steer joints
-    for (int i = 0; i < virtual_steer_jnt_names_.size(); i++)
+    for (int i = 0; i < virtual_front_steer_jnt_names_.size(); i++)
     {
       this->RegisterInterfaceHandles(
-            jnt_state_interface_, steer_jnt_pos_cmd_interface_,
-            virtual_steer_jnt_names_[i], virtual_steer_jnt_pos_[i], virtual_steer_jnt_vel_[i], virtual_steer_jnt_eff_[i], virtual_steer_jnt_pos_cmd_[i]);
+            jnt_state_interface_, front_steer_jnt_pos_cmd_interface_,
+            virtual_front_steer_jnt_names_[i], virtual_front_steer_jnt_pos_[i], virtual_front_steer_jnt_vel_[i], virtual_front_steer_jnt_eff_[i], virtual_front_steer_jnt_pos_cmd_[i]);
     }
   }
 
@@ -400,7 +419,7 @@ namespace steer_bot_hardware_gazebo
 
   double SteerBotHardwareGazebo::ComputeEffCommandFromVelError(const int _index, ros::Duration _period)
   {
-    double vel_error = wheel_jnt_vel_cmd_ - virtual_rear_wheel_jnt_vel_[_index];
+    double vel_error = rear_wheel_jnt_vel_cmd_ - virtual_rear_wheel_jnt_vel_[_index];
     ROS_DEBUG_STREAM("vel_error = " << vel_error);
     if(fabs(vel_error) < 0.1)
     {
