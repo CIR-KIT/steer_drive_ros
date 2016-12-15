@@ -74,4 +74,8 @@ if (CATKIN_ENABLE_TESTING)
     test/steer_drive_controller_limits_test/steer_drive_controller_limits.test
     test/steer_drive_controller_limits_test/steer_drive_limits_test.cpp)
   target_link_libraries(${PROJECT_NAME}_limits_test ${catkin_LIBRARIES})
+  add_rostest_gtest(${PROJECT_NAME}_timeout_test
+    test/steer_drive_controller_timeout_test/steer_drive_controller_timeout.test
+    test/steer_drive_controller_timeout_test/steer_drive_controller_timeout_test.cpp)
+  target_link_libraries(${PROJECT_NAME}_timeout_test ${catkin_LIBRARIES})
 endif()
