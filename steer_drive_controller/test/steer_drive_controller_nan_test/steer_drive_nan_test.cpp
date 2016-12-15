@@ -27,7 +27,7 @@
 
 /// \author Enrique Fernandez
 
-#include "./common/include/test_common.h"
+#include "../common/include/test_common.h"
 
 // NaN
 #include <limits>

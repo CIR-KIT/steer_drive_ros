@@ -63,11 +63,11 @@ if (CATKIN_ENABLE_TESTING)
   add_dependencies(tests ${PROJECT_NAME}_steerbot)
 
   add_rostest_gtest(${PROJECT_NAME}_test
-    test/steer_drive_controller.test
-    test/steer_drive_test.cpp)
+    test/steer_drive_controller_test/steer_drive_controller.test
+    test/steer_drive_controller_test/steer_drive_test.cpp)
   target_link_libraries(${PROJECT_NAME}_test ${catkin_LIBRARIES})
   add_rostest_gtest(${PROJECT_NAME}_nan_test
-    test/steer_drive_controller_nan.test
-    test/steer_drive_nan_test.cpp)
+    test/steer_drive_controller_nan_test/steer_drive_controller_nan.test
+    test/steer_drive_controller_nan_test/steer_drive_nan_test.cpp)
   target_link_libraries(${PROJECT_NAME}_nan_test ${catkin_LIBRARIES})
 endif()
