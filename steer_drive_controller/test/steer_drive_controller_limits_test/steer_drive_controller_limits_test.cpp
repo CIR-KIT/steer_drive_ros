@@ -230,7 +230,7 @@ TEST_F(SteerDriveControllerTest, testAngularVelocityLimits)
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
-  ros::init(argc, argv, "steer_drive_limits_test");
+  ros::init(argc, argv, "steer_drive_controller_limits_test");
 
   ros::AsyncSpinner spinner(1);
   spinner.start();

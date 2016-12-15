@@ -61,7 +61,7 @@ TEST_F(SteerDriveControllerTest, testTimeout)
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
-  ros::init(argc, argv, "steer_drive_controller_test");
+  ros::init(argc, argv, "steer_drive_controller_timeout_test");
 
   ros::AsyncSpinner spinner(1);
   spinner.start();

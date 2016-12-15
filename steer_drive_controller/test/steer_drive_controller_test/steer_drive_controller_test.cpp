@@ -146,7 +146,7 @@ TEST_F(SteerDriveControllerTest, testOdomFrame)
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
-  ros::init(argc, argv, "steer_drive_test");
+  ros::init(argc, argv, "steer_drive_controller_test");
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
