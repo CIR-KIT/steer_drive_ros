@@ -83,14 +83,14 @@ if (CATKIN_ENABLE_TESTING)
   #  test/diff_drive_wrong.test
   #  test/diff_drive_fail_test.cpp)
   #target_link_libraries(diff_drive_fail_test ${catkin_LIBRARIES})
-  add_rostest_gtest(steer_drive_controller_odom_tf_test
+  add_rostest_gtest(${PROJECT_NAME}_odom_tf_test
     test/steer_drive_controller_odom_tf_test/steer_drive_controller_odom_tf.test
     test/steer_drive_controller_odom_tf_test/steer_drive_controller_odom_tf_test.cpp)
   target_link_libraries(${PROJECT_NAME}_odom_tf_test ${catkin_LIBRARIES})
-  #add_rostest_gtest(diff_drive_default_odom_frame_test
-  #  test/diff_drive_default_odom_frame.test
-  #  test/diff_drive_default_odom_frame_test.cpp)
-  #target_link_libraries(diff_drive_default_odom_frame_test ${catkin_LIBRARIES})
+  add_rostest_gtest(${PROJECT_NAME}_default_odom_frame_test
+    test/steer_drive_controller_default_odom_frame_test/steer_drive_controller_default_odom_frame.test
+    test/steer_drive_controller_default_odom_frame_test/steer_drive_controller_default_odom_frame_test.cpp)
+  target_link_libraries(${PROJECT_NAME}_default_odom_frame_test ${catkin_LIBRARIES})
   #add_rostest_gtest(diff_drive_odom_frame_test
   #  test/diff_drive_odom_frame.test
   #  test/diff_drive_odom_frame_test.cpp)
