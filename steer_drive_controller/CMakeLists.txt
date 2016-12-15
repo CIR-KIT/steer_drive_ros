@@ -64,15 +64,15 @@ if (CATKIN_ENABLE_TESTING)
 
   add_rostest_gtest(${PROJECT_NAME}_test
     test/steer_drive_controller_test/steer_drive_controller.test
-    test/steer_drive_controller_test/steer_drive_test.cpp)
+    test/steer_drive_controller_test/steer_drive_controller_test.cpp)
   target_link_libraries(${PROJECT_NAME}_test ${catkin_LIBRARIES})
   add_rostest_gtest(${PROJECT_NAME}_nan_test
     test/steer_drive_controller_nan_test/steer_drive_controller_nan.test
-    test/steer_drive_controller_nan_test/steer_drive_nan_test.cpp)
+    test/steer_drive_controller_nan_test/steer_drive_controller_nan_test.cpp)
   target_link_libraries(${PROJECT_NAME}_nan_test ${catkin_LIBRARIES})
   add_rostest_gtest(${PROJECT_NAME}_limits_test
     test/steer_drive_controller_limits_test/steer_drive_controller_limits.test
-    test/steer_drive_controller_limits_test/steer_drive_limits_test.cpp)
+    test/steer_drive_controller_limits_test/steer_drive_controller_limits_test.cpp)
   target_link_libraries(${PROJECT_NAME}_limits_test ${catkin_LIBRARIES})
   add_rostest_gtest(${PROJECT_NAME}_timeout_test
     test/steer_drive_controller_timeout_test/steer_drive_controller_timeout.test
