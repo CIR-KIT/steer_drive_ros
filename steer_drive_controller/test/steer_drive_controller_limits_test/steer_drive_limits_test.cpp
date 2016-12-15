@@ -184,9 +184,8 @@ TEST_F(SteerDriveControllerTest, testAngularAccelerationLimits)
 
   nav_msgs::Odometry new_odom = getLastOdom();
 
-  // check if the robot speed is now 0.188rad.s-1
-  // this is not exactly same with 0.25rad.s-1 which is 0.5.s-2 * 0.5s, but smaller than that without limit setting in yaml
-  EXPECT_LT(fabs(new_odom.twist.twist.angular.z - old_odom.twist.twist.angular.z), 0.188 + VELOCITY_TOLERANCE);
+  // check if the robot speed is now 0.25rad.s-1, which is 0.5.s-2 * 0.5s
+  EXPECT_LT(fabs(new_odom.twist.twist.angular.z - old_odom.twist.twist.angular.z), 0.25 + VELOCITY_TOLERANCE);
   // check if the robot speed is now 0.1m.s-1
   EXPECT_LT(fabs(new_odom.twist.twist.linear.x - old_odom.twist.twist.linear.x), 0.1 + VELOCITY_TOLERANCE);
 
