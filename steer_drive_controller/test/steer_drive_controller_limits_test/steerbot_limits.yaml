@@ -12,8 +12,8 @@ steerbot_controller:
   angular:
     z:
       has_velocity_limits: true
-      max_velocity: 2.0
+      max_velocity: 0.5
       has_acceleration_limits: true
-      max_acceleration: 2.0
+      max_acceleration: 0.5
       has_jerk_limits: true
-      max_jerk: 5.0
+      max_jerk: 2.5
