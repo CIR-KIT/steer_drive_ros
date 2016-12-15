@@ -8,7 +8,7 @@
   <!-- Provide the radius, since the bot's wheels are spheres, not cylinders -->
   <param name="steerbot_controller/wheel_radius" value="0.11"/>
   <!-- Provide the wheel separation -->
-  <param name="steerbot_controller/wheel_separation_h" value="0.2"/>
+  <param name="steerbot_controller/wheel_separation_h" value="0.4"/>
 
   <!-- Controller test -->
   <test test-name="steer_drive_controller_wheel_separation_param_test"
