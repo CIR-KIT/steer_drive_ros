@@ -79,10 +79,10 @@ if (CATKIN_ENABLE_TESTING)
     test/steer_drive_controller_timeout_test/steer_drive_controller_timeout_test.cpp)
   target_link_libraries(${PROJECT_NAME}_timeout_test ${catkin_LIBRARIES})
   #add_rostest(test/steer_drive_controller_multipliers.test)
-  #add_rostest_gtest(diff_drive_fail_test
-  #  test/diff_drive_wrong.test
-  #  test/diff_drive_fail_test.cpp)
-  #target_link_libraries(diff_drive_fail_test ${catkin_LIBRARIES})
+  #add_rostest_gtest(steer_drive_controller_fail_test
+  #  test/steer_drive_controller_wrong.test
+  #  test/steer_drive_controller_fail_test.cpp)
+  #target_link_libraries(steer_drive_controller_fail_test ${catkin_LIBRARIES})
   add_rostest_gtest(${PROJECT_NAME}_odom_tf_test
     test/steer_drive_controller_odom_tf_test/steer_drive_controller_odom_tf.test
     test/steer_drive_controller_odom_tf_test/steer_drive_controller_odom_tf_test.cpp)
@@ -91,15 +91,15 @@ if (CATKIN_ENABLE_TESTING)
     test/steer_drive_controller_default_odom_frame_test/steer_drive_controller_default_odom_frame.test
     test/steer_drive_controller_default_odom_frame_test/steer_drive_controller_default_odom_frame_test.cpp)
   target_link_libraries(${PROJECT_NAME}_default_odom_frame_test ${catkin_LIBRARIES})
-  #add_rostest_gtest(diff_drive_odom_frame_test
-  #  test/diff_drive_odom_frame.test
-  #  test/diff_drive_odom_frame_test.cpp)
-  #target_link_libraries(diff_drive_odom_frame_test ${catkin_LIBRARIES})
-  #add_rostest(test/diff_drive_open_loop.test)
+  add_rostest_gtest(steer_drive_controller_odom_frame_test
+    test/steer_drive_controller_odom_frame_test/steer_drive_controller_odom_frame.test
+    test/steer_drive_controller_odom_frame_test/steer_drive_controller_odom_frame_test.cpp)
+  target_link_libraries(steer_drive_controller_odom_frame_test ${catkin_LIBRARIES})
+  #add_rostest(test/steer_drive_controller_open_loop.test)
   #add_rostest(test/skid_steer_controller.test)
   #add_rostest(test/skid_steer_no_wheels.test)
-  #add_rostest(test/diff_drive_radius_param.test)
-  #add_rostest(test/diff_drive_radius_param_fail.test)
-  #add_rostest(test/diff_drive_separation_param.test)
-  #add_rostest(test/diff_drive_bad_urdf.test)
+  #add_rostest(test/steer_drive_controller_radius_param.test)
+  #add_rostest(test/steer_drive_controller_radius_param_fail.test)
+  #add_rostest(test/steer_drive_controller_separation_param.test)
+  #add_rostest(test/steer_drive_controller_bad_urdf.test)
 endif()
