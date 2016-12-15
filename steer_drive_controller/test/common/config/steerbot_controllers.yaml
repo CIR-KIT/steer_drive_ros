@@ -9,5 +9,5 @@ steerbot_controller:
   cmd_vel_timeout: 20.0 # we test this separately, give plenty for the other tests
 
   wheel_separation_h : 0.20
-  wheel_radius : 0.11
+  #wheel_radius : 0.11
   wheel_separation_h_multiplier: 0.515 # calibration parameter for odometory
