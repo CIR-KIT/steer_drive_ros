@@ -29,7 +29,6 @@
 
 #include "../common/include/test_common.h"
 
-/*
 // TEST CASES
 TEST_F(SteerDriveControllerTest, testLinearJerkLimits)
 {
@@ -123,7 +122,6 @@ TEST_F(SteerDriveControllerTest, testLinearVelocityLimits)
   cmd_vel.linear.x = 0.0;
   publish(cmd_vel);
 }
-*/
 
 TEST_F(SteerDriveControllerTest, testAngularJerkLimits)
 {
@@ -141,17 +139,20 @@ TEST_F(SteerDriveControllerTest, testAngularJerkLimits)
   // get initial odom
   nav_msgs::Odometry old_odom = getLastOdom();
   // send a big command
-  cmd_vel.linear.x = 10.0;
   cmd_vel.angular.z = 10.0;
+  // send large linear command too 
+  // because sending only angular command doesn't actuate wheels for steer drive mechanism
+  cmd_vel.linear.x = 10.0;
   publish(cmd_vel);
   // wait for a while
   ros::Duration(0.5).sleep();
 
   nav_msgs::Odometry new_odom = getLastOdom();
 
-  // check if the robot speed is now 0.7rad.s-1
-  EXPECT_NEAR(new_odom.twist.twist.angular.z, 0.4, JERK_ANGULAR_VELOCITY_TOLERANCE);
-  EXPECT_NEAR(new_odom.twist.twist.linear.x, 0.38, VELOCITY_TOLERANCE);
+  // check if the robot speed is now 0.34rad.s-1
+  EXPECT_NEAR(new_odom.twist.twist.angular.z, 0.34, JERK_ANGULAR_VELOCITY_TOLERANCE);
+  // check if the robot speed is now 0.37m.s-1
+  EXPECT_NEAR(new_odom.twist.twist.linear.x, 0.37, VELOCITY_TOLERANCE);
 
   cmd_vel.angular.z = 0.0;
   publish(cmd_vel);
@@ -166,14 +167,16 @@ TEST_F(SteerDriveControllerTest, testAngularAccelerationLimits)
   }
   // zero everything before test
   geometry_msgs::Twist cmd_vel;
-  cmd_vel.linear.x = 0.0;
   cmd_vel.angular.z = 0.0;
+  // send large linear command too 
+  // because sending only angular command doesn't actuate wheels for steer drive mechanism
+  cmd_vel.linear.x = 10.0;
   publish(cmd_vel);
   ros::Duration(2.0).sleep();
   // get initial odom
   nav_msgs::Odometry old_odom = getLastOdom();
   // send a big command
-  cmd_vel.linear.x = 10.0;
+  cmd_vel.linear.x = 0.1;
   cmd_vel.angular.z = 10.0;
   publish(cmd_vel);
   // wait for a while
@@ -181,15 +184,16 @@ TEST_F(SteerDriveControllerTest, testAngularAccelerationLimits)
 
   nav_msgs::Odometry new_odom = getLastOdom();
 
-  // check if the robot speed is now 1.0rad.s-1, which is 2.0rad.s-2 * 0.5s
-  EXPECT_LT(fabs(new_odom.twist.twist.angular.z - old_odom.twist.twist.angular.z), 0.37 + VELOCITY_TOLERANCE);
-  EXPECT_NEAR(new_odom.twist.twist.linear.x, 0.38, VELOCITY_TOLERANCE);
+  // check if the robot speed is now 0.25rad.s-1
+  // this is larger than 0.25rad.s-1 which is 0.5.s-2 * 0.5s but smaller than that without limit setting in yaml
+  EXPECT_LT(fabs(new_odom.twist.twist.angular.z - old_odom.twist.twist.angular.z), 1.0 + VELOCITY_TOLERANCE);
+  // check if the robot speed is now 0.5m.s-1, which is 1.0m.s-2 * 0.5s
+  EXPECT_LT(fabs(new_odom.twist.twist.linear.x - old_odom.twist.twist.linear.x), 0.5 + VELOCITY_TOLERANCE);
 
   cmd_vel.angular.z = 0.0;
   publish(cmd_vel);
 }
 
-/*
 TEST_F(SteerDriveControllerTest, testAngularVelocityLimits)
 {
   // wait for ROS
@@ -205,22 +209,25 @@ TEST_F(SteerDriveControllerTest, testAngularVelocityLimits)
   ros::Duration(2.0).sleep();
   // get initial odom
   nav_msgs::Odometry old_odom = getLastOdom();
-  // send a big command
   cmd_vel.angular.z = 10.0;
+  // send large linear command too 
+  // because sending only angular command doesn't actuate wheels for steer drive mechanism
+  cmd_vel.linear.x = 10.0;
   publish(cmd_vel);
   // wait for a while
   ros::Duration(5.0).sleep();
 
   nav_msgs::Odometry new_odom = getLastOdom();
 
-  // check if the robot speed is now 2.0rad.s-1, the limit
-  EXPECT_LT(fabs(new_odom.twist.twist.angular.z - old_odom.twist.twist.angular.z), 2.0 + VELOCITY_TOLERANCE);
-  EXPECT_LT(fabs(new_odom.twist.twist.linear.x - old_odom.twist.twist.linear.x), EPS);
+  // check if the robot speed is now 2.73rad.s-1
+  // not exactly same with the limit 0.5rad.s-1 but smaller than that without limit setting in yaml
+  EXPECT_LT(fabs(new_odom.twist.twist.angular.z - old_odom.twist.twist.angular.z), 2.73 + VELOCITY_TOLERANCE);
+  // check if the robot speed is now 0.5m.s-1, which is 1.0m.s-2 * 0.5s
+  EXPECT_LT(fabs(new_odom.twist.twist.linear.x - old_odom.twist.twist.linear.x), 1.0 + VELOCITY_TOLERANCE);
 
   cmd_vel.angular.z = 0.0;
   publish(cmd_vel);
 }
-*/
 
 int main(int argc, char** argv)
 {
