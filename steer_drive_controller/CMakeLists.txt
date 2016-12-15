@@ -79,10 +79,10 @@ if (CATKIN_ENABLE_TESTING)
     test/steer_drive_controller_timeout_test/steer_drive_controller_timeout_test.cpp)
   target_link_libraries(${PROJECT_NAME}_timeout_test ${catkin_LIBRARIES})
   #add_rostest(test/steer_drive_controller_multipliers.test)
-  #add_rostest_gtest(steer_drive_controller_fail_test
-  #  test/steer_drive_controller_wrong.test
-  #  test/steer_drive_controller_fail_test.cpp)
-  #target_link_libraries(steer_drive_controller_fail_test ${catkin_LIBRARIES})
+  add_rostest_gtest(steer_drive_controller_fail_test
+    test/steer_drive_controller_fail_test/steer_drive_controller_wrong.test
+    test/steer_drive_controller_fail_test/steer_drive_controller_fail_test.cpp)
+  target_link_libraries(steer_drive_controller_fail_test ${catkin_LIBRARIES})
   add_rostest_gtest(${PROJECT_NAME}_odom_tf_test
     test/steer_drive_controller_odom_tf_test/steer_drive_controller_odom_tf.test
     test/steer_drive_controller_odom_tf_test/steer_drive_controller_odom_tf_test.cpp)
@@ -99,7 +99,7 @@ if (CATKIN_ENABLE_TESTING)
   #add_rostest(test/skid_steer_controller.test)
   #add_rostest(test/skid_steer_no_wheels.test)
   add_rostest(test/steer_drive_controller_radius_param_test/steer_drive_controller_radius_param.test)
-  #add_rostest(test/steer_drive_controller_radius_param_fail.test)
+  add_rostest(test/steer_drive_controller_radius_param_fail_test/steer_drive_controller_radius_param_fail.test)
   #add_rostest(test/steer_drive_controller_separation_param.test)
   #add_rostest(test/steer_drive_controller_bad_urdf.test)
 endif()
