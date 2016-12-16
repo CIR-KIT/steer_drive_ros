@@ -1,7 +1,7 @@
 <launch>
   <!-- Load steerbot model -->
   <param name="robot_description"
-         command="$(find xacro)/xacro.py '$(find steer_drive_controller)/test/common/urdf/steerbot.xacro'" />
+         command="$(find xacro)/xacro '$(find steer_drive_controller)/test/common/urdf/steerbot.xacro'" />
 
   <!-- Load controller config -->
   <rosparam command="load" file="$(find steer_drive_controller)/test/common/config/steerbot_controllers.yaml" />
