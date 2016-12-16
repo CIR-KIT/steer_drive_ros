@@ -202,7 +202,7 @@ namespace steer_bot_hardware_gazebo
         }else if(pos_cmd < -1.1){
           pos_cmd = -1.1;
         }
-        sim_joints_[i]->SetAngle(0, pos_cmd);
+        sim_joints_[i]->SetPosition(0, pos_cmd);
       }
       else if(gazebo_jnt_name == virtual_front_steer_jnt_names_[INDEX_LEFT])
       {
@@ -223,7 +223,7 @@ namespace steer_bot_hardware_gazebo
         }else if(pos_cmd < -1.1){
           pos_cmd = -1.1;
         }
-        sim_joints_[i]->SetAngle(0, pos_cmd);
+        sim_joints_[i]->SetPosition(0, pos_cmd);
       }
       else
       {
