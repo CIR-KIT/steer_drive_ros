@@ -67,6 +67,7 @@ TEST_F(SteerDriveControllerTest, testOdomTopic)
     ros::Duration(0.1).sleep();
   }
 
+  ros::Duration(2.0).sleep();
   // get an odom message
   nav_msgs::Odometry odom_msg = getLastOdom();
   // check its frame_id
