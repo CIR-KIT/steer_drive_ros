@@ -16,5 +16,6 @@
   <exec_depend>stepback_and_steerturn_recovery</exec_depend>
 
   <export>
+    <metapackage/>
   </export>
 </package>
