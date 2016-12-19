@@ -1,7 +1,7 @@
 <launch>
   <!-- Load steerbot model -->
   <param name="robot_description"
-         command="$(find xacro)/xacro.py '$(find steer_drive_controller)/test/common/urdf/steerbot.xacro'" />
+         command="$(find xacro)/xacro '$(find steer_drive_controller)/test/common/urdf/steerbot.xacro' --inorder" />
 
   <!-- Load controller config -->
   <rosparam command="load" file="$(find steer_drive_controller)/test/common/config/steerbot_controllers.yaml" />
@@ -29,5 +29,9 @@
         pkg="rqt_plot"
         type="rqt_plot"
         args="/steerbot_controller/odom/twist/twist/linear/x" />
+  <node name="steerbot_ang_vel_monitor"
+        pkg="rqt_plot"
+        type="rqt_plot"
+        args="/steerbot_controller/odom/twist/twist/angular/z" />
   -->
 </launch>

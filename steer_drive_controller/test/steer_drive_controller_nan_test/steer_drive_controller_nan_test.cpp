@@ -27,7 +27,7 @@
 
 /// \author Enrique Fernandez
 
-#include "./common/include/test_common.h"
+#include "../common/include/test_common.h"
 
 // NaN
 #include <limits>
@@ -81,7 +81,7 @@ TEST_F(SteerDriveControllerTest, testNaN)
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
-  ros::init(argc, argv, "steer_drive_nan_test");
+  ros::init(argc, argv, "steer_drive_controller_nan_test");
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
