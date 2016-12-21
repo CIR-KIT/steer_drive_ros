@@ -26,6 +26,10 @@
 //////////////////////////////////////////////////////////////////////////////
 
 /** \author Adolfo Rodríguez Tsouroukdissian */
+/** \author Masaru Morita */
+
+/* CAUTION: This code was just modified to be build in indigo for personal use.
+ * multi_interface_controller is not officially support in indito.*/
 
 #ifndef CONTROLLER_INTERFACE_MULTI_INTERFACE_CONTROLLER_H
 #define CONTROLLER_INTERFACE_MULTI_INTERFACE_CONTROLLER_H

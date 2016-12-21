@@ -34,6 +34,7 @@
 
 /*
  * Author: Bence Magyar
+ * Author: Masaru Morita
  */
 
 #include <cmath>

@@ -29,10 +29,6 @@
  */
 
 /**
- * \file 
- * 
- * Recovery behavior of step back and steer turning
- *
  * \author Masaru Morita
  */
 

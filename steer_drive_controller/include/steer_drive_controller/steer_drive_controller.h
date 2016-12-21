@@ -34,6 +34,7 @@
 
 /*
  * Author: Enrique Fernández
+ * Author: Masaru Morita
  */
 
 #include <controller_interface/controller.h>

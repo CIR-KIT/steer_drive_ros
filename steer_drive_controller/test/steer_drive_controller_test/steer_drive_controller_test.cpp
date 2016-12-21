@@ -26,8 +26,9 @@
 //////////////////////////////////////////////////////////////////////////////
 
 /// \author Bence Magyar
+/// \author Masaru Morita
 
-#include "./common/include/test_common.h"
+#include "../common/include/test_common.h"
 #include <tf/transform_listener.h>
 
 // TEST CASES
@@ -78,7 +79,6 @@ TEST_F(SteerDriveControllerTest, testForward)
   EXPECT_LT(fabs(new_odom.twist.twist.angular.z), EPS);
 }
 
-#if 0
 TEST_F(SteerDriveControllerTest, testTurn)
 {
   // wait for ROS
@@ -96,15 +96,20 @@ TEST_F(SteerDriveControllerTest, testTurn)
   nav_msgs::Odometry old_odom = getLastOdom();
   // send a velocity command
   cmd_vel.angular.z = M_PI/10.0;
+  // send linear command too 
+  // because sending only angular command doesn't actuate wheels for steer drive mechanism
+  cmd_vel.linear.x = 0.1;
   publish(cmd_vel);
   // wait for 10s
   ros::Duration(10.0).sleep();
 
   nav_msgs::Odometry new_odom = getLastOdom();
 
-  // check if the robot rotated PI around z, changes in the other fields should be ~~0
-  EXPECT_LT(fabs(new_odom.pose.pose.position.x - old_odom.pose.pose.position.x), EPS);
-  EXPECT_LT(fabs(new_odom.pose.pose.position.y - old_odom.pose.pose.position.y), EPS);
+  // check if the robot rotated PI around z, changes in x should be ~~0 and in y should be y_answer
+  double x_answer = 0.0;
+  double y_answer = 2.0 * cmd_vel.linear.x / cmd_vel.angular.z; // R = v/w, D = 2R
+  EXPECT_NEAR(fabs(new_odom.pose.pose.position.x - old_odom.pose.pose.position.x), x_answer, POSITION_TOLERANCE);
+  EXPECT_NEAR(fabs(new_odom.pose.pose.position.y - old_odom.pose.pose.position.y), y_answer, POSITION_TOLERANCE);
   EXPECT_LT(fabs(new_odom.pose.pose.position.z - old_odom.pose.pose.position.z), EPS);
 
   // convert to rpy and test that way
@@ -116,7 +121,7 @@ TEST_F(SteerDriveControllerTest, testTurn)
   EXPECT_LT(fabs(pitch_new - pitch_old), EPS);
   EXPECT_NEAR(fabs(yaw_new - yaw_old), M_PI, ORIENTATION_TOLERANCE);
 
-  EXPECT_LT(fabs(new_odom.twist.twist.linear.x), EPS);
+  EXPECT_NEAR(new_odom.twist.twist.linear.x, 0.1, VELOCITY_TOLERANCE);
   EXPECT_LT(fabs(new_odom.twist.twist.linear.y), EPS);
   EXPECT_LT(fabs(new_odom.twist.twist.linear.z), EPS);
 
@@ -124,7 +129,6 @@ TEST_F(SteerDriveControllerTest, testTurn)
   EXPECT_LT(fabs(new_odom.twist.twist.angular.y), EPS);
   EXPECT_NEAR(fabs(new_odom.twist.twist.angular.z), M_PI/10.0, EPS);
 }
-#endif
 
 TEST_F(SteerDriveControllerTest, testOdomFrame)
 {
@@ -143,7 +147,7 @@ TEST_F(SteerDriveControllerTest, testOdomFrame)
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
-  ros::init(argc, argv, "steer_drive_test");
+  ros::init(argc, argv, "steer_drive_controller_test");
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
