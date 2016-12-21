@@ -37,6 +37,7 @@
  * Author: Bence Magyar
  * Author: Enrique Fernández
  * Author: Paul Mathieu
+ * Author: Masaru Morita
  */
 
 #include <steer_drive_controller/odometry.h>
@@ -77,17 +78,13 @@ namespace steer_drive_controller
     const double rear_wheel_cur_pos = rear_wheel_pos * wheel_radius_;
 
     /// Estimate velocity of wheels using old and current position:
-    //const double left_wheel_est_vel  = left_wheel_cur_pos  - left_wheel_old_pos_;
-    //const double right_wheel_est_vel = right_wheel_cur_pos - right_wheel_old_pos_;
-
     const double rear_wheel_est_vel = rear_wheel_cur_pos - rear_wheel_old_pos_;
 
     /// Update old position with current:
     rear_wheel_old_pos_ = rear_wheel_cur_pos;
 
     /// Compute linear and angular diff:
-    const double linear  = rear_wheel_est_vel;//(right_wheel_est_vel + left_wheel_est_vel) * 0.5;
-    //const double angular = (right_wheel_est_vel - left_wheel_est_vel) / wheel_separation_w_;
+    const double linear  = rear_wheel_est_vel;
     const double angular = tan(front_steer_pos) * linear / wheel_separation_h_;
 
     /// Integrate odometry:

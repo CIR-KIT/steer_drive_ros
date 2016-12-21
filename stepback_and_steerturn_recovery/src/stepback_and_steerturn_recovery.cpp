@@ -29,10 +29,7 @@
  */
 
 /**
- * \file 
- * 
  * \author Masaru Morita
- * 
  */
 
 #include <stepback_and_steerturn_recovery/stepback_and_steerturn_recovery.h>

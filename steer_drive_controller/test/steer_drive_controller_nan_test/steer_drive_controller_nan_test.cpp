@@ -26,6 +26,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 /// \author Enrique Fernandez
+/// \author Masaru Morita
 
 #include "../common/include/test_common.h"
 
