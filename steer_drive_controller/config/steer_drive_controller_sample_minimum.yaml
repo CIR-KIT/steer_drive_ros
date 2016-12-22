@@ -40,7 +40,7 @@ steer_drive_controller:
   #    max_acceleration          : 1.7  # m/s^2
   #    min_acceleration          : -0.4 # m/s^2
   #    has_jerk_limits           : true
-  #    max_jerk                  : 5.0 # m/s^3
+  #    max_jerk                  : 5.0  # m/s^3
   #angular:
   #  z:
   #    has_velocity_limits       : true
@@ -48,4 +48,4 @@ steer_drive_controller:
   #    has_acceleration_limits   : true
   #    max_acceleration          : 1.5  # rad/s^2
   #    has_jerk_limits           : true
-  #    max_jerk                  : 2.5 # rad/s^3
+  #    max_jerk                  : 2.5  # rad/s^3
