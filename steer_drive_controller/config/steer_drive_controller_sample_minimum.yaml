@@ -1,0 +1,33 @@
+# Wheel & Steer
+steer_drive_controller:
+  type        : "steer_drive_controller/SteerDriveController"
+  rear_wheel  : 'rear_wheel_joint'
+  front_steer : 'front_steer_joint'
+  #publish_rate: 100
+
+  pose_covariance_diagonal : [0.00001, 0.00001, 1000000000000.0, 1000000000000.0, 1000000000000.0, 0.001]
+  twist_covariance_diagonal: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+  #wheel_separation_h_multiplier : 2.0 # calibration parameter for odometory
+  #wheel_radius_multiplier    : 1.0
+  #steer_pos_multiplier       : 1.0
+  #cmd_vel_timeout: 20
+  #base_frame_id: base_link
+
+  #enable_odom_tf: true
+  #wheel_separation_h : 0.79 # retriieved from urdf joints
+  #wheel_radius : 0.28 # retrieved from urdf joint
+
+  #linear:
+  #  x:
+  #    has_velocity_limits    : true
+  #    max_velocity           : 0.9  # m/s
+  #    min_velocity           : -0.9 # m/s
+  #    has_acceleration_limits: true
+  #    max_acceleration       : 1.7  # m/s^2
+  #    min_acceleration       : -0.4 # m/s^2
+  #angular:
+  #  z:
+  #    has_velocity_limits    : true
+  #    max_velocity           : 0.5  # rad/s
+  #    has_acceleration_limits: true
+  #    max_acceleration       : 1.5  # rad/s^2  #  wheel_right_front_joint_position_controller:
