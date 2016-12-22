@@ -4,19 +4,33 @@ steer_drive_controller:
   rear_wheel                    : 'rear_wheel_joint'
   front_steer                   : 'front_steer_joint'
   #publish_rate                  : 100
-
   pose_covariance_diagonal      : [0.00001, 0.00001, 1000000000000.0, 1000000000000.0, 1000000000000.0, 0.001]
   twist_covariance_diagonal     : [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-  #wheel_separation_h_multiplier : 2.0 # calibration parameter for angle odometory
-  #wheel_radius_multiplier       : 1.0 # calibration parameter for linear odometory
-  #steer_pos_multiplier          : 1.0
-  #cmd_vel_timeout               : 20
-  #base_frame_id                 : base_link
 
-  #enable_odom_tf: true
+  # Wheel separation between the rear and the front, and diameter of the rear. 
+  # These are both optional.
+  # steer_drive_controller will attempt to read either one or both from the
+  # URDF if not specified as a parameter.
   #wheel_separation_h            : 0.79 # retriieved from urdf joints
   #wheel_radius                  : 0.28 # retrieved from urdf joint
+ 
+  # Wheel separation and radius multipliers for odometry calibration.
+  #wheel_separation_h_multiplier : 2.0 # calibration parameter for angle odometory
+  #wheel_radius_multiplier       : 1.0 # calibration parameter for linear odometory
+  
+  # Steer position angle multipliers for fine tuning.
+  #steer_pos_multiplier          : 1.0
+  
+  # Velocity commands timeout [s] 
+  #cmd_vel_timeout               : 20 #default: 0.5
+ 
+  # Base frame_id
+  #base_frame_id                 : base_link #default: base_link
 
+  #enable_odom_tf: true
+
+  # Velocity, acceleration and jerk limits
+  # Whenever a min_* is unspecified, default to -max_*
   #linear:
   #  x:
   #    has_velocity_limits       : true
