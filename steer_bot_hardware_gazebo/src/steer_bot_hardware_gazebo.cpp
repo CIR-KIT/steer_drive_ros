@@ -190,7 +190,7 @@ namespace steer_bot_hardware_gazebo
       // wheels
       if(gazebo_jnt_name == virtual_rear_wheel_jnt_names_[INDEX_RIGHT])
       {
-        const double eff_cmd = 2*ComputeEffCommandFromVelError(INDEX_RIGHT, period);
+        const double eff_cmd = ComputeEffCommandFromVelError(INDEX_RIGHT, period);
         sim_joints_[i]->SetForce(0u, eff_cmd);
 
         if(log_cnt_ % 500 == 0)
@@ -203,7 +203,7 @@ namespace steer_bot_hardware_gazebo
       }
       else if(gazebo_jnt_name == virtual_rear_wheel_jnt_names_[INDEX_LEFT])
       {
-        const double eff_cmd = 2*ComputeEffCommandFromVelError(INDEX_LEFT, period);
+        const double eff_cmd = ComputeEffCommandFromVelError(INDEX_LEFT, period);
         sim_joints_[i]->SetForce(0u, eff_cmd);
 
         if(log_cnt_ % 500 == 0)
@@ -227,17 +227,12 @@ namespace steer_bot_hardware_gazebo
         {
           const double h = wheel_separation_h_;
           const double w = wheel_separation_w_;
-          pos_cmd = 2.5*atan2(2*h*tan(front_steer_jnt_pos_cmd_), 2*h + w/2.0*tan(front_steer_jnt_pos_cmd_));
+          pos_cmd = atan2(2*h*tan(front_steer_jnt_pos_cmd_), 2*h + w/2.0*tan(front_steer_jnt_pos_cmd_));
           ROS_DEBUG_STREAM("ackermann steer angle: " << pos_cmd << " at RIGHT");
         }
         else
         {
-          pos_cmd = 2*front_steer_jnt_pos_cmd_;
-        }
-        if (pos_cmd > 1.1) {
-          pos_cmd = 1.1;
-        }else if(pos_cmd < -1.1){
-          pos_cmd = -1.1;
+          pos_cmd = front_steer_jnt_pos_cmd_;
         }
         sim_joints_[i]->SetAngle(0, pos_cmd);
       }
@@ -248,17 +243,12 @@ namespace steer_bot_hardware_gazebo
         {
           const double h = wheel_separation_h_;
           const double w = wheel_separation_w_;
-          pos_cmd = 2.5*atan2(2*h*tan(front_steer_jnt_pos_cmd_), 2*h - w/2.0*tan(front_steer_jnt_pos_cmd_));
+          pos_cmd = atan2(2*h*tan(front_steer_jnt_pos_cmd_), 2*h - w/2.0*tan(front_steer_jnt_pos_cmd_));
           ROS_DEBUG_STREAM("ackermann steer angle: " << pos_cmd << " at LEFT");
         }
         else
         {
-          pos_cmd = 2*front_steer_jnt_pos_cmd_;
-        }
-        if (pos_cmd > 1.1) {
-          pos_cmd = 1.1;
-        }else if(pos_cmd < -1.1){
-          pos_cmd = -1.1;
+          pos_cmd = front_steer_jnt_pos_cmd_;
         }
         sim_joints_[i]->SetAngle(0, pos_cmd);
       }
