@@ -18,6 +18,11 @@
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/common.hh>
 
+enum FRONT_REAR
+{
+    FRONT = 0, REAR = 1,
+};
+
 namespace steer_bot_hardware_gazebo
 {
 
@@ -55,7 +60,10 @@ private:
   void RegisterInterfaceHandles(
           hardware_interface::JointStateInterface& _jnt_state_interface,
           hardware_interface::JointCommandInterface& _jnt_cmd_interface,
-          const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff,  double& _jnt_cmd);
+          const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff, double& _jnt_cmd);
+  void RegisterInterfaceHandles(
+          hardware_interface::JointStateInterface& _jnt_state_interface,
+          const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff);
   void RegisterJointStateInterfaceHandle(
       hardware_interface::JointStateInterface& _jnt_state_interface,
       const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff);
@@ -63,7 +71,7 @@ private:
       hardware_interface::JointStateInterface& _jnt_state_interface,
       hardware_interface::JointCommandInterface& _jnt_cmd_interface,
       const std::string _jnt_name, double& _jnt_cmd);
-  double ComputeEffCommandFromVelError(const int _index, ros::Duration _period);
+  double ComputeEffCommandFromVelError(const int _index, const int _front_rear, ros::Duration _period);
 
   void GetCurrentState(std::vector<double>& _jnt_pos, std::vector<double>& _jnt_vel, std::vector<double>& _jnt_eff,
                        const int _if_index, const int _sim_jnt_index);
@@ -148,7 +156,7 @@ private:
   //---- joint interface command
   std::vector<double> virtual_front_steer_jnt_pos_cmd_;
   //---- Hardware interface: joint
-  hardware_interface::VelocityJointInterface front_wheel_jnt_vel_cmd_interface_;
+  //hardware_interface::VelocityJointInterface front_wheel_jnt_vel_cmd_interface_;
 
   // ackermann link mechanism
   bool enable_ackermann_link_ ;
