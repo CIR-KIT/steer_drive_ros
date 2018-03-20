@@ -212,7 +212,11 @@ namespace steer_bot_hardware_gazebo
         {
           pos_cmd = front_steer_jnt_pos_cmd_;
         }
+#if GAZEBO_MAJOR_VERSION >= 9
+        sim_joints_[i]->SetPosition(0, pos_cmd, true);
+#else
         sim_joints_[i]->SetPosition(0, pos_cmd);
+#endif
       }
       else if(gazebo_jnt_name == virtual_front_steer_jnt_names_[INDEX_LEFT])
       {
@@ -228,7 +232,11 @@ namespace steer_bot_hardware_gazebo
         {
           pos_cmd = 2*front_steer_jnt_pos_cmd_;
         }
+#if GAZEBO_MAJOR_VERSION >= 9
+        sim_joints_[i]->SetPosition(0, pos_cmd, true);
+#else
         sim_joints_[i]->SetPosition(0, pos_cmd);
+#endif
       }
       else
       {
@@ -461,8 +469,13 @@ namespace steer_bot_hardware_gazebo
   void SteerBotHardwareGazebo::GetCurrentState(std::vector<double>& _jnt_pos, std::vector<double>& _jnt_vel, std::vector<double>& _jnt_eff,
                                                const int _if_index, const int _sim_jnt_index)
   {
+#if GAZEBO_MAJOR_VERSION >= 9
+    _jnt_pos[_if_index] +=
+        angles::shortest_angular_distance(_jnt_pos[_if_index], sim_joints_[_sim_jnt_index]->Position(0u));
+#else
     _jnt_pos[_if_index] +=
         angles::shortest_angular_distance(_jnt_pos[_if_index], sim_joints_[_sim_jnt_index]->GetAngle(0u).Radian());
+#endif
     _jnt_vel[_if_index] = sim_joints_[_sim_jnt_index]->GetVelocity(0u);
     _jnt_eff[_if_index] = sim_joints_[_sim_jnt_index]->GetForce(0u);
   }
