@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2014, PAL Robotics S.L.
+// Copyright (C) 2015, Locus Robotics Corp.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -25,63 +25,45 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //////////////////////////////////////////////////////////////////////////////
 
-/// \author Enrique Fernandez
+/// \author Eric Tappan
+/// \author Masaru Morita
 
-#include "./common/include/test_common.h"
-
-// NaN
-#include <limits>
+#include "../common/include/test_common.h"
+#include <tf/transform_listener.h>
 
 // TEST CASES
-TEST_F(SteerDriveControllerTest, testNaN)
+TEST_F(SteerDriveControllerTest, testOdomFrame)
 {
   // wait for ROS
   while(!isControllerAlive())
   {
     ros::Duration(0.1).sleep();
   }
-  // zero everything before test
-  geometry_msgs::Twist cmd_vel;
-  cmd_vel.linear.x = 0.0;
-  cmd_vel.angular.z = 0.0;
-  publish(cmd_vel);
+  // set up tf listener
+  tf::TransformListener listener;
   ros::Duration(2.0).sleep();
+  // check the original odom frame doesn't exist
+  EXPECT_TRUE(listener.frameExists("odom"));
+}
 
-  // send a command
-  cmd_vel.linear.x = 0.1;
-  ros::Duration(2.0).sleep();
+TEST_F(SteerDriveControllerTest, testOdomTopic)
+{
+  // wait for ROS
+  while(!isControllerAlive())
+  {
+    ros::Duration(0.1).sleep();
+  }
 
-  // stop robot (will generate NaN)
-  stop();
-  ros::Duration(2.0).sleep();
-
-  nav_msgs::Odometry odom = getLastOdom();
-
-  EXPECT_NE(std::isnan(odom.twist.twist.linear.x), true);
-  EXPECT_NE(std::isnan(odom.twist.twist.angular.z), true);
-  EXPECT_NE(std::isnan(odom.pose.pose.position.x), true);
-  EXPECT_NE(std::isnan(odom.pose.pose.position.y), true);
-  EXPECT_NE(std::isnan(odom.pose.pose.orientation.z), true);
-  EXPECT_NE(std::isnan(odom.pose.pose.orientation.w), true);
-
-  // start robot
-  start();
-  ros::Duration(2.0).sleep();
-
-  odom = getLastOdom();
-
-  EXPECT_NE(std::isnan(odom.twist.twist.linear.x), true);
-  EXPECT_NE(std::isnan(odom.twist.twist.angular.z), true);
-  EXPECT_NE(std::isnan(odom.pose.pose.position.x), true);
-  EXPECT_NE(std::isnan(odom.pose.pose.position.y), true);
-  EXPECT_NE(std::isnan(odom.pose.pose.orientation.z), true);
-  EXPECT_NE(std::isnan(odom.pose.pose.orientation.w), true);
+  // get an odom message
+  nav_msgs::Odometry odom_msg = getLastOdom();
+  // check its frame_id
+  ASSERT_STREQ(odom_msg.header.frame_id.c_str(), "odom");
 }
 
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
-  ros::init(argc, argv, "steer_drive_nan_test");
+  ros::init(argc, argv, "steer_drive_controller_default_odom_frame_test");
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
