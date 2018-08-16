@@ -153,29 +153,44 @@ namespace steer_bot_hardware_gazebo
       // wheels
       if(gazebo_jnt_name == virtual_rear_wheel_jnt_names_[INDEX_RIGHT])
       {
-        const double eff_cmd = 2*ComputeEffCommandFromVelError(INDEX_RIGHT, period);
-        sim_joints_[i]->SetForce(0u, eff_cmd);
-
-        if(log_cnt_ % 500 == 0)
-        {
-          ROS_DEBUG_STREAM("rear_wheel_jnt_vel_cmd_ = " << rear_wheel_jnt_vel_cmd_);
-          ROS_DEBUG_STREAM("virtual_rear_wheel_jnt_vel_[INDEX_RIGHT] = " << virtual_rear_wheel_jnt_vel_[INDEX_RIGHT]);
-          ROS_DEBUG_STREAM("error[INDEX_RIGHT] " <<  rear_wheel_jnt_vel_cmd_ - virtual_rear_wheel_jnt_vel_[INDEX_RIGHT]);
-          ROS_DEBUG_STREAM("command[INDEX_RIGHT] = " << eff_cmd);
-        }
+        //const double eff_cmd = 2*ComputeEffCommandFromVelError(INDEX_RIGHT, REAR, period);
+        //sim_joints_[i]->SetForce(0u, eff_cmd);
+        //if(log_cnt_ % 500 == 0)
+        //{
+        //  ROS_DEBUG_STREAM("rear_wheel_jnt_vel_cmd_ = " << rear_wheel_jnt_vel_cmd_);
+        //  ROS_DEBUG_STREAM("virtual_rear_wheel_jnt_vel_[INDEX_RIGHT] = " << virtual_rear_wheel_jnt_vel_[INDEX_RIGHT]);
+        //  ROS_DEBUG_STREAM("error[INDEX_RIGHT] " <<  rear_wheel_jnt_vel_cmd_ - virtual_rear_wheel_jnt_vel_[INDEX_RIGHT]);
+        //  ROS_DEBUG_STREAM("command[INDEX_RIGHT] = " << eff_cmd);
+        //}
+        sim_joints_[i]->SetVelocity(0, rear_wheel_jnt_vel_cmd_);
       }
       else if(gazebo_jnt_name == virtual_rear_wheel_jnt_names_[INDEX_LEFT])
       {
-        const double eff_cmd = 2*ComputeEffCommandFromVelError(INDEX_LEFT, period);
-        sim_joints_[i]->SetForce(0u, eff_cmd);
+        //const double eff_cmd = 2*ComputeEffCommandFromVelError(INDEX_LEFT, REAR, period);
+        //sim_joints_[i]->SetForce(0u, eff_cmd);
+        //if(log_cnt_ % 500 == 0)
+        //{
+        //  ROS_DEBUG_STREAM("rear_wheel_jnt_vel_cmd_ = " << rear_wheel_jnt_vel_cmd_);
+        //  ROS_DEBUG_STREAM("virtual_rear_wheel_jnt_vel_[INDEX_LEFT] = " << virtual_rear_wheel_jnt_vel_[INDEX_LEFT]);
+        //  ROS_DEBUG_STREAM("error[INDEX_LEFT] " <<  rear_wheel_jnt_vel_cmd_ - virtual_rear_wheel_jnt_vel_[INDEX_LEFT]);
+        //  ROS_DEBUG_STREAM("command[INDEX_LEFT] = " << eff_cmd);
+        //}
+        sim_joints_[i]->SetVelocity(0, rear_wheel_jnt_vel_cmd_);
+      }
+      else if(gazebo_jnt_name == virtual_front_wheel_jnt_names_[INDEX_RIGHT])
+      {
+        //const double eff_cmd = 2*ComputeEffCommandFromVelError(INDEX_RIGHT, FRONT, period);
+        //sim_joints_[i]->SetForce(0u, eff_cmd);
+        //ROS_INFO_STREAM("command[INDEX_RIGHT] = " << eff_cmd);
+        sim_joints_[i]->SetVelocity(0, rear_wheel_jnt_vel_cmd_); // added for gazebo in kinetic
+      }
+      else if(gazebo_jnt_name == virtual_front_wheel_jnt_names_[INDEX_LEFT])
+      {
+        //const double eff_cmd = 2*ComputeEffCommandFromVelError(INDEX_LEFT, FRONT, period);
+        //sim_joints_[i]->SetForce(0u, eff_cmd);
+        //ROS_INFO_STREAM("command[INDEX_LEFT] = " << eff_cmd);
+        sim_joints_[i]->SetVelocity(0, rear_wheel_jnt_vel_cmd_); // added for gazebo in kinetic
 
-        if(log_cnt_ % 500 == 0)
-        {
-          ROS_DEBUG_STREAM("rear_wheel_jnt_vel_cmd_ = " << rear_wheel_jnt_vel_cmd_);
-          ROS_DEBUG_STREAM("virtual_rear_wheel_jnt_vel_[INDEX_LEFT] = " << virtual_rear_wheel_jnt_vel_[INDEX_LEFT]);
-          ROS_DEBUG_STREAM("error[INDEX_LEFT] " <<  rear_wheel_jnt_vel_cmd_ - virtual_rear_wheel_jnt_vel_[INDEX_LEFT]);
-          ROS_DEBUG_STREAM("command[INDEX_LEFT] = " << eff_cmd);
-        }
       }
       // steers
       else if(gazebo_jnt_name == front_steer_jnt_name_)
@@ -190,19 +205,18 @@ namespace steer_bot_hardware_gazebo
         {
           const double h = wheel_separation_h_;
           const double w = wheel_separation_w_;
-          pos_cmd = 2.5*atan2(2*h*tan(front_steer_jnt_pos_cmd_), 2*h + w/2.0*tan(front_steer_jnt_pos_cmd_));
+          pos_cmd = atan2(2*h*tan(front_steer_jnt_pos_cmd_), 2*h + w/2.0*tan(front_steer_jnt_pos_cmd_));
           ROS_DEBUG_STREAM("ackermann steer angle: " << pos_cmd << " at RIGHT");
         }
         else
         {
-          pos_cmd = 2*front_steer_jnt_pos_cmd_;
+          pos_cmd = front_steer_jnt_pos_cmd_;
         }
-        if (pos_cmd > 1.1) {
-          pos_cmd = 1.1;
-        }else if(pos_cmd < -1.1){
-          pos_cmd = -1.1;
-        }
-        sim_joints_[i]->SetAngle(0, pos_cmd);
+#if GAZEBO_MAJOR_VERSION >= 9
+        sim_joints_[i]->SetPosition(0, pos_cmd, true);
+#else
+        sim_joints_[i]->SetPosition(0, pos_cmd);
+#endif
       }
       else if(gazebo_jnt_name == virtual_front_steer_jnt_names_[INDEX_LEFT])
       {
@@ -211,19 +225,18 @@ namespace steer_bot_hardware_gazebo
         {
           const double h = wheel_separation_h_;
           const double w = wheel_separation_w_;
-          pos_cmd = 2.5*atan2(2*h*tan(front_steer_jnt_pos_cmd_), 2*h - w/2.0*tan(front_steer_jnt_pos_cmd_));
+          pos_cmd = atan2(2*h*tan(front_steer_jnt_pos_cmd_), 2*h - w/2.0*tan(front_steer_jnt_pos_cmd_));
           ROS_DEBUG_STREAM("ackermann steer angle: " << pos_cmd << " at LEFT");
         }
         else
         {
           pos_cmd = 2*front_steer_jnt_pos_cmd_;
         }
-        if (pos_cmd > 1.1) {
-          pos_cmd = 1.1;
-        }else if(pos_cmd < -1.1){
-          pos_cmd = -1.1;
-        }
-        sim_joints_[i]->SetAngle(0, pos_cmd);
+#if GAZEBO_MAJOR_VERSION >= 9
+        sim_joints_[i]->SetPosition(0, pos_cmd, true);
+#else
+        sim_joints_[i]->SetPosition(0, pos_cmd);
+#endif
       }
       else
       {
@@ -351,6 +364,15 @@ namespace steer_bot_hardware_gazebo
                                               _jnt_name, _jnt_cmd);
   }
 
+  void SteerBotHardwareGazebo::RegisterInterfaceHandles(
+          hardware_interface::JointStateInterface& _jnt_state_interface,
+          const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff)
+  {
+    // register joint (both JointState and CommandJoint)
+    this->RegisterJointStateInterfaceHandle(_jnt_state_interface, _jnt_name,
+                                            _jnt_pos, _jnt_vel, _jnt_eff);
+  }
+
   void SteerBotHardwareGazebo::RegisterWheelInterface()
   {
     // actual wheel joints
@@ -369,8 +391,8 @@ namespace steer_bot_hardware_gazebo
     for (int i = 0; i < virtual_front_wheel_jnt_names_.size(); i++)
     {
       this->RegisterInterfaceHandles(
-            jnt_state_interface_, front_wheel_jnt_vel_cmd_interface_,
-            virtual_front_wheel_jnt_names_[i], virtual_front_wheel_jnt_pos_[i], virtual_front_wheel_jnt_vel_[i], virtual_front_wheel_jnt_eff_[i], virtual_front_wheel_jnt_vel_cmd_[i]);
+            jnt_state_interface_, //front_wheel_jnt_vel_cmd_interface_,
+            virtual_front_wheel_jnt_names_[i], virtual_front_wheel_jnt_pos_[i], virtual_front_wheel_jnt_vel_[i], virtual_front_wheel_jnt_eff_[i]/*, virtual_front_wheel_jnt_vel_cmd_[i]*/);
     }
   }
 
@@ -417,9 +439,15 @@ namespace steer_bot_hardware_gazebo
   }
 
 
-  double SteerBotHardwareGazebo::ComputeEffCommandFromVelError(const int _index, ros::Duration _period)
+  double SteerBotHardwareGazebo::ComputeEffCommandFromVelError(
+    const int _index, const int _front_rear, ros::Duration _period)
   {
-    double vel_error = rear_wheel_jnt_vel_cmd_ - virtual_rear_wheel_jnt_vel_[_index];
+    double vel_error = 0;
+    if(_front_rear == FRONT)
+        vel_error = rear_wheel_jnt_vel_cmd_ - virtual_front_wheel_jnt_vel_[_index];
+    else if(_front_rear == REAR)
+        vel_error = rear_wheel_jnt_vel_cmd_ - virtual_rear_wheel_jnt_vel_[_index];
+
     ROS_DEBUG_STREAM("vel_error = " << vel_error);
     if(fabs(vel_error) < 0.1)
     {
@@ -441,8 +469,13 @@ namespace steer_bot_hardware_gazebo
   void SteerBotHardwareGazebo::GetCurrentState(std::vector<double>& _jnt_pos, std::vector<double>& _jnt_vel, std::vector<double>& _jnt_eff,
                                                const int _if_index, const int _sim_jnt_index)
   {
+#if GAZEBO_MAJOR_VERSION >= 9
+    _jnt_pos[_if_index] +=
+        angles::shortest_angular_distance(_jnt_pos[_if_index], sim_joints_[_sim_jnt_index]->Position(0u));
+#else
     _jnt_pos[_if_index] +=
         angles::shortest_angular_distance(_jnt_pos[_if_index], sim_joints_[_sim_jnt_index]->GetAngle(0u).Radian());
+#endif
     _jnt_vel[_if_index] = sim_joints_[_sim_jnt_index]->GetVelocity(0u);
     _jnt_eff[_if_index] = sim_joints_[_sim_jnt_index]->GetForce(0u);
   }
