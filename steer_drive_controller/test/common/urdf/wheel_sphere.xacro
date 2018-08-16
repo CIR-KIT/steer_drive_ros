@@ -5,7 +5,7 @@
   <xacro:property name="steer_effort"   value="10.0"/>
   <xacro:property name="steer_velocity" value="5.0"/>
 
-  <macro name="front_steer" params="name parent radius thickness length width axel_offset steer_height *origin">
+  <xacro:macro name="front_steer" params="name parent radius thickness length width axel_offset steer_height *origin">
     <link name="${name}_steer_link">
       <inertial>
         <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -39,9 +39,9 @@
     <gazebo reference="${name}_steer_link">
       <material>Gazebo/Yellow</material>
     </gazebo>
-  </macro>
+  </xacro:macro>
 
-  <macro name="front_wheel_lr" params="name parent radius thickness length width axel_offset right_left steer_height *origin">
+  <xacro:macro name="front_wheel_lr" params="name parent radius thickness length width axel_offset right_left steer_height *origin">
     <link name="${name}_steer_link">
       <inertial>
         <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -66,7 +66,7 @@
       <parent link="${parent}_link"/>
       <child link="${name}_steer_link"/>
       <origin xyz="${length/2-axel_offset} ${right_left*(width/2+axel_offset)} ${steer_height}" rpy="0 0 0"/>
-      <!--insert_block name="origin"/-->
+      <!--xacro:insert_block name="origin"/-->
       <axis xyz="0 0 1"/>
       <limit effort="${steer_effort}"
              lower="${-180.0 * deg_to_rad}" upper="${180.0 * deg_to_rad}"
@@ -120,9 +120,9 @@
     <gazebo reference="${name}_wheel_link">
       <material>Gazebo/Red</material>
     </gazebo>
-  </macro>
+  </xacro:macro>
 
-  <macro name="rear_wheel" params="name parent radius thickness *origin">
+  <xacro:macro name="rear_wheel" params="name parent radius thickness *origin">
     <link name="${name}_wheel_link">
       <inertial>
         <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -146,7 +146,7 @@
     <joint name="${name}_wheel_joint" type="continuous">
       <parent link="${parent}_link"/>
       <child link="${name}_wheel_link"/>
-      <insert_block name="origin"/>
+      <xacro:insert_block name="origin"/>
       <axis xyz="0 0 1"/>
     </joint>
 
@@ -161,9 +161,9 @@
     <gazebo reference="${name}_wheel_link">
       <material>Gazebo/Yellow</material>
     </gazebo>
-  </macro>
+  </xacro:macro>
 
-  <macro name="rear_wheel_lr" params="name parent radius thickness *origin">
+  <xacro:macro name="rear_wheel_lr" params="name parent radius thickness *origin">
     <link name="${name}_wheel_link">
       <inertial>
         <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -187,7 +187,7 @@
     <joint name="${name}_wheel_joint" type="continuous">
       <parent link="${parent}_link"/>
       <child link="${name}_wheel_link"/>
-      <insert_block name="origin"/>
+      <xacro:insert_block name="origin"/>
       <axis xyz="0 0 1"/>
     </joint>
 
@@ -202,5 +202,5 @@
     <gazebo reference="${name}_wheel_link">
       <material>Gazebo/Red</material>
     </gazebo>
-  </macro>
+  </xacro:macro>
 </robot>
