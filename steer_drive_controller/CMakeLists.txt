@@ -93,7 +93,7 @@ if (CATKIN_ENABLE_TESTING)
   add_rostest_gtest(steer_drive_controller_odom_frame_test
     test/steer_drive_controller_odom_frame_test/steer_drive_controller_odom_frame.test
     test/steer_drive_controller_odom_frame_test/steer_drive_controller_odom_frame_test.cpp)
-  target_link_libraries(steer_drive_controller_odom_frame_test ${catkin_LIBRARIES})
+  target_link_libraries(${PROJECT_NAME}_odom_frame_test ${catkin_LIBRARIES})
   add_rostest(test/steer_drive_controller_open_loop_test/steer_drive_controller_open_loop.test)
   add_rostest(test/steer_drive_controller_no_wheel_test/steer_drive_controller_no_wheel.test)
   add_rostest(test/steer_drive_controller_no_steer_test/steer_drive_controller_no_steer.test)

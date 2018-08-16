@@ -26,6 +26,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 /// \author Bence Magyar
+/// \author Masaru Morita
 
 #include "../common/include/test_common.h"
 #include <tf/transform_listener.h>

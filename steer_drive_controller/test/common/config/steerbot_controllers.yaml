@@ -10,4 +10,5 @@ steerbot_controller:
 
   #wheel_separation_h : 0.4
   #wheel_radius : 0.11
-  wheel_separation_h_multiplier: 0.257 # calibration parameter for odometory, needed for test.
+  wheel_separation_h_multiplier: 0.257 # calibration parameter for odometory, needed for test passing.
+

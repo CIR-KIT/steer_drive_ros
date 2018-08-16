@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot name="robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 <!--
-Robot model taken from http://wiki.ros.org/pr2_mechanism/Tutorials/SImple%20URDF-Controller%20Example
+Robot model was modified from the one from http://wiki.ros.org/pr2_mechanism/Tutorials/SImple%20URDF-Controller%20Example
 -->
   <xacro:include filename="$(find steer_drive_controller)/test/common/urdf/wheel.xacro"/>
 
