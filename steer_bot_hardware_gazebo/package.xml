@@ -22,8 +22,6 @@
   <depend>joint_limits_interface</depend>
   <depend>roscpp</depend>
 
-  <build_depend>gazebo</build_depend>
-
   <export>
     <gazebo_ros_control plugin="${prefix}/steer_bot_hardware_gazebo_plugins.xml"/>
   </export>
