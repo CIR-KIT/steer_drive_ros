@@ -61,7 +61,7 @@ notifications:
 # trigger a build matrix for different ROS distributions if desired.
 env:
   global:
-    - ROS_DISTRO=indigo
+    - ROS_DISTRO=jade
     - ROS_CI_DESKTOP="`lsb_release -cs`"  # e.g. [precise|trusty|...]
     - CI_SOURCE_PATH=$(pwd)
     - ROSINSTALL_FILE=$CI_SOURCE_PATH/cirkit_unit03_pkgs.rosinstall
@@ -76,6 +76,8 @@ before_install:
   - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
   - sudo apt-get update -qq
   - sudo apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-$ROS_DISTRO-catkin
+  - sudo apt-get install -y libsdformat1 # for installing gazebo2
+  - sudo apt-get install -y gazebo2 # refer to https://github.com/jsk-ros-pkg/jsk_common/issues/1036
   - source /opt/ros/$ROS_DISTRO/setup.bash
   # Prepare rosdep to install dependencies.
   - sudo rosdep init

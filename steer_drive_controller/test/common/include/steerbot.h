@@ -122,7 +122,7 @@ public:
       }
 
       // steers
-      front_steer_jnt_vel_ = front_steer_jnt_pos_cmd_;
+      front_steer_jnt_pos_ = front_steer_jnt_pos_cmd_;
       for (unsigned int i = 0; i < virtual_front_steer_jnt_pos_cmd_.size(); i++)
       {
         virtual_front_steer_jnt_pos_[i] = virtual_front_steer_jnt_pos_cmd_[i];

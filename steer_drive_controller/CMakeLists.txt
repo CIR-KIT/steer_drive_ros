@@ -63,11 +63,41 @@ if (CATKIN_ENABLE_TESTING)
   add_dependencies(tests ${PROJECT_NAME}_steerbot)
 
   add_rostest_gtest(${PROJECT_NAME}_test
-    test/steer_drive_controller.test
-    test/steer_drive_test.cpp)
+    test/steer_drive_controller_test/steer_drive_controller.test
+    test/steer_drive_controller_test/steer_drive_controller_test.cpp)
   target_link_libraries(${PROJECT_NAME}_test ${catkin_LIBRARIES})
   add_rostest_gtest(${PROJECT_NAME}_nan_test
-    test/steer_drive_controller_nan.test
-    test/steer_drive_nan_test.cpp)
+    test/steer_drive_controller_nan_test/steer_drive_controller_nan.test
+    test/steer_drive_controller_nan_test/steer_drive_controller_nan_test.cpp)
   target_link_libraries(${PROJECT_NAME}_nan_test ${catkin_LIBRARIES})
+  add_rostest_gtest(${PROJECT_NAME}_limits_test
+    test/steer_drive_controller_limits_test/steer_drive_controller_limits.test
+    test/steer_drive_controller_limits_test/steer_drive_controller_limits_test.cpp)
+  target_link_libraries(${PROJECT_NAME}_limits_test ${catkin_LIBRARIES})
+  add_rostest_gtest(${PROJECT_NAME}_timeout_test
+    test/steer_drive_controller_timeout_test/steer_drive_controller_timeout.test
+    test/steer_drive_controller_timeout_test/steer_drive_controller_timeout_test.cpp)
+  target_link_libraries(${PROJECT_NAME}_timeout_test ${catkin_LIBRARIES})
+  add_rostest_gtest(steer_drive_controller_fail_test
+    test/steer_drive_controller_fail_test/steer_drive_controller_wrong.test
+    test/steer_drive_controller_fail_test/steer_drive_controller_fail_test.cpp)
+  target_link_libraries(steer_drive_controller_fail_test ${catkin_LIBRARIES})
+  add_rostest_gtest(${PROJECT_NAME}_odom_tf_test
+    test/steer_drive_controller_odom_tf_test/steer_drive_controller_odom_tf.test
+    test/steer_drive_controller_odom_tf_test/steer_drive_controller_odom_tf_test.cpp)
+  target_link_libraries(${PROJECT_NAME}_odom_tf_test ${catkin_LIBRARIES})
+  add_rostest_gtest(${PROJECT_NAME}_default_odom_frame_test
+    test/steer_drive_controller_default_odom_frame_test/steer_drive_controller_default_odom_frame.test
+    test/steer_drive_controller_default_odom_frame_test/steer_drive_controller_default_odom_frame_test.cpp)
+  target_link_libraries(${PROJECT_NAME}_default_odom_frame_test ${catkin_LIBRARIES})
+  add_rostest_gtest(steer_drive_controller_odom_frame_test
+    test/steer_drive_controller_odom_frame_test/steer_drive_controller_odom_frame.test
+    test/steer_drive_controller_odom_frame_test/steer_drive_controller_odom_frame_test.cpp)
+  target_link_libraries(steer_drive_controller_odom_frame_test ${catkin_LIBRARIES})
+  add_rostest(test/steer_drive_controller_open_loop_test/steer_drive_controller_open_loop.test)
+  add_rostest(test/steer_drive_controller_no_wheel_test/steer_drive_controller_no_wheel.test)
+  add_rostest(test/steer_drive_controller_no_steer_test/steer_drive_controller_no_steer.test)
+  add_rostest(test/steer_drive_controller_radius_param_test/steer_drive_controller_radius_param.test)
+  add_rostest(test/steer_drive_controller_radius_param_fail_test/steer_drive_controller_radius_param_fail.test)
+  add_rostest(test/steer_drive_controller_separation_param_test/steer_drive_controller_separation_param.test)
 endif()
