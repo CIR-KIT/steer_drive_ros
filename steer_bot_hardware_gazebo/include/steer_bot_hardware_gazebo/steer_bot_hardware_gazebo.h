@@ -18,6 +18,11 @@
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/common.hh>
 
+enum FRONT_REAR
+{
+    FRONT = 0, REAR = 1,
+};
+
 namespace steer_bot_hardware_gazebo
 {
 
@@ -56,6 +61,9 @@ private:
           hardware_interface::JointStateInterface& _jnt_state_interface,
           hardware_interface::JointCommandInterface& _jnt_cmd_interface,
           const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff,  double& _jnt_cmd);
+  void RegisterInterfaceHandles(
+          hardware_interface::JointStateInterface& _jnt_state_interface,
+const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff);
   void RegisterJointStateInterfaceHandle(
       hardware_interface::JointStateInterface& _jnt_state_interface,
       const std::string _jnt_name, double& _jnt_pos, double& _jnt_vel, double& _jnt_eff);
