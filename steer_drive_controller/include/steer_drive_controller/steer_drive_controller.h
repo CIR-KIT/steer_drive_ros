@@ -37,6 +37,7 @@
  */
 
 #include <controller_interface/controller.h>
+#include <controller_interface/multi_interface_controller.h>
 #include <hardware_interface/joint_command_interface.h>
 #include <pluginlib/class_list_macros.h>
 
@@ -48,7 +49,6 @@
 
 #include <steer_drive_controller/odometry.h>
 #include <steer_drive_controller/speed_limiter.h>
-#include <steer_drive_controller/multi_interface_controller.h>
 
 //#define GUI_DEBUG // uncommentout when you use qtcreator for debugging
 
