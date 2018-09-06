@@ -1,34 +1,34 @@
-### パラメータ
+### Parameters
 
 ```yaml
 steer_bot_hardware_gazebo:
-    # 後輪フレーム
+    # rear wheel frame
     rear_wheel  : 'base_to_wheel'
-    # ステアフレーム
+    # steer frame
     front_steer : 'base_to_steer'
-    # Gazebo用仮想後輪フレーム
+    # virtual rear frame for Gazebo
     virtual_rear_wheels  : ['base_to_right_rear_wheel', 'base_to_left_rear_wheel']
     virtual_front_wheels : ['base_to_right_front_wheel', 'base_to_left_front_wheel']
-    # Gazebo用仮想ステアフレーム
+    # virtual steer frame for Gazebo
     virtual_front_steers : ['base_to_right_front_steer', 'base_to_left_front_steer']
 
     # ackermann link mechanism
-    # trueならアッカーマン, falseならパラレルリンク．デフォルトはtrue．
+    # true for ackermann, false for parallel link. default: true
     enable_ackermann_link: true
-    # タイヤ間距離（左右）
+    # wheels separatation between the right & the left
     wheel_separation_w : 0.5
-    # タイヤ間距離（前後）
+    # wheels separatation between the front & the rear
     wheel_separation_h : 0.79
 ```
 
 ```yaml
 gains:
-　# 後輪速度制御用PIDゲイン
+　# PID Gains for rear wheel velocity control
   base_to_right_rear_wheel  :  {p: 100000.0, d: 10.0, i: 0.50, i_clamp: 3.0}
   base_to_left_rear_wheel   :  {p: 100000.0, d: 10.0, i: 0.50, i_clamp: 3.0}
 ```
 
-### SetVelocityが使えない．
-- 仕様っぽい
+### In case of inavailable of SetVelocity method
+- maybe specification
   - http://answers.ros.org/question/118546/setting-joint-velocity-in-gazebo/
-- VELOCITY_PIDでやるしかない．
+- VELOCITY_PID is one way to solve it
