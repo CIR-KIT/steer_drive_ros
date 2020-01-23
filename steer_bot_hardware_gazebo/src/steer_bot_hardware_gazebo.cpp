@@ -60,7 +60,7 @@ namespace steer_bot_hardware_gazebo
       JointHandle cmd_handle = front_steer_jnt_pos_cmd_interface_.getHandle(name);
 
       using namespace joint_limits_interface;
-      boost::shared_ptr<const urdf::Joint> urdf_joint = urdf_model->getJoint(name);
+      urdf::JointConstSharedPtr urdf_joint = urdf_model->getJoint(name);
       JointLimits limits;
       SoftJointLimits soft_limits;
       if (!getJointLimits(urdf_joint, limits) || !getSoftJointLimits(urdf_joint, soft_limits))
