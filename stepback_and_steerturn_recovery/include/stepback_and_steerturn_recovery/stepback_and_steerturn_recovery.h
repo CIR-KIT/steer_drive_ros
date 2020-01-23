@@ -51,7 +51,6 @@ namespace cmap=costmap_2d;
 namespace blp=base_local_planner;
 using std::vector;
 using std::max;
-namespace tf{ class TransformListener;}
 namespace stepback_and_steerturn_recovery
 {
 
